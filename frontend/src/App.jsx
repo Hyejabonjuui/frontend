@@ -1,5 +1,22 @@
+import { BrowserRouter } from 'react-router-dom';
+
+import AuthProvider from '@/contexts/AuthProvider';
+import LoginDialogProvider from '@/contexts/LoginDialogProvider';
+import ToastProvider from '@/contexts/ToastProvider';
+import Router from '@/routes/Router';
+
 function App() {
-  return <h1>청년 정책 프로젝트</h1>;
+  return (
+    <BrowserRouter>
+      <ToastProvider>
+        <AuthProvider>
+          <LoginDialogProvider>
+            <Router />
+          </LoginDialogProvider>
+        </AuthProvider>
+      </ToastProvider>
+    </BrowserRouter>
+  );
 }
 
 export default App;
