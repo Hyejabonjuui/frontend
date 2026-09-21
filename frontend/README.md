@@ -1,16 +1,118 @@
-# React + Vite
+# 혜자 · 청년 주거 정책 추천 (Frontend)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Vite + React 19 + MUI 기반 SPA입니다. 화면 설계서(Figma `화면 전체 (v2)`, node `230-2`)를 기준으로 구성했습니다.
 
-Currently, two official plugins are available:
+## 실행
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+npm run dev      # 개발 서버
+npm run build    # 프로덕션 빌드
+npm run lint     # ESLint 검사
+npm run format   # Prettier 포맷팅
+```
 
-## React Compiler
+환경 변수는 `.env.example`을 복사해 사용합니다. (`VITE_API_BASE_URL`, `VITE_USE_MOCK`)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 백엔드 없이 화면 테스트하기
 
-## Expanding the ESLint configuration
+`VITE_USE_MOCK=true`(개발 환경 기본값)이면 axios 어댑터가 `src/mocks`의 목 API로 바뀝니다.
+로그인·조건 저장·관심 정책·알림까지 실제 화면 흐름을 그대로 확인할 수 있습니다.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+| 계정 | 비밀번호 | 역할 |
+|---|---|---|
+| `minji@hyeja.kr` | `hyeja1234!` | 일반 회원 (조건·관심 정책·알림 채워져 있음) |
+| `admin@hyeja.kr` | `hyeja1234!` | 관리자 (정책 수집 화면 접근) |
+
+- 저장한 내용은 브라우저 `localStorage`에 남습니다. `window.hyejaMock.reset()`으로 처음 상태로 되돌립니다.
+- 검색어에 `AI실패`를 넣으면 추천 결과의 AI 실패 안내를 확인할 수 있습니다.
+- 목 관련 코드는 전부 `src/mocks/`에 있고, 프로덕션 코드에 들어간 연결부는 `[notiice]` 주석으로 표시했습니다.
+  (`src/main.jsx`의 조건부 블록, `.env.*`의 `VITE_USE_MOCK`)
+- 백엔드가 준비되면 `VITE_USE_MOCK=false`로 바꾸면 됩니다. 목 코드는 동적 import라 빌드에서 분리됩니다.
+
+## 화면 구성
+
+| 설계서 | 경로 | 접근 |
+|---|---|---|
+| S-01 홈 | `/` | 공개 |
+| S-02 로그인 | 모달 (전역) | 비로그인 |
+| S-03 회원가입 | `/signup` | 비로그인 |
+| S-04 내 조건 등록 | `/conditions` | 로그인 |
+| S-05 추천 결과 | `/recommendations` | 공개 |
+| S-06 정책 상세 | `/policies/:policyId` | 공개 |
+| S-08 마이페이지 | `/mypage?tab=condition\|account\|notification` | 로그인 |
+| S-09 알림함 | `/notifications` | 로그인 |
+| S-10 정책 관리 | `/admin` | 관리자 |
+| S-14 관심 정책 | `/favorites` | 로그인 |
+| S-15 이메일 찾기 | `/find-email` | 비로그인 |
+| S-16 비밀번호 재발급 | `/reset-password` | 비로그인 |
+
+## 디렉터리 구조
+
+```
+src/
+├── api/            서버 통신 계층 (axios 인스턴스, 도메인별 API 함수)
+├── assets/         이미지·아이콘
+├── components/
+│   ├── auth/       로그인 모달
+│   ├── common/     디자인 시스템 조각 (D-day·칩·판정 아이콘·빈 상태·에러·로딩)
+│   ├── layout/     Header / Footer / MainLayout
+│   ├── notification/ 알림 아이템 · 목록 · 헤더 팝오버
+│   ├── policy/     검색바 · 분류 탭 · 정책 행 · 목록 · 카드뉴스
+│   └── recommendation/ 가능·확인필요·불가 그룹
+├── constants/      라우트·메시지·정책 옵션·조건 필드
+├── contexts/       인증 · 토스트 · 로그인 모달
+├── hooks/          데이터 조회와 재사용 로직
+├── pages/          URL과 1:1로 연결되는 화면
+├── routes/         라우팅 테이블과 접근 제어
+├── styles/         MUI 테마(디자인 토큰 단일 소스)
+└── utils/          React와 무관한 순수 함수
+```
+
+## 작성 규칙
+
+- **import 경로는 `@/` alias를 사용한다.**
+- **스타일 값은 `styles/theme.js`의 토큰을 통해서만 쓴다.** 색·radius·타이포 하드코딩 금지.
+  - 색: `primary(#5cb8ff)` / `success(#1f8a4c)` / `warning(#c77700)` / `error(#d14343)`
+  - radius: 버튼·입력칸 4 · D-day 12 · 칩 16 · 카드 12 · 토스트 8
+  - 글꼴: 현재 Noto Sans KR → Pretendard 교체 시 `theme.js`의 `fontFamily` 한 줄만 수정
+- **MUI v9는 `alignItems` 같은 system prop을 직접 받지 않는다.** 전부 `sx`에 넣는다.
+- **예외·완료 안내는 모두 토스트로 처리한다.** (`useToast`의 `showSuccess / showError / showInfo`)
+  화면 아래 가운데, 3초, ✕로 즉시 닫기, 한 번에 1개.
+- **조건 판정은 색만으로 구분하지 않는다.** `JudgeIcon`이 ✓ / ✗ / ? 기호를 함께 쓴다.
+- **입력 오류는 테두리 2px + `⚠` 문구를 함께 표시한다.**
+- **API URL은 `api/endpoints.js`에만 존재한다.**
+- **컴포넌트는 axios를 직접 호출하지 않는다.** `pages → hooks → api` 순서로 내려간다.
+- **데이터 조회는 effect 내부에서 수행하고 `isActive` 플래그로 정리한다.**
+  (ESLint `react-hooks/set-state-in-effect` 준수, 응답 순서 꼬임 방지)
+
+## 아이콘
+
+Iconify(`@iconify/react`)를 사용하며 설계서에 지정된 이름을 그대로 씁니다.
+`mdi:magnify` · `mdi:bell-outline` · `mdi:account-outline` · `mdi:lock-outline` ·
+`mdi:calendar` · `mdi:heart-outline` / `mdi:heart` · `mdi:close` · `mdi:chevron-down`
+
+## API 계약
+
+설계서 주석에 적힌 경로는 그대로 따랐습니다.
+
+| 기능 | 경로 |
+|---|---|
+| F-01 회원가입 | `POST /api/auth/signup` → 자동 로그인 후 조건 등록 |
+| F-03 조건 저장 | `PUT /api/me/profile` · 선택지 `GET /api/codes` |
+| F-05 회원 탈퇴 | `DELETE /api/me` |
+| F-09 정책 수집 | `POST /api/admin/collect` |
+| F-11 정책 상세 | `GET /api/policies/{id}` (로그인 시 조건 판정 포함) |
+| F-13 용어 풀이 | `GET /api/terms` |
+| F-14 추천 | `POST /api/recommendations` body `{ query }` |
+| F-16 관심 저장·해제 | `POST` / `DELETE /api/me/favorites/{policyId}` |
+| F-17 준비 상태 변경 | `PATCH /api/me/favorites/{policyId}` |
+| F-18 관심 목록 | `GET /api/me/favorites` |
+
+## 아직 확정되지 않은 것
+
+- 설계서에 경로가 없는 기능(로그인·로그아웃·이메일 찾기·비밀번호 재발급·정책 목록·카드뉴스·알림)은
+  같은 규칙(`/api` 접두사 + 리소스 중심)으로 맞춘 가정값입니다.
+- 응답 봉투(`content` / `totalCount` / `totalPages`)와 정렬 옵션 "최신순"은 가정값입니다.
+- 토큰 재발급 흐름은 설계서에 없어 만들지 않았습니다. 지금은 401이면 로그아웃됩니다.
+- 관리자 판별은 `user.role === 'ADMIN'`으로 가정했습니다.
