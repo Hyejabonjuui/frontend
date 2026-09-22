@@ -6,6 +6,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 
+const NOTIFICATIONS_UPDATED_EVENT = 'hyeja:notifications-updated';
+const notifyNotificationsUpdated = () => window.dispatchEvent(new Event(NOTIFICATIONS_UPDATED_EVENT));
+
 export const useNotifications = () => {
   const { isAuthenticated } = useAuth();
   const { showSuccess, showError } = useToast();
@@ -44,6 +47,17 @@ export const useNotifications = () => {
     };
   }, [isAuthenticated, reloadToken]);
 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    const handleNotificationsUpdated = () => setReloadToken((previous) => previous + 1);
+    window.addEventListener(NOTIFICATIONS_UPDATED_EVENT, handleNotificationsUpdated);
+
+    return () => window.removeEventListener(NOTIFICATIONS_UPDATED_EVENT, handleNotificationsUpdated);
+  }, [isAuthenticated]);
+
   const notifications = useMemo(
     () => (isAuthenticated ? state.notifications : []),
     [isAuthenticated, state.notifications],
@@ -66,6 +80,7 @@ export const useNotifications = () => {
           notification.id === notificationId ? { ...notification, isRead: true } : notification,
         ),
       }));
+      notifyNotificationsUpdated();
     } catch (error) {
       setState((previous) => ({ ...previous, errorMessage: getErrorMessage(error) }));
     }
@@ -81,6 +96,7 @@ export const useNotifications = () => {
           isRead: true,
         })),
       }));
+      notifyNotificationsUpdated();
     } catch (error) {
       setState((previous) => ({ ...previous, errorMessage: getErrorMessage(error) }));
     }
@@ -96,6 +112,7 @@ export const useNotifications = () => {
             (notification) => notification.id !== notificationId,
           ),
         }));
+        notifyNotificationsUpdated();
         showSuccess(TOAST_MESSAGES.NOTIFICATION_DELETED);
       } catch (error) {
         showError(getErrorMessage(error));
