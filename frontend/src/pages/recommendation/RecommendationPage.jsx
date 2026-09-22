@@ -97,7 +97,7 @@ function RecommendationPage() {
               )}
             </Stack>
 
-            <Stack direction="row" spacing={3}>
+            <Stack direction="row" spacing={3} useFlexGap sx={{ flexWrap: 'wrap' }}>
               {GROUP_ORDER.map((group) => (
                 <Typography key={group} variant="body2">
                   {RECOMMENDATION_GROUP_LABEL[group]}{' '}

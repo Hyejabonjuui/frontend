@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link as RouterLink, NavLink, useNavigate } from 'react-router-dom';
-import { Icon } from '@iconify/react';
+import AppIcon from '@/components/common/AppIcon';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Badge from '@mui/material/Badge';
@@ -62,8 +62,11 @@ function Header() {
           width: '100%',
           maxWidth: LAYOUT.contentWidth,
           mx: 'auto',
+          px: LAYOUT.pageGutter,
           minHeight: `${LAYOUT.headerHeight}px !important`,
-          gap: { xs: 1, sm: 3 },
+          gap: { xs: 0.5, sm: 2, md: 3 },
+          flexWrap: { xs: 'wrap', sm: 'nowrap' },
+          py: { xs: 0.5, sm: 0 },
         }}
       >
         <Typography
@@ -77,8 +80,8 @@ function Header() {
 
         <Stack
           direction="row"
-          spacing={{ xs: 0, sm: 2 }}
-          sx={{ flexShrink: 0 }}
+          spacing={{ xs: 0, sm: 1, md: 2 }}
+          sx={{ flexShrink: 0, order: { xs: 3, sm: 0 }, width: { xs: '100%', sm: 'auto' } }}
         >
           {navItems.map((item) => (
             <Button
@@ -105,7 +108,7 @@ function Header() {
 
         <Box sx={{ flexGrow: 1 }} />
 
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexShrink: 0 }}>
+        <Stack direction="row" spacing={{ xs: 0, sm: 1 }} sx={{ alignItems: 'center', flexShrink: 0 }}>
           {isAuthenticated ? (
             <>
               <IconButton
@@ -113,15 +116,15 @@ function Header() {
                 onClick={(event) => setNotificationAnchorEl(event.currentTarget)}
               >
                 <Badge badgeContent={unreadCount} color="primary">
-                  <Icon icon="mdi:bell-outline" width={24} />
+                  <AppIcon name="bell-outline" size={24} />
                 </Badge>
               </IconButton>
 
               <Button
                 variant="text"
                 onClick={(event) => setAccountAnchorEl(event.currentTarget)}
-                endIcon={<Icon icon="mdi:chevron-down" width={20} />}
-                sx={{ color: 'text.primary' }}
+                endIcon={<AppIcon name="chevron-down" size={20} />}
+                sx={{ color: 'text.primary', maxWidth: { xs: 132, sm: 180 }, overflow: 'hidden' }}
               >
                 {user.nickname}
               </Button>
@@ -131,7 +134,7 @@ function Header() {
               <Button variant="text" onClick={() => openLoginDialog()} sx={{ color: 'text.secondary' }}>
                 로그인
               </Button>
-              <Button component={RouterLink} to={ROUTES.SIGNUP} variant="contained">
+              <Button component={RouterLink} to={ROUTES.SIGNUP} variant="contained" size="small">
                 회원가입
               </Button>
             </>

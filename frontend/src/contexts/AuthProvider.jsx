@@ -20,7 +20,7 @@ function AuthProvider({ children }) {
         setUser(profile);
       } catch (error) {
         // 서버에 닿지 못한 것뿐이라면 토큰을 지우지 않는다. 인증이 거절된 경우에만 정리한다.
-        if (error?.response) {
+        if (error?.response?.status === 401) {
           tokenStorage.clear();
         }
       } finally {

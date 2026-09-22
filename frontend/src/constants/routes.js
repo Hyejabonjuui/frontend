@@ -13,7 +13,24 @@ export const ROUTES = {
   NOT_FOUND: '*',
 };
 
-export const buildPolicyDetailPath = (policyId) => `/policies/${policyId}`;
+export const buildPolicyDetailPath = (policyId) => {
+  const path = `/policies/${policyId}`;
+
+  // notice: 더미 데이터의 문자열 테스트 중 정책 상세로 이동해도 선택한 필드와 길이를 유지한다.
+  if (import.meta.env.VITE_USE_MOCK !== 'true' || typeof window === 'undefined') {
+    return path;
+  }
+
+  const currentSearch = new URLSearchParams(window.location.search);
+  const field = currentSearch.get('uiTextTestField');
+  const length = currentSearch.get('uiTextTestLength');
+
+  if (!field || !length) {
+    return path;
+  }
+
+  return `${path}?${new URLSearchParams({ uiTextTestField: field, uiTextTestLength: length })}`;
+};
 
 export const MY_PAGE_TABS = {
   CONDITION: 'condition',

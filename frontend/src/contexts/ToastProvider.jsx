@@ -2,15 +2,16 @@ import { useCallback, useMemo, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
 
+import AppIcon from '@/components/common/AppIcon';
 import { ToastContext } from '@/contexts/ToastContext';
 import { RADIUS } from '@/styles/theme';
 
 const AUTO_HIDE_DURATION = 3000;
 
 const ICON_BY_SEVERITY = {
-  success: { symbol: '✓', color: 'success.main' },
-  error: { symbol: '!', color: 'error.main' },
-  warning: { symbol: 'i', color: 'warning.main' },
+  success: { name: 'check', color: 'success.main' },
+  error: { name: 'exclamation', color: 'error.main' },
+  warning: { name: 'info', color: 'warning.main' },
 };
 
 function ToastProvider({ children }) {
@@ -49,21 +50,7 @@ function ToastProvider({ children }) {
             onClose={hideToast}
             severity={toast.severity}
             icon={
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 22,
-                  height: 22,
-                  borderRadius: '50%',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: 'common.white',
-                }}
-              >
-                {icon.symbol}
-              </span>
+              <AppIcon name={icon.name} size={22} sx={{ color: 'common.white' }} />
             }
             sx={{
               width: 420,

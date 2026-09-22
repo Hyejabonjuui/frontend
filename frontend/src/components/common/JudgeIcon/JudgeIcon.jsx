@@ -1,24 +1,20 @@
 import Box from '@mui/material/Box';
 
-import { JUDGE_RESULT, JUDGE_RESULT_LABEL } from '@/constants/policy';
+import AppIcon from '@/components/common/AppIcon';
+import { JUDGE_RESULT, JUDGE_RESULT_COLOR, JUDGE_RESULT_LABEL } from '@/constants/policy';
 
 const ICON_STYLE_BY_RESULT = {
   [JUDGE_RESULT.MET]: {
-    symbol: '✓',
-    sx: { backgroundColor: 'success.main', color: 'common.white' },
+    icon: 'check',
+    sx: { backgroundColor: JUDGE_RESULT_COLOR[JUDGE_RESULT.MET], color: 'text.primary' },
   },
   [JUDGE_RESULT.NOT_MET]: {
-    symbol: '✗',
-    sx: {
-      backgroundColor: 'common.white',
-      color: 'error.main',
-      border: '1.5px solid',
-      borderColor: 'error.main',
-    },
+    icon: 'cross',
+    sx: { backgroundColor: JUDGE_RESULT_COLOR[JUDGE_RESULT.NOT_MET], color: 'common.white' },
   },
   [JUDGE_RESULT.NEED_CHECK]: {
-    symbol: '?',
-    sx: { backgroundColor: 'warning.main', color: 'common.white' },
+    icon: 'question',
+    sx: { backgroundColor: JUDGE_RESULT_COLOR[JUDGE_RESULT.NEED_CHECK], color: 'text.primary' },
   },
 };
 
@@ -41,13 +37,10 @@ function JudgeIcon({ result, size = 24 }) {
         width: size,
         height: size,
         borderRadius: '50%',
-        fontSize: 12,
-        fontWeight: 700,
-        lineHeight: '16px',
         ...iconStyle.sx,
       }}
     >
-      {iconStyle.symbol}
+      <AppIcon name={iconStyle.icon} size={size * 0.6} />
     </Box>
   );
 }

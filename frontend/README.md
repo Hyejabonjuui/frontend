@@ -16,7 +16,7 @@ npm run format   # Prettier 포맷팅
 
 ## 백엔드 없이 화면 테스트하기
 
-`VITE_USE_MOCK=true`(개발 환경 기본값)이면 axios 어댑터가 `src/mocks`의 목 API로 바뀝니다.
+`VITE_USE_MOCK=true`이면 axios 어댑터가 `src/mocks`의 목 API로 바뀝니다.
 로그인·조건 저장·관심 정책·알림까지 실제 화면 흐름을 그대로 확인할 수 있습니다.
 
 | 계정 | 비밀번호 | 역할 |
@@ -24,11 +24,13 @@ npm run format   # Prettier 포맷팅
 | `minji@hyeja.kr` | `hyeja1234!` | 일반 회원 (조건·관심 정책·알림 채워져 있음) |
 | `admin@hyeja.kr` | `hyeja1234!` | 관리자 (정책 수집 화면 접근) |
 
-- 저장한 내용은 브라우저 `localStorage`에 남습니다. `window.hyejaMock.reset()`으로 처음 상태로 되돌립니다.
+- 저장한 내용은 브라우저 `localStorage`에 남습니다. `window.hyejaMock.reset()`은 목 데이터, 로그인 토큰, 작성 중인 조건을 초기화합니다.
 - 검색어에 `AI실패`를 넣으면 추천 결과의 AI 실패 안내를 확인할 수 있습니다.
-- 목 관련 코드는 전부 `src/mocks/`에 있고, 프로덕션 코드에 들어간 연결부는 `[notiice]` 주석으로 표시했습니다.
+- 목 관련 코드는 전부 `src/mocks/`에 있고, 연결부와 더미 데이터 설정은 `notice:` 주석으로 표시했습니다.
   (`src/main.jsx`의 조건부 블록, `.env.*`의 `VITE_USE_MOCK`)
-- 백엔드가 준비되면 `VITE_USE_MOCK=false`로 바꾸면 됩니다. 목 코드는 동적 import라 빌드에서 분리됩니다.
+- 배포 빌드에는 `.env.production`의 `VITE_USE_MOCK=false`가 적용됩니다. 로컬에서 더미 데이터로 확인할 때는 `.env`에 `VITE_USE_MOCK=true`를 둡니다.
+- 실제 배포 시에는 `VITE_API_BASE_URL`을 배포된 API 주소로 지정해야 합니다. `.env.example`의 `localhost:8080`은 로컬 개발용입니다.
+- 문자열 길이별 화면 점검 방법과 확인 범위는 `STRING_LENGTH_UI_TEST.md`에 있습니다.
 
 ## 화면 구성
 
@@ -50,9 +52,11 @@ npm run format   # Prettier 포맷팅
 ## 디렉터리 구조
 
 ```
+public/
+├── icons/          화면 아이콘 SVG 파일 (아이콘 하나당 한 파일)
+├── favicon.svg    브라우저 탭 아이콘
 src/
 ├── api/            서버 통신 계층 (axios 인스턴스, 도메인별 API 함수)
-├── assets/         이미지·아이콘
 ├── components/
 │   ├── auth/       로그인 모달
 │   ├── common/     디자인 시스템 조각 (D-day·칩·판정 아이콘·빈 상태·에러·로딩)
@@ -68,6 +72,9 @@ src/
 ├── styles/         MUI 테마(디자인 토큰 단일 소스)
 └── utils/          React와 무관한 순수 함수
 ```
+
+화면 아이콘은 `public/icons/*.svg`에 보관하고 `src/components/common/AppIcon`의 `name`으로 사용합니다.
+아이콘 색은 주변 글자색을 따르므로 SVG 파일에는 단색 도형만 넣습니다. 판정 아이콘은 `JudgeIcon`, 입력 오류 아이콘은 `FieldError`에서 공통으로 표시합니다.
 
 ## 작성 규칙
 
@@ -88,9 +95,8 @@ src/
 
 ## 아이콘
 
-Iconify(`@iconify/react`)를 사용하며 설계서에 지정된 이름을 그대로 씁니다.
-`mdi:magnify` · `mdi:bell-outline` · `mdi:account-outline` · `mdi:lock-outline` ·
-`mdi:calendar` · `mdi:heart-outline` / `mdi:heart` · `mdi:close` · `mdi:chevron-down`
+화면 아이콘은 `public/icons/*.svg`에 보관하고 `AppIcon`의 `name`으로 사용합니다.
+예: `search` · `bell-outline` · `account-outline` · `lock-outline` · `heart-outline` / `heart` · `close` · `chevron-down`
 
 ## API 계약
 

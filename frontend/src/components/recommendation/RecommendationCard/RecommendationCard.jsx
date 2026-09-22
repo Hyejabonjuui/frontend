@@ -1,5 +1,5 @@
 import { Link as RouterLink } from 'react-router-dom';
-import { Icon } from '@iconify/react';
+import AppIcon from '@/components/common/AppIcon';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
@@ -26,14 +26,14 @@ function RecommendationCard({ policy, group, isFavorite = false, onToggleFavorit
         backgroundColor: isImpossible ? 'grey.100' : 'background.paper',
       }}
     >
-      <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start' }}>
+      <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: 'flex-start', flexWrap: 'wrap' }}>
         <Chip label={policy.subtypeName} variant="outlined" size="small" sx={{ flexShrink: 0 }} />
 
-        <Typography variant="body2" sx={{ flexGrow: 1 }}>
+        <Typography variant="body2" sx={{ flexGrow: 1, minWidth: 0, width: { xs: 'calc(100% - 110px)', sm: 'auto' }, overflowWrap: 'anywhere' }}>
           {policy.title}
         </Typography>
 
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexShrink: 0 }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexShrink: 0, ml: { xs: 'auto', sm: 0 } }}>
           <DdayBadge
             applyPeriodType={policy.applyPeriodType}
             applyEndDate={policy.applyEndDate}
@@ -43,11 +43,7 @@ function RecommendationCard({ policy, group, isFavorite = false, onToggleFavorit
             aria-label={isFavorite ? '관심 정책 해제' : '관심 정책 저장'}
             onClick={() => onToggleFavorite?.(policy.id)}
           >
-            <Icon
-              icon={isFavorite ? 'mdi:heart' : 'mdi:heart-outline'}
-              width={20}
-              color="currentColor"
-            />
+            <AppIcon name={isFavorite ? 'heart' : 'heart-outline'} size={20} />
           </IconButton>
         </Stack>
       </Stack>
@@ -83,7 +79,7 @@ function RecommendationCard({ policy, group, isFavorite = false, onToggleFavorit
           variant="body1"
           sx={{ flexShrink: 0 }}
         >
-          상세 보기 →
+          상세 보기 <AppIcon name="arrow-right" size={16} />
         </Link>
       </Stack>
     </Card>

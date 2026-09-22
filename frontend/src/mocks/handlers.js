@@ -6,7 +6,8 @@ import {
 } from '@/constants/policy';
 import { buildCardNews } from '@/mocks/data/cardNews';
 import { CODE_GROUPS } from '@/mocks/data/codes';
-import { findPolicyById, POLICIES } from '@/mocks/data/policies';
+import { POLICIES } from '@/mocks/data/policies';
+import { getPolicyStringLengthCase } from '@/mocks/data/policyStringLengthCases';
 import { TERMS } from '@/mocks/data/terms';
 import {
   buildJudgementReason,
@@ -104,9 +105,29 @@ const getFavorites = (userId) => mockStore.getState().favorites[userId] ?? [];
 
 const getNotifications = (userId) => mockStore.getState().notifications[userId] ?? [];
 
+// notice: 더미 데이터의 UI 문자열 테스트용이다. URL에 필드·길이가 유효할 때만 정책 1건을 대체한다.
+// 예: /policies/1?uiTextTestField=title&uiTextTestLength=50
+const getActivePolicies = () => {
+  if (typeof window === 'undefined') {
+    return POLICIES;
+  }
+
+  const query = new URLSearchParams(window.location.search);
+  const lengthText = query.get('uiTextTestLength');
+  const length = lengthText && /^\d+$/.test(lengthText) ? Number(lengthText) : NaN;
+  const testPolicy = getPolicyStringLengthCase(query.get('uiTextTestField'), length);
+
+  return testPolicy
+    ? POLICIES.map((policy) => (policy.id === testPolicy.id ? testPolicy : policy))
+    : POLICIES;
+};
+
+const findActivePolicyById = (policyId) =>
+  getActivePolicies().find((policy) => policy.id === Number(policyId));
+
 const listPolicies = (params, user) => {
   const { subtype = 'ALL', sort = 'DEADLINE', onlyMatched, page = 1, size = 8 } = params;
-  let filtered = POLICIES.filter(
+  let filtered = getActivePolicies().filter(
     (policy) => subtype === 'ALL' || policy.subtype === subtype,
   );
 
@@ -143,9 +164,9 @@ const buildRecommendations = (query, user) => {
   const matchedSubtype = Object.entries(SUBTYPE_NAMES).find(([, name]) =>
     keyword.includes(name.split('·')[0]),
   );
-  // [notiice] 목 전용: 후보 0건 화면을 확인하려고 둔 검색어
+  // notice: 목 전용으로 후보 0건 화면을 확인하려고 둔 검색어다.
   const isNoCandidateCase = keyword.includes('후보0건');
-  const candidates = (isNoCandidateCase ? [] : POLICIES).filter((policy) => {
+  const candidates = (isNoCandidateCase ? [] : getActivePolicies()).filter((policy) => {
     // 설계서: 다른 지역 전용 정책은 결과에서 제외한다.
     if (policy.regionCode !== NATIONWIDE_REGION_CODE && user?.profile?.regionCode) {
       const isSameSido = policy.regionCode.slice(0, 2) === user.profile.regionCode.slice(0, 2);
@@ -185,7 +206,7 @@ const buildRecommendations = (query, user) => {
       conditionSummary: user ? buildConditionSummary(user.profile) : '',
     },
     groups,
-    isAiFailed: keyword.includes('AI실패'), // [notiice] 목 전용: AI 실패 화면을 확인하려고 둔 검색어
+    isAiFailed: keyword.includes('AI실패'), // notice: 목 전용으로 AI 실패 화면을 확인하는 검색어다.
   });
 };
 
@@ -324,7 +345,7 @@ export const HANDLERS = [
     method: 'get',
     match: (url) => url === '/api/policies/card-news',
     handle: () => {
-      const featured = sortPolicies(POLICIES, 'DEADLINE').slice(0, 4);
+      const featured = sortPolicies(getActivePolicies(), 'DEADLINE').slice(0, 4);
 
       return ok({ content: featured.map(buildCardNews) });
     },
@@ -338,7 +359,7 @@ export const HANDLERS = [
     method: 'get',
     match: (url) => /^\/api\/policies\/\d+$/.test(url),
     handle: ({ url, user }) => {
-      const policy = findPolicyById(url.split('/').at(-1));
+      const policy = findActivePolicyById(url.split('/').at(-1));
 
       if (!policy) {
         return fail(404, '요청한 정보를 찾을 수 없어요');
@@ -380,7 +401,7 @@ export const HANDLERS = [
 
       const content = getFavorites(user.id)
         .map((favorite) => {
-          const policy = findPolicyById(favorite.policyId);
+          const policy = findActivePolicyById(favorite.policyId);
 
           return policy
             ? { ...favorite, policy: toPolicySummary(policy) }
@@ -452,7 +473,7 @@ export const HANDLERS = [
       }
 
       const content = getNotifications(user.id).map((notification) => {
-        const policy = findPolicyById(notification.policyId);
+        const policy = findActivePolicyById(notification.policyId);
 
         return {
           ...notification,

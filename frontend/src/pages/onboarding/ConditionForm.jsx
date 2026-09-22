@@ -11,6 +11,7 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
+import FieldError from '@/components/common/FieldError';
 import {
   CONDITION_FIELDS,
   CONDITION_HELPER_TEXTS,
@@ -58,7 +59,7 @@ function RadioField({ label, isRequired, field, options, value, error, helperTex
           />
         ))}
       </RadioGroup>
-      <FormHelperText>{error ? `⚠ ${error}` : helperText}</FormHelperText>
+      <FormHelperText>{error ? <FieldError>{error}</FieldError> : helperText}</FormHelperText>
     </FormControl>
   );
 }
@@ -92,7 +93,7 @@ function ConditionForm({ form, fieldErrors, codes, onChange }) {
           error={Boolean(fieldErrors.birthDate)}
           helperText={
             fieldErrors.birthDate
-              ? `⚠ ${fieldErrors.birthDate}`
+              ? <FieldError>{fieldErrors.birthDate}</FieldError>
               : CONDITION_HELPER_TEXTS.birthDate
           }
           slotProps={{ inputLabel: { shrink: true } }}
@@ -101,7 +102,7 @@ function ConditionForm({ form, fieldErrors, codes, onChange }) {
 
         <FormControl error={Boolean(fieldErrors.regionCode)}>
           <FieldLabel label="거주지" isRequired />
-          <Stack direction="row" spacing={1}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
             <TextField
               select
               value={form.sidoCode}
@@ -143,7 +144,7 @@ function ConditionForm({ form, fieldErrors, codes, onChange }) {
           </Stack>
           <FormHelperText sx={{ wordBreak: 'keep-all', overflowWrap: 'break-word' }}>
             {fieldErrors.regionCode
-              ? `⚠ ${fieldErrors.regionCode}`
+              ? <FieldError>{fieldErrors.regionCode}</FieldError>
               : '시/군/구 전체 지역은 선택할 수 없어요. 구체적인 지역을 선택해 주세요'}
           </FormHelperText>
         </FormControl>

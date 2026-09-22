@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Icon } from '@iconify/react';
+import AppIcon from '@/components/common/AppIcon';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -64,7 +64,7 @@ function PolicySearchField() {
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton type="submit" size="small" aria-label="검색">
-                  <Icon icon="mdi:magnify" width={18} />
+                  <AppIcon name="search" size={18} />
                 </IconButton>
               </InputAdornment>
             ),

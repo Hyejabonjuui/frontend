@@ -15,9 +15,10 @@ function MainLayout() {
         sx={{
           width: '100%',
           maxWidth: LAYOUT.contentWidth,
+          minWidth: 0,
           mx: 'auto',
           px: LAYOUT.pageGutter,
-          py: 4,
+          py: { xs: 3, sm: 4 },
         }}
       >
         <Outlet />

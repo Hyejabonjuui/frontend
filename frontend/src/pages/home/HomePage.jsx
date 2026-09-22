@@ -75,7 +75,7 @@ function HomePage() {
   };
 
   return (
-    <Stack spacing={6}>
+    <Stack spacing={{ xs: 4, sm: 5, md: 6 }}>
       <Stack component="section" spacing={2} sx={{ alignItems: 'center' }}>
         <Typography variant="h1" sx={{ textAlign: 'center' }}>
           받을 수 있는 주거 혜택, 한 번에 찾아요
@@ -114,7 +114,7 @@ function HomePage() {
       </Stack>
 
       <Box component="section">
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'baseline', mb: 2 }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ alignItems: { xs: 'flex-start', sm: 'baseline' }, mb: 2 }}>
           <Typography variant="h2">혜자가 추천해요</Typography>
           <Typography variant="caption" color="text.secondary">
             마감이 가깝고 많이 본 정책이에요 · 누르면 카드뉴스 4장을 한 번에 보여드려요
@@ -140,8 +140,9 @@ function HomePage() {
         />
 
         <Stack
-          direction="row"
-          sx={{ alignItems: 'center', justifyContent: 'space-between', py: 2 }}
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={1}
+          sx={{ alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', py: 2 }}
         >
           <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
             <Select

@@ -7,8 +7,8 @@ import App from '@/App';
 import theme from '@/styles/theme';
 import '@/styles/global.css';
 
-// [notiice] 테스트용 코드입니다. 백엔드가 없을 때 화면을 확인하려고 목 API를 붙입니다.
-// [notiice] VITE_USE_MOCK 이 'true' 일 때만 실행되며, 이 블록을 지우면 실제 서버로만 요청합니다.
+// notice: 백엔드 없이 화면을 확인할 때만 목 API를 붙인다.
+// notice: 배포 빌드의 기본값은 .env.production에서 false로 고정한다.
 if (import.meta.env.VITE_USE_MOCK === 'true') {
   const [{ enableMockApi }, { default: httpClient }] = await Promise.all([
     import('@/mocks'),

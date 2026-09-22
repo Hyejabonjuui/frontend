@@ -27,7 +27,7 @@ function ConditionSetupPage() {
 
   return (
     <Stack sx={{ alignItems: 'center' }}>
-      <Card variant="outlined" sx={{ width: '100%', maxWidth: 620, p: 4 }}>
+      <Card variant="outlined" sx={{ width: '100%', maxWidth: 620, p: { xs: 2, sm: 4 } }}>
         <Stack spacing={1} sx={{ mb: 3 }}>
           <Typography variant="h1">내 조건 등록</Typography>
           <Typography variant="body1" color="text.secondary">

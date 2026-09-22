@@ -24,7 +24,7 @@ function CardHeroSection({ cardNewsList, isLoading, errorMessage, onSelect }) {
   const [featured, ...others] = cardNewsList;
 
   return (
-    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ alignItems: 'stretch' }}>
+    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: 'stretch' }}>
       <Card variant="outlined" sx={{ flex: 1, minHeight: 240 }}>
         <CardActionArea
           onClick={() => onSelect(featured)}
