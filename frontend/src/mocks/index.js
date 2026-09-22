@@ -1,6 +1,8 @@
 import { MOCK_PASSWORD, USERS } from '@/mocks/data/users';
 import { mockAdapter } from '@/mocks/mockAdapter';
 import { mockStore } from '@/mocks/store';
+import { conditionDraft } from '@/utils/conditionDraft';
+import { tokenStorage } from '@/utils/tokenStorage';
 
 /**
  * 백엔드 없이 화면을 확인하려고 axios 어댑터를 목 핸들러로 바꾼다.
@@ -11,7 +13,10 @@ export const enableMockApi = (httpClient) => {
 
   window.hyejaMock = {
     reset: () => {
+      // notice: 목 데이터 초기화 시 테스트 계정과 작성 중인 조건도 함께 초기 상태로 돌린다.
       mockStore.reset();
+      conditionDraft.clear();
+      tokenStorage.clear();
       window.location.reload();
     },
     accounts: USERS.map((user) => ({
