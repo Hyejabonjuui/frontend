@@ -1,5 +1,5 @@
 import { Link as RouterLink } from 'react-router-dom';
-import { Icon } from '@iconify/react';
+import AppIcon from '@/components/common/AppIcon';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
@@ -26,7 +26,8 @@ function FavoriteRow({ favorite, onRemove }) {
       to={buildPolicyDetailPath(policy.id)}
       sx={{
         display: 'flex',
-        alignItems: 'center',
+        alignItems: { xs: 'flex-start', sm: 'center' },
+        flexWrap: { xs: 'wrap', sm: 'nowrap' },
         gap: 2,
         px: 2,
         py: 1.5,
@@ -44,7 +45,7 @@ function FavoriteRow({ favorite, onRemove }) {
       <Typography
         variant="body2"
         color={isClosed ? 'text.disabled' : 'text.primary'}
-        sx={{ flexGrow: 1, wordBreak: 'keep-all', overflowWrap: 'break-word' }}
+        sx={{ flexGrow: 1, minWidth: 0, width: { xs: 'calc(100% - 110px)', sm: 'auto' }, wordBreak: 'keep-all', overflowWrap: 'break-word' }}
       >
         {policy.title}
         {isClosed && (
@@ -65,7 +66,7 @@ function FavoriteRow({ favorite, onRemove }) {
       <Stack
         direction="row"
         spacing={1}
-        sx={{ alignItems: 'center', width: 110, justifyContent: 'flex-end' }}
+        sx={{ alignItems: 'center', width: { xs: 'auto', sm: 110 }, ml: { xs: 'auto', sm: 0 }, justifyContent: 'flex-end' }}
       >
         <DdayBadge applyPeriodType={policy.applyPeriodType} applyEndDate={policy.applyEndDate} />
 
@@ -75,7 +76,7 @@ function FavoriteRow({ favorite, onRemove }) {
           onClick={handleRemoveClick}
           sx={{ color: 'favorite.main' }}
         >
-          <Icon icon="mdi:heart" width={20} color="currentColor" />
+          <AppIcon name="heart" size={20} />
         </IconButton>
       </Stack>
     </Box>

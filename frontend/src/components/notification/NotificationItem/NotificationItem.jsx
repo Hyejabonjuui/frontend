@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Icon } from '@iconify/react';
+import AppIcon from '@/components/common/AppIcon';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
@@ -49,6 +49,7 @@ function NotificationItem({ notification, onRead, onDelete }) {
         onClick={handleClick}
         sx={{
           flexGrow: 1,
+          minWidth: 0,
           textAlign: 'left',
           border: 0,
           background: 'none',
@@ -67,13 +68,13 @@ function NotificationItem({ notification, onRead, onDelete }) {
         applyEndDate={notification.applyEndDate}
       />
 
-      <Typography variant="caption" color="text.disabled" sx={{ width: 68, textAlign: 'right' }}>
+      <Typography variant="caption" color="text.disabled" sx={{ display: { xs: 'none', sm: 'block' }, width: 68, textAlign: 'right', flexShrink: 0 }}>
         {formatRelativeTime(notification.createdAt)}
       </Typography>
 
       {onDelete && (
         <IconButton size="small" aria-label="알림 삭제" onClick={() => onDelete(notification.id)}>
-          <Icon icon="mdi:close" width={16} />
+          <AppIcon name="close" size={16} />
         </IconButton>
       )}
     </Stack>

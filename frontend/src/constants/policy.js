@@ -29,6 +29,12 @@ export const JUDGE_RESULT = {
   NEED_CHECK: 'NEED_CHECK',
 };
 
+export const JUDGE_RESULT_COLOR = {
+  [JUDGE_RESULT.MET]: '#00D55A',
+  [JUDGE_RESULT.NOT_MET]: '#FF1C1C',
+  [JUDGE_RESULT.NEED_CHECK]: '#FFE449',
+};
+
 export const JUDGE_RESULT_LABEL = {
   [JUDGE_RESULT.MET]: '충족',
   [JUDGE_RESULT.NOT_MET]: '미충족',

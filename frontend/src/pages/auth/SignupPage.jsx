@@ -8,6 +8,8 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
+import AppIcon from '@/components/common/AppIcon';
+import FieldError from '@/components/common/FieldError';
 import { TOAST_MESSAGES, VALIDATION_MESSAGES } from '@/constants/messages';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
@@ -93,14 +95,14 @@ function SignupPage() {
 
   return (
     <Stack sx={{ alignItems: 'center' }}>
-      <Card variant="outlined" sx={{ width: '100%', maxWidth: 440, p: 4 }}>
+      <Card variant="outlined" sx={{ width: '100%', maxWidth: 440, p: { xs: 2, sm: 4 } }}>
         <Stack spacing={1.5}>
           <Typography variant="h1">회원가입</Typography>
 
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             <Chip label="1 계정 만들기" size="small" color="primary" />
             <Typography variant="caption" color="text.disabled">
-              →
+              <AppIcon name="arrow-right" size={12} />
             </Typography>
             <Chip label="2 내 조건 등록" size="small" variant="outlined" />
           </Stack>
@@ -115,7 +117,7 @@ function SignupPage() {
             onChange={handleChange}
             placeholder="example@email.com"
             error={Boolean(fieldErrors.email)}
-            helperText={fieldErrors.email ? `⚠ ${fieldErrors.email}` : '로그인 아이디로 써요'}
+            helperText={fieldErrors.email ? <FieldError>{fieldErrors.email}</FieldError> : '로그인 아이디로 써요'}
             fullWidth
           />
           <TextField
@@ -127,7 +129,7 @@ function SignupPage() {
             error={Boolean(fieldErrors.password)}
             helperText={
               fieldErrors.password
-                ? `⚠ ${fieldErrors.password}`
+                ? <FieldError>{fieldErrors.password}</FieldError>
                 : '8자 이상, 영문과 숫자, 특수문자를 섞어 주세요'
             }
             fullWidth
@@ -139,7 +141,7 @@ function SignupPage() {
             value={form.passwordConfirm}
             onChange={handleChange}
             error={Boolean(fieldErrors.passwordConfirm)}
-            helperText={fieldErrors.passwordConfirm ? `⚠ ${fieldErrors.passwordConfirm}` : ' '}
+            helperText={fieldErrors.passwordConfirm ? <FieldError>{fieldErrors.passwordConfirm}</FieldError> : ' '}
             fullWidth
           />
           <TextField
@@ -150,7 +152,7 @@ function SignupPage() {
             error={Boolean(fieldErrors.nickname)}
             helperText={
               fieldErrors.nickname
-                ? `⚠ ${fieldErrors.nickname}`
+                ? <FieldError>{fieldErrors.nickname}</FieldError>
                 : `홈페이지에서 사용하는 닉네임 (최대 ${NICKNAME_MAX_LENGTH}자)`
             }
             fullWidth

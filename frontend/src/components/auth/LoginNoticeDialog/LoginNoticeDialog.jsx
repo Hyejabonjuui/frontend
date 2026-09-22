@@ -1,4 +1,4 @@
-import { Icon } from '@iconify/react';
+import AppIcon from '@/components/common/AppIcon';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -18,7 +18,7 @@ function LoginNoticeDialog({ notice, onClose, onConfirm }) {
     <Dialog open onClose={onClose} maxWidth="xs" fullWidth>
       <Stack direction="row" sx={{ justifyContent: 'flex-end', px: 1.5, pt: 1.5 }}>
         <IconButton onClick={onClose} aria-label="닫기" size="small">
-          <Icon icon="mdi:close" width={20} />
+          <AppIcon name="close" size={20} />
         </IconButton>
       </Stack>
 

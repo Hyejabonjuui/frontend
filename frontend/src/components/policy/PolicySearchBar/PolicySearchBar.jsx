@@ -1,4 +1,5 @@
-import { Icon } from '@iconify/react';
+import AppIcon from '@/components/common/AppIcon';
+import FieldError from '@/components/common/FieldError';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Stack from '@mui/material/Stack';
@@ -38,7 +39,7 @@ function PolicySearchBar({ keyword, onKeywordChange, onSubmit, errorMessage, onR
     : undefined;
 
   return (
-    <Stack component="form" spacing={1.5} onSubmit={handleSubmit} sx={{ alignItems: 'center' }}>
+    <Stack component="form" spacing={1.5} onSubmit={handleSubmit} sx={{ alignItems: 'center', width: '100%' }}>
       <TextField
         value={keyword}
         onChange={(event) =>
@@ -47,9 +48,9 @@ function PolicySearchBar({ keyword, onKeywordChange, onSubmit, errorMessage, onR
         onMouseDown={handleLockedMouseDown}
         placeholder="예: 월세 지원 알려줘"
         error={Boolean(errorMessage)}
-        helperText={errorMessage ? `⚠ ${errorMessage}` : ' '}
+        helperText={errorMessage ? <FieldError>{errorMessage}</FieldError> : ' '}
         fullWidth
-        sx={{ maxWidth: 560, '& .MuiOutlinedInput-root': { borderRadius: 999, pr: 0.5 } }}
+        sx={{ maxWidth: 560, '& .MuiOutlinedInput-root': { borderRadius: 999, pr: 0.5 }, '& .MuiInputAdornment-root .MuiTypography-root': { display: { xs: 'none', sm: 'block' } } }}
         slotProps={{
           htmlInput: {
             maxLength: SEARCH_KEYWORD_MAX_LENGTH,
@@ -68,7 +69,7 @@ function PolicySearchBar({ keyword, onKeywordChange, onSubmit, errorMessage, onR
                   aria-label="검색"
                   sx={{ bgcolor: 'primary.main' }}
                 >
-                  <Icon icon="mdi:magnify" width={20} color="#0b1626" />
+                  <AppIcon name="search" size={20} sx={{ color: '#0b1626' }} />
                 </IconButton>
               </InputAdornment>
             ),
@@ -76,7 +77,7 @@ function PolicySearchBar({ keyword, onKeywordChange, onSubmit, errorMessage, onR
         }}
       />
 
-      <Stack direction="row" spacing={1} sx={{ justifyContent: 'center', flexWrap: 'wrap' }}>
+      <Stack direction="row" spacing={1} useFlexGap sx={{ justifyContent: 'center', flexWrap: 'wrap' }}>
         {POLICY_SEARCH_HASHTAGS.map((hashtag) => (
           <SubtypeChip key={hashtag} label={`#${hashtag}`} onClick={() => requestSearch(hashtag)} />
         ))}

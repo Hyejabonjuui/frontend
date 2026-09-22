@@ -5,6 +5,7 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
+import AppIcon from '@/components/common/AppIcon';
 import EmptyState from '@/components/common/EmptyState';
 import ErrorState from '@/components/common/ErrorState';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -32,7 +33,7 @@ function FavoritePage() {
       <Stack spacing={0.5}>
         <Typography variant="h1">관심 정책</Typography>
         <Typography variant="body1" color="text.secondary">
-          ♡ 저장한 정책을 모아 두고, 마감 7일 전에 알려드려요.
+          <AppIcon name="heart-outline" size={14} /> 저장한 정책을 모아 두고, 마감 7일 전에 알려드려요.
         </Typography>
       </Stack>
 

@@ -1,5 +1,5 @@
 import { Link as RouterLink } from 'react-router-dom';
-import { Icon } from '@iconify/react';
+import AppIcon from '@/components/common/AppIcon';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
@@ -21,7 +21,8 @@ function PolicyRow({ policy, isFavorite = false, onToggleFavorite }) {
       to={buildPolicyDetailPath(policy.id)}
       sx={{
         display: 'flex',
-        alignItems: 'center',
+        alignItems: { xs: 'flex-start', sm: 'center' },
+        flexWrap: { xs: 'wrap', sm: 'nowrap' },
         gap: 2,
         px: 2,
         py: 1.5,
@@ -34,18 +35,18 @@ function PolicyRow({ policy, isFavorite = false, onToggleFavorite }) {
     >
       <Chip label={policy.subtypeName} variant="outlined" size="small" sx={{ flexShrink: 0 }} />
 
-      <Typography variant="body2" sx={{ flexGrow: 1 }}>
+      <Typography variant="body2" sx={{ flexGrow: 1, minWidth: 0, width: { xs: 'calc(100% - 110px)', sm: 'auto' }, overflowWrap: 'anywhere' }}>
         {policy.title}
       </Typography>
 
-      <Typography variant="body1" color="text.secondary" sx={{ width: 100, textAlign: 'right' }}>
+      <Typography variant="body1" color="text.secondary" sx={{ width: { xs: 'auto', sm: 100 }, textAlign: { xs: 'left', sm: 'right' }, ml: { xs: 0, sm: 'auto' } }}>
         {policy.regionName}
       </Typography>
 
       <Stack
         direction="row"
         spacing={1}
-        sx={{ alignItems: 'center', width: 110, justifyContent: 'flex-end' }}
+        sx={{ alignItems: 'center', width: { xs: 'auto', sm: 110 }, ml: { xs: 'auto', sm: 0 }, justifyContent: 'flex-end' }}
       >
         <DdayBadge applyPeriodType={policy.applyPeriodType} applyEndDate={policy.applyEndDate} />
 
@@ -55,11 +56,7 @@ function PolicyRow({ policy, isFavorite = false, onToggleFavorite }) {
           onClick={handleFavoriteClick}
           sx={{ color: isFavorite ? 'favorite.main' : 'text.disabled' }}
         >
-          <Icon
-            icon={isFavorite ? 'mdi:heart' : 'mdi:heart-outline'}
-            width={20}
-            color="currentColor"
-          />
+          <AppIcon name={isFavorite ? 'heart' : 'heart-outline'} size={20} />
         </IconButton>
       </Stack>
     </Box>

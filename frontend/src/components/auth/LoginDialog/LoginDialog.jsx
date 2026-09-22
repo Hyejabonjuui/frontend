@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Icon } from '@iconify/react';
+import AppIcon from '@/components/common/AppIcon';
+import FieldError from '@/components/common/FieldError';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -85,7 +86,7 @@ function LoginDialog({ isOpen, onClose, onLoggedIn }) {
       >
         로그인
         <IconButton onClick={resetAndClose} aria-label="닫기" size="small">
-          <Icon icon="mdi:close" width={20} />
+          <AppIcon name="close" size={20} />
         </IconButton>
       </DialogTitle>
 
@@ -104,7 +105,7 @@ function LoginDialog({ isOpen, onClose, onLoggedIn }) {
               input: {
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Icon icon="mdi:account-outline" width={20} />
+                    <AppIcon name="account-outline" size={20} />
                   </InputAdornment>
                 ),
               },
@@ -119,13 +120,13 @@ function LoginDialog({ isOpen, onClose, onLoggedIn }) {
             onChange={handleChange}
             placeholder="비밀번호 입력"
             error={Boolean(errorMessage)}
-            helperText={errorMessage ? `⚠ ${errorMessage}` : ' '}
+            helperText={errorMessage ? <FieldError>{errorMessage}</FieldError> : ' '}
             fullWidth
             slotProps={{
               input: {
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Icon icon="mdi:lock-outline" width={20} />
+                    <AppIcon name="lock-outline" size={20} />
                   </InputAdornment>
                 ),
               },

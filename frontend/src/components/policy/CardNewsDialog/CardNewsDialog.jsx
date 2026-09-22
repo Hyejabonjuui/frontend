@@ -1,5 +1,5 @@
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { Icon } from '@iconify/react';
+import AppIcon from '@/components/common/AppIcon';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -22,8 +22,8 @@ function CardNewsPanel({ card, cardCount, children }) {
   return (
     <Stack
       sx={{
-        flex: 1,
-        p: 2,
+        p: { xs: 2, sm: 2.5, md: 2 },
+        minHeight: { xs: 0, sm: 260, md: 0 },
         minWidth: 0,
         borderRadius: `${RADIUS.card}px`,
         backgroundColor: 'grey.100',
@@ -42,7 +42,7 @@ function CardNewsPanel({ card, cardCount, children }) {
           >
             {headingParts.map((part) =>
               part.startsWith('(') ? (
-                <Box key={part} component="span" sx={{ whiteSpace: 'nowrap' }}>
+                <Box key={part} component="span" sx={{ whiteSpace: { xs: 'normal', md: 'nowrap' }, overflowWrap: 'anywhere' }}>
                   {part}
                 </Box>
               ) : (
@@ -53,9 +53,14 @@ function CardNewsPanel({ card, cardCount, children }) {
         )}
 
         {card.tags?.length > 0 && (
-          <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+          <Stack direction="row" spacing={0.5} useFlexGap sx={{ flexWrap: 'wrap' }}>
             {card.tags.map((tag) => (
-              <Chip key={tag} label={tag} size="small" variant="outlined" />
+              <Chip
+                key={tag}
+                label={<Typography variant="h2">{tag}</Typography>}
+                variant="outlined"
+                sx={{ height: 'auto', maxWidth: '100%', '& .MuiChip-label': { py: 0.5, whiteSpace: 'normal' } }}
+              />
             ))}
           </Stack>
         )}
@@ -113,7 +118,7 @@ function CardNewsDialog({ cardNews, onClose, isFavorite = false, onToggleFavorit
     return (
       <Stack spacing={1} sx={{ alignItems: 'flex-start' }}>
         <Button variant="contained" fullWidth onClick={handleApplyClick}>
-          이 정책 신청하기 ↗
+          이 정책 신청하기 <AppIcon name="arrow-up-right" size={16} />
         </Button>
         <Link
           component={RouterLink}
@@ -121,7 +126,7 @@ function CardNewsDialog({ cardNews, onClose, isFavorite = false, onToggleFavorit
           onClick={onClose}
           variant="body1"
         >
-          정책 상세 보기 →
+          정책 상세 보기 <AppIcon name="arrow-right" size={16} />
         </Link>
       </Stack>
     );
@@ -136,9 +141,10 @@ function CardNewsDialog({ cardNews, onClose, isFavorite = false, onToggleFavorit
       slotProps={{
         paper: {
           sx: {
-            width: 'min(1440px, calc(100vw - 48px))',
-            maxHeight: 'calc(100vh - 48px)',
-            minHeight: 'min(680px, calc(100vh - 48px))',
+            width: { xs: 'calc(100vw - 24px)', sm: 'min(900px, calc(100vw - 48px))', md: 'min(1440px, calc(100vw - 48px))' },
+            maxHeight: { xs: 'calc(100dvh - 24px)', sm: 'calc(100dvh - 48px)' },
+            minHeight: { xs: 0, md: 'min(680px, calc(100dvh - 48px))' },
+            m: { xs: 1.5, sm: 3 },
           },
         },
       }}
@@ -146,11 +152,12 @@ function CardNewsDialog({ cardNews, onClose, isFavorite = false, onToggleFavorit
       <Stack
         direction="row"
         spacing={1}
-        sx={{ alignItems: 'center', px: 3, pt: 2.5, pb: 0.5 }}
+        useFlexGap
+        sx={{ alignItems: 'center', flexWrap: { xs: 'wrap', sm: 'nowrap' }, px: { xs: 2, sm: 3 }, pt: 2.5, pb: 0.5 }}
       >
         <Chip label={cardNews.subtypeName} variant="outlined" size="small" sx={{ flexShrink: 0 }} />
 
-        <Typography variant="h2" sx={{ flexGrow: 1, minWidth: 0 }}>
+        <Typography variant="h2" sx={{ flexGrow: 1, minWidth: 0, overflowWrap: 'anywhere' }}>
           {cardNews.title}
         </Typography>
 
@@ -165,31 +172,33 @@ function CardNewsDialog({ cardNews, onClose, isFavorite = false, onToggleFavorit
             onClick={() => onToggleFavorite(cardNews.policyId)}
             sx={{ color: isFavorite ? 'favorite.main' : 'text.disabled' }}
           >
-            <Icon
-              icon={isFavorite ? 'mdi:heart' : 'mdi:heart-outline'}
-              width={20}
-              color="currentColor"
-            />
+            <AppIcon name={isFavorite ? 'heart' : 'heart-outline'} size={20} />
           </IconButton>
         )}
 
         <IconButton onClick={onClose} aria-label="닫기">
-          <Icon icon="mdi:close" width={20} />
+          <AppIcon name="close" size={20} />
         </IconButton>
       </Stack>
 
-      <DialogContent sx={{ display: 'flex', pb: 3 }}>
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          spacing={2}
-          sx={{ alignItems: 'stretch', flex: 1 }}
+      <DialogContent sx={{ display: 'flex', px: { xs: 2, sm: 3 }, pb: 3 }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' },
+            // 설명이 길어져도 그리드 행이 내용보다 작아지지 않게 한다.
+            gridAutoRows: 'minmax(max-content, 1fr)',
+            gap: { xs: 1.5, sm: 2 },
+            flex: 1,
+            minWidth: 0,
+          }}
         >
           {cards.map((card) => (
             <CardNewsPanel key={card.order} card={card} cardCount={cardCount}>
               {renderCardActions(card)}
             </CardNewsPanel>
           ))}
-        </Stack>
+        </Box>
       </DialogContent>
     </Dialog>
   );
