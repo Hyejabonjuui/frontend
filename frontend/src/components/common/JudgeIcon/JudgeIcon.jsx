@@ -6,7 +6,7 @@ import { JUDGE_RESULT, JUDGE_RESULT_COLOR, JUDGE_RESULT_LABEL } from '@/constant
 const ICON_STYLE_BY_RESULT = {
   [JUDGE_RESULT.MET]: {
     icon: 'check',
-    sx: { backgroundColor: JUDGE_RESULT_COLOR[JUDGE_RESULT.MET], color: 'text.primary' },
+    sx: { backgroundColor: JUDGE_RESULT_COLOR[JUDGE_RESULT.MET], color: 'common.white' },
   },
   [JUDGE_RESULT.NOT_MET]: {
     icon: 'cross',
@@ -14,7 +14,7 @@ const ICON_STYLE_BY_RESULT = {
   },
   [JUDGE_RESULT.NEED_CHECK]: {
     icon: 'question',
-    sx: { backgroundColor: JUDGE_RESULT_COLOR[JUDGE_RESULT.NEED_CHECK], color: 'text.primary' },
+    sx: { backgroundColor: JUDGE_RESULT_COLOR[JUDGE_RESULT.NEED_CHECK], color: 'common.white' },
   },
 };
 
