@@ -11,7 +11,7 @@ const AUTO_HIDE_DURATION = 3000;
 const ICON_BY_SEVERITY = {
   success: { name: 'check', color: 'success.main' },
   error: { name: 'exclamation', color: 'error.main' },
-  warning: { name: 'info', color: 'warning.main' },
+  warning: { name: 'exclamation', color: 'warning.main' },
 };
 
 function ToastProvider({ children }) {
