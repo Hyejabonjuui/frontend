@@ -23,8 +23,8 @@ const designTokens = {
   fill2: '#f4f5f7',
   line: '#d2d6db',
   line2: '#a8aeb6',
-  stateOk: '#00D55A',
-  stateWarn: '#FFE449',
+  stateOk: '#00A845',
+  stateWarn: '#A38F20',
   stateErr: '#FF1C1C',
   favorite: '#e5484d',
 };
