@@ -21,6 +21,7 @@ import { TOAST_MESSAGES } from '@/constants/messages';
 import { buildMyPagePath, MY_PAGE_TABS, ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { usePolicyDetail } from '@/hooks/usePolicies';
 import { useTerms } from '@/hooks/useTerms';
 import { useToast } from '@/hooks/useToast';
@@ -90,6 +91,65 @@ function JudgementCard({ judgements, summary }) {
   );
 }
 
+function RawConditionsCard({ conditions, onLogin }) {
+  return (
+    <Card
+      variant="outlined"
+      sx={{
+        width: '100%',
+        minWidth: 0,
+        p: 3,
+        alignSelf: 'flex-start',
+        backgroundColor: 'grey.100',
+      }}
+    >
+      <Typography variant="body2" sx={{ mb: 1.5 }}>
+        신청 조건 (공고 원문)
+      </Typography>
+
+      <Stack divider={<Divider flexItem />} sx={{ minWidth: 0 }}>
+        {conditions.map((condition) => (
+          <Stack
+            key={condition.key}
+            direction="row"
+            spacing={1.5}
+            sx={{ alignItems: 'flex-start', py: 1, minWidth: 0 }}
+          >
+            <Typography variant="body2" sx={{ width: 72, flexShrink: 0 }}>
+              {condition.label}
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{ flex: 1, minWidth: 0, whiteSpace: 'pre-line', overflowWrap: 'anywhere' }}
+            >
+              {condition.value}
+            </Typography>
+          </Stack>
+        ))}
+      </Stack>
+
+      <Stack
+        spacing={1.25}
+        sx={{
+          mt: 1.5,
+          p: 1.75,
+          border: 1,
+          borderColor: 'grey.500',
+          borderRadius: 2,
+          backgroundColor: 'background.paper',
+        }}
+      >
+        <Typography variant="body2" align="center">
+          로그인하고 1초만에 확인하기
+        </Typography>
+        <Button variant="contained" fullWidth onClick={onLogin}>
+          로그인하고 확인하기
+        </Button>
+      </Stack>
+    </Card>
+  );
+}
+
 function DetailSection({ label, children }) {
   return (
     <Stack spacing={0.5}>
@@ -104,6 +164,7 @@ function DetailSection({ label, children }) {
 function PolicyDetailPage() {
   const { policyId } = useParams();
   const { isAuthenticated } = useAuth();
+  const { openLoginDialog } = useLoginDialog();
   const { showError } = useToast();
   const { policy, isLoading, errorMessage, refetch } = usePolicyDetail(policyId);
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -202,9 +263,16 @@ function PolicyDetailPage() {
           </Stack>
         </Stack>
 
-        {isAuthenticated && policy.judgements?.length > 0 && (
+        {(!isAuthenticated || policy.judgements?.length > 0) && (
           <Box sx={{ width: { xs: '100%', sm: 'clamp(260px, 30vw, 340px)', md: 340 }, flexShrink: 0, display: 'flex' }}>
-            <JudgementCard judgements={policy.judgements} summary={policy.judgementSummary} />
+            {isAuthenticated ? (
+              <JudgementCard judgements={policy.judgements} summary={policy.judgementSummary} />
+            ) : (
+              <RawConditionsCard
+                conditions={policy.rawConditions ?? []}
+                onLogin={openLoginDialog}
+              />
+            )}
           </Box>
         )}
       </Stack>

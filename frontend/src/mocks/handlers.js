@@ -12,6 +12,7 @@ import { TERMS } from '@/mocks/data/terms';
 import {
   buildJudgementReason,
   buildJudgements,
+  buildRawConditions,
   getRecommendationGroup,
 } from '@/mocks/judge';
 import { buildAccessToken, findUserByToken, mockStore } from '@/mocks/store';
@@ -376,6 +377,7 @@ export const HANDLERS = [
         applyMethod: policy.applyMethod,
         applyUrl: policy.applyUrl,
         extraQualification: policy.requirement?.extraQualification ?? '',
+        rawConditions: buildRawConditions(policy),
         judgements,
         judgementSummary: judgements.length
           ? buildJudgementReason(judgements, getRecommendationGroup(judgements))
