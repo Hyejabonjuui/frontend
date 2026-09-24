@@ -23,6 +23,58 @@ const findIncomeRange = (incomeRange) =>
 const findEmploymentName = (employmentCode) =>
   EMPLOYMENT_CODES.find((item) => item.code === employmentCode)?.name ?? '';
 
+const RAW_CONDITION_FALLBACK = '공고문에서 확인';
+
+/** 비로그인 정책 상세에서 보여 줄 공고 원문 조건을 화면용 문자열로 만든다. */
+export const buildRawConditions = (policy) => {
+  const requirement = policy.requirement ?? {};
+  const hasAgeRange = requirement.ageMin !== undefined && requirement.ageMax !== undefined;
+  const employmentCodes = requirement.employmentCodes;
+  const employmentNames = Array.isArray(employmentCodes)
+    ? employmentCodes.map(findEmploymentName)
+    : [];
+  const employmentCondition = !Array.isArray(employmentCodes)
+    ? RAW_CONDITION_FALLBACK
+    : employmentCodes.length === 0
+      ? '제한 없음'
+      : employmentNames.every(Boolean)
+        ? employmentNames.join(' · ')
+        : RAW_CONDITION_FALLBACK;
+
+  return [
+    {
+      key: 'AGE',
+      label: '나이',
+      value: hasAgeRange
+        ? `만 ${requirement.ageMin}~${requirement.ageMax}세`
+        : RAW_CONDITION_FALLBACK,
+    },
+    {
+      key: 'REGION',
+      label: '지역',
+      value: policy.regionName || RAW_CONDITION_FALLBACK,
+    },
+    {
+      key: 'INCOME',
+      label: '소득',
+      value:
+        requirement.incomeMaxRatio !== undefined
+          ? `중위소득 ${requirement.incomeMaxRatio}% 이하`
+          : RAW_CONDITION_FALLBACK,
+    },
+    {
+      key: 'EMPLOYMENT',
+      label: '취업',
+      value: employmentCondition,
+    },
+    {
+      key: 'EXTRA',
+      label: '추가 자격',
+      value: requirement.extraQualification || RAW_CONDITION_FALLBACK,
+    },
+  ];
+};
+
 export const calculateAge = (birthDate) => {
   if (!birthDate) {
     return null;
