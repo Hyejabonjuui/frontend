@@ -42,6 +42,7 @@ function RecommendationCard({ policy, group, isFavorite = false, onToggleFavorit
             size="small"
             aria-label={isFavorite ? '관심 정책 해제' : '관심 정책 저장'}
             onClick={() => onToggleFavorite?.(policy.id)}
+            sx={{ color: isFavorite ? 'favorite.main' : 'text.disabled' }}
           >
             <AppIcon name={isFavorite ? 'heart' : 'heart-outline'} size={20} />
           </IconButton>
