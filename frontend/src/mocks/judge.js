@@ -29,7 +29,17 @@ const RAW_CONDITION_FALLBACK = '공고문에서 확인';
 export const buildRawConditions = (policy) => {
   const requirement = policy.requirement ?? {};
   const hasAgeRange = requirement.ageMin !== undefined && requirement.ageMax !== undefined;
-  const employmentNames = requirement.employmentCodes?.map(findEmploymentName).filter(Boolean) ?? [];
+  const employmentCodes = requirement.employmentCodes;
+  const employmentNames = Array.isArray(employmentCodes)
+    ? employmentCodes.map(findEmploymentName)
+    : [];
+  const employmentCondition = !Array.isArray(employmentCodes)
+    ? RAW_CONDITION_FALLBACK
+    : employmentCodes.length === 0
+      ? '제한 없음'
+      : employmentNames.every(Boolean)
+        ? employmentNames.join(' · ')
+        : RAW_CONDITION_FALLBACK;
 
   return [
     {
@@ -55,7 +65,7 @@ export const buildRawConditions = (policy) => {
     {
       key: 'EMPLOYMENT',
       label: '취업',
-      value: employmentNames.length > 0 ? employmentNames.join(' · ') : '제한 없음',
+      value: employmentCondition,
     },
     {
       key: 'EXTRA',

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link as RouterLink, useParams } from 'react-router-dom';
 import AppIcon from '@/components/common/AppIcon';
 import Box from '@mui/material/Box';
@@ -153,7 +153,7 @@ function RawConditionsCard({ conditions, onLogin }) {
         <Typography variant="body2" align="center">
           로그인하고 1초만에 확인하기
         </Typography>
-        <Button variant="contained" fullWidth onClick={onLogin}>
+        <Button variant="contained" fullWidth onClick={() => onLogin()}>
           로그인하고 확인하기
         </Button>
       </Stack>
@@ -181,6 +181,15 @@ function PolicyDetailPage() {
   const { isFavorite, toggleFavorite } = useFavorites();
   const terms = useTerms();
   const [isCardNewsOpen, setIsCardNewsOpen] = useState(false);
+  const wasAuthenticatedRef = useRef(isAuthenticated);
+
+  useEffect(() => {
+    if (!wasAuthenticatedRef.current && isAuthenticated) {
+      refetch();
+    }
+
+    wasAuthenticatedRef.current = isAuthenticated;
+  }, [isAuthenticated, refetch]);
 
   if (isLoading) {
     return <LoadingSpinner />;
