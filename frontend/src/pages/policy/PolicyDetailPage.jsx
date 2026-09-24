@@ -98,8 +98,11 @@ function RawConditionsCard({ conditions, onLogin }) {
       sx={{
         width: '100%',
         minWidth: 0,
+        height: { xs: 'auto', sm: '100%' },
         p: 3,
-        alignSelf: 'flex-start',
+        alignSelf: { xs: 'flex-start', sm: 'stretch' },
+        display: 'flex',
+        flexDirection: 'column',
         backgroundColor: 'grey.100',
       }}
     >
@@ -107,13 +110,21 @@ function RawConditionsCard({ conditions, onLogin }) {
         신청 조건 (공고 원문)
       </Typography>
 
-      <Stack divider={<Divider flexItem />} sx={{ minWidth: 0 }}>
+      <Stack
+        divider={<Divider flexItem />}
+        sx={{ minWidth: 0, flexGrow: { xs: 0, sm: 1 } }}
+      >
         {conditions.map((condition) => (
           <Stack
             key={condition.key}
             direction="row"
             spacing={1.5}
-            sx={{ alignItems: 'flex-start', py: 1, minWidth: 0 }}
+            sx={{
+              alignItems: { xs: 'flex-start', sm: 'center' },
+              flex: { xs: '0 0 auto', sm: '1 1 0' },
+              py: 1,
+              minWidth: 0,
+            }}
           >
             <Typography variant="body2" sx={{ width: 72, flexShrink: 0 }}>
               {condition.label}
