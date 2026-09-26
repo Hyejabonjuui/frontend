@@ -109,7 +109,7 @@ function ConditionForm({ form, fieldErrors, codes, onChange }) {
               select
               value={form.sidoCode}
               onChange={handleSidoChange}
-              aria-label="시도 선택"
+              slotProps={{ htmlInput: { 'aria-label': '시도 선택' } }}
               sx={{ flex: 1 }}
             >
               {codes.regions.map((region) => (
@@ -125,7 +125,7 @@ function ConditionForm({ form, fieldErrors, codes, onChange }) {
               onChange={(event) => onChange(CONDITION_FIELDS.REGION_CODE, event.target.value)}
               disabled={!selectedSido}
               error={Boolean(fieldErrors.regionCode)}
-              aria-label="시군구 선택"
+              slotProps={{ htmlInput: { 'aria-label': '시군구 선택' } }}
               sx={{ flex: 1 }}
             >
               {(selectedSido?.sigungu ?? []).map((sigungu) => {
