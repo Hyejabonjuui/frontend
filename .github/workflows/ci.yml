@@ -39,5 +39,31 @@ jobs:
       - name: Format check
         run: npm run format:check
 
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Integration tests
+        run: npm run test:integration
+
+      # 단위와 통합을 합친 커버리지를 리포트로만 남긴다. threshold는 머지 후 실제 수치를 보고 건다.
+      - name: Coverage
+        run: npm run test:coverage
+
+      - name: Coverage summary
+        run: |
+          node -e "
+            const { total } = require('./coverage/coverage-summary.json');
+            const rows = ['lines', 'statements', 'functions', 'branches']
+              .map((key) => '| ' + key + ' | ' + total[key].pct + '% | ' + total[key].covered + ' / ' + total[key].total + ' |');
+            console.log(['### Coverage', '', '| 항목 | 비율 | 커버 / 전체 |', '| --- | --- | --- |', ...rows].join('\\n'));
+          " >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14
+
       - name: Build
         run: npm run build
