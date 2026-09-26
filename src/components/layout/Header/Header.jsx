@@ -108,7 +108,11 @@ function Header() {
 
         <Box sx={{ flexGrow: 1 }} />
 
-        <Stack direction="row" spacing={{ xs: 0, sm: 1 }} sx={{ alignItems: 'center', flexShrink: 0 }}>
+        <Stack
+          direction="row"
+          spacing={{ xs: 0, sm: 1 }}
+          sx={{ alignItems: 'center', flexShrink: 0 }}
+        >
           {isAuthenticated ? (
             <>
               <IconButton
@@ -131,7 +135,11 @@ function Header() {
             </>
           ) : (
             <>
-              <Button variant="text" onClick={() => openLoginDialog()} sx={{ color: 'text.secondary' }}>
+              <Button
+                variant="text"
+                onClick={() => openLoginDialog()}
+                sx={{ color: 'text.secondary' }}
+              >
                 로그인
               </Button>
               <Button component={RouterLink} to={ROUTES.SIGNUP} variant="contained" size="small">

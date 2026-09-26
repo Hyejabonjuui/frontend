@@ -6,4 +6,3 @@ export const getFavorites = (params) => httpClient.get(ENDPOINTS.FAVORITE.LIST, 
 export const addFavorite = (policyId) => httpClient.post(ENDPOINTS.FAVORITE.DETAIL(policyId));
 
 export const removeFavorite = (policyId) => httpClient.delete(ENDPOINTS.FAVORITE.DETAIL(policyId));
-

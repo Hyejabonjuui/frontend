@@ -45,7 +45,13 @@ function FavoriteRow({ favorite, onRemove }) {
       <Typography
         variant="body2"
         color={isClosed ? 'text.disabled' : 'text.primary'}
-        sx={{ flexGrow: 1, minWidth: 0, width: { xs: 'calc(100% - 110px)', sm: 'auto' }, wordBreak: 'keep-all', overflowWrap: 'break-word' }}
+        sx={{
+          flexGrow: 1,
+          minWidth: 0,
+          width: { xs: 'calc(100% - 110px)', sm: 'auto' },
+          wordBreak: 'keep-all',
+          overflowWrap: 'break-word',
+        }}
       >
         {policy.title}
         {isClosed && (
@@ -66,7 +72,12 @@ function FavoriteRow({ favorite, onRemove }) {
       <Stack
         direction="row"
         spacing={1}
-        sx={{ alignItems: 'center', width: { xs: 'auto', sm: 110 }, ml: { xs: 'auto', sm: 0 }, justifyContent: 'flex-end' }}
+        sx={{
+          alignItems: 'center',
+          width: { xs: 'auto', sm: 110 },
+          ml: { xs: 'auto', sm: 0 },
+          justifyContent: 'flex-end',
+        }}
       >
         <DdayBadge applyPeriodType={policy.applyPeriodType} applyEndDate={policy.applyEndDate} />
 

@@ -92,9 +92,11 @@ function ConditionForm({ form, fieldErrors, codes, onChange }) {
           onChange={(event) => onChange(CONDITION_FIELDS.BIRTH_DATE, event.target.value)}
           error={Boolean(fieldErrors.birthDate)}
           helperText={
-            fieldErrors.birthDate
-              ? <FieldError>{fieldErrors.birthDate}</FieldError>
-              : CONDITION_HELPER_TEXTS.birthDate
+            fieldErrors.birthDate ? (
+              <FieldError>{fieldErrors.birthDate}</FieldError>
+            ) : (
+              CONDITION_HELPER_TEXTS.birthDate
+            )
           }
           slotProps={{ inputLabel: { shrink: true } }}
           fullWidth
@@ -143,9 +145,11 @@ function ConditionForm({ form, fieldErrors, codes, onChange }) {
             </TextField>
           </Stack>
           <FormHelperText sx={{ wordBreak: 'keep-all', overflowWrap: 'break-word' }}>
-            {fieldErrors.regionCode
-              ? <FieldError>{fieldErrors.regionCode}</FieldError>
-              : '시/군/구 전체 지역은 선택할 수 없어요. 구체적인 지역을 선택해 주세요'}
+            {fieldErrors.regionCode ? (
+              <FieldError>{fieldErrors.regionCode}</FieldError>
+            ) : (
+              '시/군/구 전체 지역은 선택할 수 없어요. 구체적인 지역을 선택해 주세요'
+            )}
           </FormHelperText>
         </FormControl>
 

@@ -39,7 +39,12 @@ function PolicySearchBar({ keyword, onKeywordChange, onSubmit, errorMessage, onR
     : undefined;
 
   return (
-    <Stack component="form" spacing={1.5} onSubmit={handleSubmit} sx={{ alignItems: 'center', width: '100%' }}>
+    <Stack
+      component="form"
+      spacing={1.5}
+      onSubmit={handleSubmit}
+      sx={{ alignItems: 'center', width: '100%' }}
+    >
       <TextField
         value={keyword}
         onChange={(event) =>
@@ -50,7 +55,11 @@ function PolicySearchBar({ keyword, onKeywordChange, onSubmit, errorMessage, onR
         error={Boolean(errorMessage)}
         helperText={errorMessage ? <FieldError>{errorMessage}</FieldError> : ' '}
         fullWidth
-        sx={{ maxWidth: 560, '& .MuiOutlinedInput-root': { borderRadius: 999, pr: 0.5 }, '& .MuiInputAdornment-root .MuiTypography-root': { display: { xs: 'none', sm: 'block' } } }}
+        sx={{
+          maxWidth: 560,
+          '& .MuiOutlinedInput-root': { borderRadius: 999, pr: 0.5 },
+          '& .MuiInputAdornment-root .MuiTypography-root': { display: { xs: 'none', sm: 'block' } },
+        }}
         slotProps={{
           htmlInput: {
             maxLength: SEARCH_KEYWORD_MAX_LENGTH,
@@ -77,7 +86,12 @@ function PolicySearchBar({ keyword, onKeywordChange, onSubmit, errorMessage, onR
         }}
       />
 
-      <Stack direction="row" spacing={1} useFlexGap sx={{ justifyContent: 'center', flexWrap: 'wrap' }}>
+      <Stack
+        direction="row"
+        spacing={1}
+        useFlexGap
+        sx={{ justifyContent: 'center', flexWrap: 'wrap' }}
+      >
         {POLICY_SEARCH_HASHTAGS.map((hashtag) => (
           <SubtypeChip key={hashtag} label={`#${hashtag}`} onClick={() => requestSearch(hashtag)} />
         ))}

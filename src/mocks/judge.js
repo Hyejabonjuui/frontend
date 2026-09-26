@@ -1,8 +1,4 @@
-import {
-  JUDGE_RESULT,
-  NATIONWIDE_REGION_CODE,
-  RECOMMENDATION_GROUP,
-} from '@/constants/policy';
+import { JUDGE_RESULT, NATIONWIDE_REGION_CODE, RECOMMENDATION_GROUP } from '@/constants/policy';
 import { EMPLOYMENT_CODES, INCOME_RANGE_CODES, REGION_CODES } from '@/mocks/data/codes';
 
 const findRegionName = (regionCode) => {
@@ -115,7 +111,11 @@ const judgeAge = (requirement, profile) => {
   const age = calculateAge(profile.birthDate);
 
   if (requirement.ageMin === undefined || requirement.ageMax === undefined) {
-    return { result: JUDGE_RESULT.NEED_CHECK, requirement: '공고문에서 확인', myValue: '해당 없음' };
+    return {
+      result: JUDGE_RESULT.NEED_CHECK,
+      requirement: '공고문에서 확인',
+      myValue: '해당 없음',
+    };
   }
 
   const label = `만 ${requirement.ageMin}~${requirement.ageMax}세`;
@@ -150,7 +150,11 @@ const judgeRegion = (policy, profile) => {
 
 const judgeIncome = (requirement, profile) => {
   if (requirement.incomeMaxRatio === undefined) {
-    return { result: JUDGE_RESULT.NEED_CHECK, requirement: '공고문에서 확인', myValue: '해당 없음' };
+    return {
+      result: JUDGE_RESULT.NEED_CHECK,
+      requirement: '공고문에서 확인',
+      myValue: '해당 없음',
+    };
   }
 
   const label = `중위소득 ${requirement.incomeMaxRatio}% 이하`;
@@ -162,9 +166,7 @@ const judgeIncome = (requirement, profile) => {
 
   return {
     result:
-      myIncome.medianRatio <= requirement.incomeMaxRatio
-        ? JUDGE_RESULT.MET
-        : JUDGE_RESULT.NOT_MET,
+      myIncome.medianRatio <= requirement.incomeMaxRatio ? JUDGE_RESULT.MET : JUDGE_RESULT.NOT_MET,
     requirement: label,
     myValue: myIncome.name,
   };
@@ -172,7 +174,9 @@ const judgeIncome = (requirement, profile) => {
 
 const judgeEmployment = (requirement, profile) => {
   const allowed = requirement.employmentCodes;
-  const myValue = profile.employmentCode ? findEmploymentName(profile.employmentCode) : '입력 안 함';
+  const myValue = profile.employmentCode
+    ? findEmploymentName(profile.employmentCode)
+    : '입력 안 함';
 
   if (!allowed) {
     return { result: JUDGE_RESULT.MET, requirement: '제한 없음', myValue };
@@ -242,9 +246,7 @@ export const buildJudgementReason = (judgements, group) => {
   }
 
   if (group === RECOMMENDATION_GROUP.NEED_CHECK) {
-    const unknown = judgements.filter(
-      (judgement) => judgement.result === JUDGE_RESULT.NEED_CHECK,
-    );
+    const unknown = judgements.filter((judgement) => judgement.result === JUDGE_RESULT.NEED_CHECK);
 
     return `${unknown.map((judgement) => judgement.conditionName).join('·')} 정보를 입력하면 정확히 알려드려요.`;
   }

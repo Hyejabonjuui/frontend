@@ -75,8 +75,9 @@ function JudgementCard({ judgements, summary }) {
       </Stack>
 
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>
-        <AppIcon name="check" size={12} /> 충족 · <AppIcon name="cross" size={12} /> 미충족 · <AppIcon name="question" size={12} /> 확인 필요 — 나이·지역·소득·취업은 코드로, 무주택·추가 자격은 AI가
-        판정해요
+        <AppIcon name="check" size={12} /> 충족 · <AppIcon name="cross" size={12} /> 미충족 ·{' '}
+        <AppIcon name="question" size={12} /> 확인 필요 — 나이·지역·소득·취업은 코드로, 무주택·추가
+        자격은 AI가 판정해요
       </Typography>
 
       <Link
@@ -110,10 +111,7 @@ function RawConditionsCard({ conditions, onLogin }) {
         신청 조건 (공고 원문)
       </Typography>
 
-      <Stack
-        divider={<Divider flexItem />}
-        sx={{ minWidth: 0, flexGrow: { xs: 0, sm: 1 } }}
-      >
+      <Stack divider={<Divider flexItem />} sx={{ minWidth: 0, flexGrow: { xs: 0, sm: 1 } }}>
         {conditions.map((condition) => (
           <Stack
             key={condition.key}
@@ -232,12 +230,20 @@ function PolicyDetailPage() {
       >
         <Stack spacing={3} sx={{ flex: 1, minWidth: 0 }}>
           <Stack component="header" spacing={1.5}>
-            <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+            <Stack
+              direction="row"
+              spacing={1}
+              useFlexGap
+              sx={{ alignItems: 'center', flexWrap: 'wrap' }}
+            >
               <Chip label={policy.subtypeName} variant="outlined" size="small" />
               <Typography variant="h1" sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
                 {policy.title}
               </Typography>
-              <DdayBadge applyPeriodType={policy.applyPeriodType} applyEndDate={policy.applyEndDate} />
+              <DdayBadge
+                applyPeriodType={policy.applyPeriodType}
+                applyEndDate={policy.applyEndDate}
+              />
             </Stack>
 
             <Typography variant="body1" color="text.secondary">
@@ -284,7 +290,13 @@ function PolicyDetailPage() {
         </Stack>
 
         {(!isAuthenticated || policy.judgements?.length > 0) && (
-          <Box sx={{ width: { xs: '100%', sm: 'clamp(260px, 30vw, 340px)', md: 340 }, flexShrink: 0, display: 'flex' }}>
+          <Box
+            sx={{
+              width: { xs: '100%', sm: 'clamp(260px, 30vw, 340px)', md: 340 },
+              flexShrink: 0,
+              display: 'flex',
+            }}
+          >
             {isAuthenticated ? (
               <JudgementCard judgements={policy.judgements} summary={policy.judgementSummary} />
             ) : (

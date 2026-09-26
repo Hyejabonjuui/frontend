@@ -26,18 +26,32 @@ function RecommendationCard({ policy, group, isFavorite = false, onToggleFavorit
         backgroundColor: isImpossible ? 'grey.100' : 'background.paper',
       }}
     >
-      <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: 'flex-start', flexWrap: 'wrap' }}>
+      <Stack
+        direction="row"
+        spacing={1}
+        useFlexGap
+        sx={{ alignItems: 'flex-start', flexWrap: 'wrap' }}
+      >
         <Chip label={policy.subtypeName} variant="outlined" size="small" sx={{ flexShrink: 0 }} />
 
-        <Typography variant="body2" sx={{ flexGrow: 1, minWidth: 0, width: { xs: 'calc(100% - 110px)', sm: 'auto' }, overflowWrap: 'anywhere' }}>
+        <Typography
+          variant="body2"
+          sx={{
+            flexGrow: 1,
+            minWidth: 0,
+            width: { xs: 'calc(100% - 110px)', sm: 'auto' },
+            overflowWrap: 'anywhere',
+          }}
+        >
           {policy.title}
         </Typography>
 
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexShrink: 0, ml: { xs: 'auto', sm: 0 } }}>
-          <DdayBadge
-            applyPeriodType={policy.applyPeriodType}
-            applyEndDate={policy.applyEndDate}
-          />
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{ alignItems: 'center', flexShrink: 0, ml: { xs: 'auto', sm: 0 } }}
+        >
+          <DdayBadge applyPeriodType={policy.applyPeriodType} applyEndDate={policy.applyEndDate} />
           <IconButton
             size="small"
             aria-label={isFavorite ? '관심 정책 해제' : '관심 정책 저장'}

@@ -75,14 +75,14 @@ function LoginDialog({ isOpen, onClose, onLoggedIn }) {
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={resetAndClose}
-      maxWidth="xs"
-      fullWidth
-    >
+    <Dialog open={isOpen} onClose={resetAndClose} maxWidth="xs" fullWidth>
       <DialogTitle
-        sx={{ typography: 'h2', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+        sx={{
+          typography: 'h2',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
       >
         로그인
         <IconButton onClick={resetAndClose} aria-label="닫기" size="small">

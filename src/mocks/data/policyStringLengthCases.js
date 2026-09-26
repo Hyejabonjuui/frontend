@@ -65,10 +65,7 @@ export const POLICY_STRING_LENGTH_CASES = Object.fromEntries(
   Object.entries(fields).map(([field, kind]) => [
     field,
     Object.fromEntries(
-      lengths.map((length) => [
-        `test_${length}`,
-        createCase(field, length, kind),
-      ]),
+      lengths.map((length) => [`test_${length}`, createCase(field, length, kind)]),
     ),
   ]),
 );
@@ -79,5 +76,7 @@ export const getPolicyStringLengthCase = (field, length) => {
     return null;
   }
 
-  return POLICY_STRING_LENGTH_CASES[field][`test_${length}`] ?? createCase(field, length, fields[field]);
+  return (
+    POLICY_STRING_LENGTH_CASES[field][`test_${length}`] ?? createCase(field, length, fields[field])
+  );
 };

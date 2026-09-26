@@ -4,8 +4,10 @@ import { createTheme } from '@mui/material/styles';
 import AppIcon from '@/components/common/AppIcon';
 
 const svgIcon = (name, size = 20) => createElement(AppIcon, { name, size });
-const SelectChevron = (props) => createElement(AppIcon, { ...props, name: 'chevron-down', size: 24 });
-const PagePrevious = (props) => createElement(AppIcon, { ...props, name: 'chevron-left', size: 20 });
+const SelectChevron = (props) =>
+  createElement(AppIcon, { ...props, name: 'chevron-down', size: 24 });
+const PagePrevious = (props) =>
+  createElement(AppIcon, { ...props, name: 'chevron-left', size: 20 });
 const PageNext = (props) => createElement(AppIcon, { ...props, name: 'chevron-right', size: 20 });
 const PageFirst = (props) => createElement(AppIcon, { ...props, name: 'first-page', size: 20 });
 const PageLast = (props) => createElement(AppIcon, { ...props, name: 'last-page', size: 20 });
@@ -81,19 +83,39 @@ const theme = createTheme({
   shape: { borderRadius: RADIUS.control },
   typography: {
     fontFamily,
-    h1: { fontSize: 26, lineHeight: '35px', fontWeight: 700, [tabletText]: { fontSize: 24, lineHeight: '33px' } },
-    h2: { fontSize: 20, lineHeight: '28px', fontWeight: 700, [tabletText]: { fontSize: 19, lineHeight: '26px' } },
+    h1: {
+      fontSize: 26,
+      lineHeight: '35px',
+      fontWeight: 700,
+      [tabletText]: { fontSize: 24, lineHeight: '33px' },
+    },
+    h2: {
+      fontSize: 20,
+      lineHeight: '28px',
+      fontWeight: 700,
+      [tabletText]: { fontSize: 19, lineHeight: '26px' },
+    },
     body1: { fontSize: 14, lineHeight: '20px', fontWeight: 400, [tabletText]: { fontSize: 13 } },
     body2: { fontSize: 14, lineHeight: '20px', fontWeight: 500, [tabletText]: { fontSize: 13 } },
     caption: { fontSize: 12, lineHeight: '16px', fontWeight: 400, [tabletText]: { fontSize: 11 } },
-    button: { fontSize: 14, lineHeight: '20px', fontWeight: 500, textTransform: 'none', [tabletText]: { fontSize: 13 } },
+    button: {
+      fontSize: 14,
+      lineHeight: '20px',
+      fontWeight: 500,
+      textTransform: 'none',
+      [tabletText]: { fontSize: 13 },
+    },
   },
   components: {
     // MUI가 기본으로 그리던 조작 아이콘도 public/icons의 SVG를 사용한다.
     MuiSelect: { defaultProps: { IconComponent: SelectChevron } },
-    MuiRadio: { defaultProps: { icon: svgIcon('radio-unchecked'), checkedIcon: svgIcon('radio-checked') } },
+    MuiRadio: {
+      defaultProps: { icon: svgIcon('radio-unchecked'), checkedIcon: svgIcon('radio-checked') },
+    },
     MuiPaginationItem: {
-      defaultProps: { slots: { previous: PagePrevious, next: PageNext, first: PageFirst, last: PageLast } },
+      defaultProps: {
+        slots: { previous: PagePrevious, next: PageNext, first: PageFirst, last: PageLast },
+      },
     },
     MuiAlert: {
       defaultProps: {

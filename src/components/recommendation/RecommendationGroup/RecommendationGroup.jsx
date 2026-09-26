@@ -20,7 +20,12 @@ const JUDGE_RESULT_BY_GROUP = {
 function RecommendationGroup({ group, policies = [], isFavorite, onToggleFavorite }) {
   return (
     <Box component="section">
-      <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: 'center', flexWrap: 'wrap', mb: 1.5 }}>
+      <Stack
+        direction="row"
+        spacing={1}
+        useFlexGap
+        sx={{ alignItems: 'center', flexWrap: 'wrap', mb: 1.5 }}
+      >
         <JudgeIcon result={JUDGE_RESULT_BY_GROUP[group]} size={20} />
         <Typography variant="h2">
           {RECOMMENDATION_GROUP_LABEL[group]} · {policies.length}건

@@ -60,9 +60,7 @@ function RecommendationPage() {
           keyword={searchKeyword}
           onKeywordChange={setSearchKeyword}
           onSubmit={handleSearch}
-          onRequestLogin={
-            isAuthenticated ? undefined : () => openLoginNotice(LOGIN_NOTICE.SEARCH)
-          }
+          onRequestLogin={isAuthenticated ? undefined : () => openLoginNotice(LOGIN_NOTICE.SEARCH)}
         />
       </Stack>
 

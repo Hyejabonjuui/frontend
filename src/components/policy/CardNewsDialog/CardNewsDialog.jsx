@@ -42,7 +42,11 @@ function CardNewsPanel({ card, cardCount, children }) {
           >
             {headingParts.map((part) =>
               part.startsWith('(') ? (
-                <Box key={part} component="span" sx={{ whiteSpace: { xs: 'normal', md: 'nowrap' }, overflowWrap: 'anywhere' }}>
+                <Box
+                  key={part}
+                  component="span"
+                  sx={{ whiteSpace: { xs: 'normal', md: 'nowrap' }, overflowWrap: 'anywhere' }}
+                >
                   {part}
                 </Box>
               ) : (
@@ -59,7 +63,11 @@ function CardNewsPanel({ card, cardCount, children }) {
                 key={tag}
                 label={<Typography variant="h2">{tag}</Typography>}
                 variant="outlined"
-                sx={{ height: 'auto', maxWidth: '100%', '& .MuiChip-label': { py: 0.5, whiteSpace: 'normal' } }}
+                sx={{
+                  height: 'auto',
+                  maxWidth: '100%',
+                  '& .MuiChip-label': { py: 0.5, whiteSpace: 'normal' },
+                }}
               />
             ))}
           </Stack>
@@ -141,7 +149,11 @@ function CardNewsDialog({ cardNews, onClose, isFavorite = false, onToggleFavorit
       slotProps={{
         paper: {
           sx: {
-            width: { xs: 'calc(100vw - 24px)', sm: 'min(900px, calc(100vw - 48px))', md: 'min(1440px, calc(100vw - 48px))' },
+            width: {
+              xs: 'calc(100vw - 24px)',
+              sm: 'min(900px, calc(100vw - 48px))',
+              md: 'min(1440px, calc(100vw - 48px))',
+            },
             maxHeight: { xs: 'calc(100dvh - 24px)', sm: 'calc(100dvh - 48px)' },
             minHeight: { xs: 0, md: 'min(680px, calc(100dvh - 48px))' },
             m: { xs: 1.5, sm: 3 },
@@ -153,7 +165,13 @@ function CardNewsDialog({ cardNews, onClose, isFavorite = false, onToggleFavorit
         direction="row"
         spacing={1}
         useFlexGap
-        sx={{ alignItems: 'center', flexWrap: { xs: 'wrap', sm: 'nowrap' }, px: { xs: 2, sm: 3 }, pt: 2.5, pb: 0.5 }}
+        sx={{
+          alignItems: 'center',
+          flexWrap: { xs: 'wrap', sm: 'nowrap' },
+          px: { xs: 2, sm: 3 },
+          pt: 2.5,
+          pb: 0.5,
+        }}
       >
         <Chip label={cardNews.subtypeName} variant="outlined" size="small" sx={{ flexShrink: 0 }} />
 
@@ -185,7 +203,11 @@ function CardNewsDialog({ cardNews, onClose, isFavorite = false, onToggleFavorit
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' },
+            gridTemplateColumns: {
+              xs: 'minmax(0, 1fr)',
+              sm: 'repeat(2, minmax(0, 1fr))',
+              md: 'repeat(4, minmax(0, 1fr))',
+            },
             // 설명이 길어져도 그리드 행이 내용보다 작아지지 않게 한다.
             gridAutoRows: 'minmax(max-content, 1fr)',
             gap: { xs: 1.5, sm: 2 },

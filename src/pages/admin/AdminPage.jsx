@@ -59,7 +59,11 @@ function AdminPage() {
       </Stack>
 
       <Card variant="outlined" sx={{ p: 2 }}>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { xs: 'flex-start', sm: 'center' } }}>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={2}
+          sx={{ alignItems: { xs: 'flex-start', sm: 'center' } }}
+        >
           <Button
             variant="contained"
             onClick={handleCollect}
@@ -69,7 +73,10 @@ function AdminPage() {
             지금 수집 실행
           </Button>
           <Typography variant="body1" color="text.secondary">
-            온통청년 API <AppIcon name="arrow-right" size={14} /> 주거 정책 저장 <AppIcon name="arrow-right" size={14} /> 하위 유형 분류 <AppIcon name="arrow-right" size={14} /> 카드뉴스 생성 <AppIcon name="arrow-right" size={14} /> D-7 알림
+            온통청년 API <AppIcon name="arrow-right" size={14} /> 주거 정책 저장{' '}
+            <AppIcon name="arrow-right" size={14} /> 하위 유형 분류{' '}
+            <AppIcon name="arrow-right" size={14} /> 카드뉴스 생성{' '}
+            <AppIcon name="arrow-right" size={14} /> D-7 알림
           </Typography>
         </Stack>
       </Card>

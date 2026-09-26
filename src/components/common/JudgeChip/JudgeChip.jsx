@@ -3,7 +3,6 @@ import Chip from '@mui/material/Chip';
 import JudgeIcon from '@/components/common/JudgeIcon';
 import { JUDGE_RESULT_COLOR, JUDGE_RESULT_LABEL } from '@/constants/policy';
 
-
 function JudgeChip({ result, label }) {
   return (
     <Chip

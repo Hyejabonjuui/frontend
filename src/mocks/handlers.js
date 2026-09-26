@@ -218,9 +218,7 @@ export const HANDLERS = [
     method: 'post',
     match: (url) => url === '/api/auth/login',
     handle: ({ body }) => {
-      const user = mockStore
-        .getState()
-        .users.find((item) => item.email === body.email);
+      const user = mockStore.getState().users.find((item) => item.email === body.email);
 
       if (!user || user.password !== body.password) {
         return fail(401, '이메일 또는 비밀번호가 올바르지 않아요');
@@ -237,9 +235,7 @@ export const HANDLERS = [
     method: 'post',
     match: (url) => url === '/api/auth/signup',
     handle: ({ body }) => {
-      const isDuplicated = mockStore
-        .getState()
-        .users.some((item) => item.email === body.email);
+      const isDuplicated = mockStore.getState().users.some((item) => item.email === body.email);
 
       if (isDuplicated) {
         return fail(409, '이미 가입된 이메일이에요');
@@ -280,9 +276,7 @@ export const HANDLERS = [
     method: 'post',
     match: (url) => url === '/api/auth/find-email',
     handle: ({ body }) => {
-      const user = mockStore
-        .getState()
-        .users.find((item) => item.nickname === body.nickname);
+      const user = mockStore.getState().users.find((item) => item.nickname === body.nickname);
 
       return user ? ok({ email: user.email }) : fail(404, '일치하는 회원을 찾지 못했어요');
     },
@@ -405,9 +399,7 @@ export const HANDLERS = [
         .map((favorite) => {
           const policy = findActivePolicyById(favorite.policyId);
 
-          return policy
-            ? { ...favorite, policy: toPolicySummary(policy) }
-            : null;
+          return policy ? { ...favorite, policy: toPolicySummary(policy) } : null;
         })
         .filter(Boolean);
 
