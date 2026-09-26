@@ -13,7 +13,7 @@ export const ENDPOINTS = {
   },
   USER: {
     ME: '/api/me', // F-05 (DELETE = 회원 탈퇴)
-    PROFILE: '/api/me/profile', // F-03
+    PROFILE: '/api/members/me/profile', // F-03
   },
   CODE: {
     LIST: '/api/codes', // F-03 선택지
