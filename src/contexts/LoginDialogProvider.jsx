@@ -55,12 +55,12 @@ function LoginDialogProvider({ children }) {
     [openLoginDialog, showInfo],
   );
 
-  const handleLoggedIn = useCallback(() => {
+  const handleLoggedIn = useCallback((authenticatedUser) => {
     const pendingAction = pendingActionRef.current;
 
     pendingActionRef.current = null;
     setIsOpen(false);
-    pendingAction?.();
+    pendingAction?.(authenticatedUser);
   }, []);
 
   const value = useMemo(
