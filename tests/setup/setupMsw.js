@@ -1,5 +1,6 @@
 import { afterAll, afterEach, beforeAll } from 'vitest';
 
+import './setupDom';
 import { server } from '../msw/server';
 
 // 핸들러가 없는 요청을 조용히 넘기지 않고 테스트를 실패시킨다.
