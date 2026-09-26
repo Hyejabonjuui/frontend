@@ -70,11 +70,22 @@ export const mockStore = {
   },
 };
 
-export const buildAccessToken = (userId) => `mock-access-token-${userId}`;
+const encodeTokenPart = (value) =>
+  btoa(JSON.stringify(value)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+
+export const buildAccessToken = (userId, role = 'USER') =>
+  `${encodeTokenPart({ alg: 'none', typ: 'JWT' })}.${encodeTokenPart({ sub: String(userId), role })}.mock-signature`;
 
 export const findUserByToken = (authorization) => {
   const token = authorization?.replace('Bearer ', '');
-  const userId = Number(token?.replace('mock-access-token-', ''));
+  let userId;
+
+  try {
+    const payload = token?.split('.')[1]?.replace(/-/g, '+').replace(/_/g, '/');
+    userId = Number(JSON.parse(atob(payload)).sub);
+  } catch {
+    return null;
+  }
 
   return state.users.find((user) => user.id === userId) ?? null;
 };

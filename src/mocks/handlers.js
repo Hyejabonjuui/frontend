@@ -225,9 +225,9 @@ export const HANDLERS = [
       }
 
       return ok({
-        accessToken: buildAccessToken(user.id),
-        refreshToken: `mock-refresh-token-${user.id}`,
-        user: toPublicUser(user),
+        accessToken: buildAccessToken(user.id, user.role),
+        memberId: user.id,
+        nickname: user.nickname,
       });
     },
   },
@@ -275,7 +275,7 @@ export const HANDLERS = [
 
       // 설계서 F-01: 가입하면 자동 로그인 후 조건 등록으로 이어진다.
       return ok({
-        accessToken: buildAccessToken(user.id),
+        accessToken: buildAccessToken(user.id, user.role),
         refreshToken: `mock-refresh-token-${user.id}`,
         user: toPublicUser(user),
       });

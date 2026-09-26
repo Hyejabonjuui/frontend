@@ -27,6 +27,12 @@ export const tokenStorage = {
     return Number.isInteger(memberId) && memberId > 0 ? memberId : null;
   },
 
+  getRole(accessToken = this.getAccessToken()) {
+    const role = decodePayload(accessToken ?? '')?.role;
+
+    return typeof role === 'string' ? role : null;
+  },
+
   setTokens({ accessToken, refreshToken }) {
     if (accessToken) {
       localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
