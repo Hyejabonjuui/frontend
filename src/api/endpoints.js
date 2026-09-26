@@ -26,8 +26,8 @@ export const ENDPOINTS = {
     TERMS: '/api/terms', // F-13
   },
   FAVORITE: {
-    LIST: '/api/me/favorites', // F-18
-    DETAIL: (policyId) => `/api/me/favorites/${policyId}`, // F-16 POST/DELETE
+    LIST: '/api/favorite', // F-18
+    DETAIL: (policyId) => `/api/favorite/${policyId}`, // F-16 POST/DELETE
   },
   NOTIFICATION: {
     LIST: '/api/me/notifications',

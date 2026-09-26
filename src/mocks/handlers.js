@@ -388,7 +388,7 @@ export const HANDLERS = [
   { method: 'get', match: (url) => url === '/api/terms', handle: () => ok({ content: TERMS }) },
   {
     method: 'get',
-    match: (url) => url === '/api/me/favorites',
+    match: (url) => url === '/api/favorite',
     handle: ({ user }) => {
       const denied = requireUser(user);
       if (denied) {
@@ -408,7 +408,7 @@ export const HANDLERS = [
   },
   {
     method: 'post',
-    match: (url) => /^\/api\/me\/favorites\/\d+$/.test(url),
+    match: (url) => /^\/api\/favorite\/[^/]+$/.test(url),
     handle: ({ url, user }) => {
       const denied = requireUser(user);
       if (denied) {
@@ -437,7 +437,7 @@ export const HANDLERS = [
   },
   {
     method: 'delete',
-    match: (url) => /^\/api\/me\/favorites\/\d+$/.test(url),
+    match: (url) => /^\/api\/favorite\/[^/]+$/.test(url),
     handle: ({ url, user }) => {
       const denied = requireUser(user);
       if (denied) {
