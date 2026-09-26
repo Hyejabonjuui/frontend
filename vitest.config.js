@@ -9,9 +9,11 @@ export default mergeConfig(
       environment: 'jsdom',
       // notice: .env.* 파일은 gitignore 대상이라 CI에 없다. 테스트에서 쓸 값을 여기서 고정한다.
       // notice: baseURL이 있어야 MSW가 절대 URL로 요청을 가로챌 수 있다. 목 어댑터는 끈다.
+      // notice: CI(UTC)와 로컬(KST)의 날짜 계산이 갈리지 않게 서비스 기준 시간대로 고정한다.
       env: {
         VITE_API_BASE_URL: 'http://localhost',
         VITE_USE_MOCK: 'false',
+        TZ: 'Asia/Seoul',
       },
       setupFiles: ['./tests/setup/setupDom.js'],
       restoreMocks: true,
