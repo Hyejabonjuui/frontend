@@ -1,4 +1,10 @@
-import { PROFILE_CODE_GROUPS } from '@/constants/profileCodes';
+import {
+  EMPLOYMENT_CODES,
+  INCOME_RANGE_CODES,
+  PROFILE_CODE_GROUPS,
+} from '@/constants/profileCodes';
+
+export { EMPLOYMENT_CODES, INCOME_RANGE_CODES };
 
 export const REGION_CODES = [
   {
