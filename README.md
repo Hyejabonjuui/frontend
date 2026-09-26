@@ -79,7 +79,7 @@ src/
 ## 작성 규칙
 
 - **import 경로는 `@/` alias를 사용한다.**
-- **스타일 값은 `styles/theme.js`의 토큰을 통해서만 쓴다.** 색·radius·타이포 하드코딩 금지.
+- **스타일 값은 `src/styles/theme.js`의 토큰을 통해서만 쓴다.** 색·radius·타이포 하드코딩 금지.
   - 색: `primary(#5cb8ff)` / `success(#1f8a4c)` / `warning(#c77700)` / `error(#d14343)`
   - radius: 버튼·입력칸 4 · D-day 12 · 칩 16 · 카드 12 · 토스트 8
   - 글꼴: 현재 Noto Sans KR → Pretendard 교체 시 `theme.js`의 `fontFamily` 한 줄만 수정
@@ -88,7 +88,7 @@ src/
   화면 아래 가운데, 3초, ✕로 즉시 닫기, 한 번에 1개.
 - **조건 판정은 색만으로 구분하지 않는다.** `JudgeIcon`이 ✓ / ✗ / ? 기호를 함께 쓴다.
 - **입력 오류는 테두리 2px + `⚠` 문구를 함께 표시한다.**
-- **API URL은 `api/endpoints.js`에만 존재한다.**
+- **API URL은 `src/api/endpoints.js`에만 존재한다.**
 - **컴포넌트는 axios를 직접 호출하지 않는다.** `pages → hooks → api` 순서로 내려간다.
 - **데이터 조회는 effect 내부에서 수행하고 `isActive` 플래그로 정리한다.**
   (ESLint `react-hooks/set-state-in-effect` 준수, 응답 순서 꼬임 방지)
