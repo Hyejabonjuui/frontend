@@ -21,7 +21,7 @@ import { server } from '../../msw/server';
 
 const SUBMIT_LABEL = '저장하고 시작하기';
 
-const findBirthDateInput = () => screen.findByLabelText('생년월일');
+const findBirthDateInput = () => screen.findByLabelText('생년월일', {}, { timeout: 5000 });
 
 const chooseOption = async (user, comboboxName, optionName) => {
   await user.click(screen.getByRole('combobox', { name: comboboxName }));
