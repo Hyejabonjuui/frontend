@@ -5,18 +5,18 @@
  */
 export const ENDPOINTS = {
   AUTH: {
-    LOGIN: '/api/auth/login',
-    SIGNUP: '/api/auth/signup', // F-01
-    LOGOUT: '/api/auth/logout',
+    LOGIN: '/api/members/login',
+    SIGNUP: '/api/members', // 계정 + profile 동시 저장
+    LOGOUT: '/api/members/logout',
     FIND_EMAIL: '/api/auth/find-email',
     RESET_PASSWORD: '/api/auth/reset-password',
   },
   USER: {
-    ME: '/api/me', // F-05 (DELETE = 회원 탈퇴)
+    ME: '/api/members/me',
     PROFILE: '/api/me/profile', // F-03
   },
   CODE: {
-    LIST: '/api/codes', // F-03 선택지
+    REGIONS: '/api/regions',
   },
   POLICY: {
     LIST: '/api/policies',

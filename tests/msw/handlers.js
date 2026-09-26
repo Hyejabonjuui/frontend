@@ -58,6 +58,16 @@ export const handlers = [
       user: MEMBER_USER,
     });
   }),
+  http.post(apiUrl(ENDPOINTS.AUTH.SIGNUP), async ({ request }) => {
+    const body = await request.json();
+
+    return ok({
+      memberId: 3,
+      email: body.email,
+      nickname: body.nickname,
+      createdAt: '2026-09-27T00:00:00',
+    });
+  }),
   http.post(apiUrl(ENDPOINTS.AUTH.LOGOUT), () => ok()),
 
   http.get(
@@ -73,7 +83,7 @@ export const handlers = [
     withUser(async ({ request }) => ok(await request.json())),
   ),
 
-  http.get(apiUrl(ENDPOINTS.CODE.LIST), () => ok(CODES)),
+  http.get(apiUrl(ENDPOINTS.CODE.REGIONS), () => ok(CODES.regions)),
   http.get(apiUrl(ENDPOINTS.POLICY.TERMS), () => ok(TERM_LIST)),
   http.get(apiUrl(ENDPOINTS.POLICY.CARD_NEWS), () => ok(CARD_NEWS)),
   http.get(apiUrl(ENDPOINTS.POLICY.LIST), () => ok(POLICY_PAGE)),

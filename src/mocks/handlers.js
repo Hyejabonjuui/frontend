@@ -216,7 +216,7 @@ const requireUser = (user) => (user ? null : fail(401, '로그인이 필요한 �
 export const HANDLERS = [
   {
     method: 'post',
-    match: (url) => url === '/api/auth/login',
+    match: (url) => url === '/api/members/login',
     handle: ({ body }) => {
       const user = mockStore.getState().users.find((item) => item.email === body.email);
 
@@ -233,7 +233,7 @@ export const HANDLERS = [
   },
   {
     method: 'post',
-    match: (url) => url === '/api/auth/signup',
+    match: (url) => url === '/api/members',
     handle: ({ body }) => {
       const isDuplicated = mockStore.getState().users.some((item) => item.email === body.email);
 
@@ -250,7 +250,17 @@ export const HANDLERS = [
           nickname: body.nickname,
           role: 'USER',
           joinedAt: new Date().toISOString().slice(0, 10),
-          profile: {},
+          profile: {
+            birthDate: body.profile.birth,
+            sidoCode: body.profile.regionCode.slice(0, 2),
+            regionCode: body.profile.regionCode,
+            employmentCode: body.profile.employmentCode,
+            houseless: body.profile.houselessYn,
+            marriageCode: body.profile.marriageCode ?? '',
+            incomeRange: body.profile.incomeRangeCode ?? '',
+            educationCode: body.profile.educationCode ?? '',
+            housingType: body.profile.housingType ?? '',
+          },
         };
 
         state.users.push(user);
@@ -271,7 +281,7 @@ export const HANDLERS = [
       });
     },
   },
-  { method: 'post', match: (url) => url === '/api/auth/logout', handle: () => ok({}) },
+  { method: 'post', match: (url) => url === '/api/members/logout', handle: () => ok({}) },
   {
     method: 'post',
     match: (url) => url === '/api/auth/find-email',
@@ -288,12 +298,12 @@ export const HANDLERS = [
   },
   {
     method: 'get',
-    match: (url) => url === '/api/me',
+    match: (url) => url === '/api/members/me',
     handle: ({ user }) => requireUser(user) ?? ok(toPublicUser(user)),
   },
   {
     method: 'delete',
-    match: (url) => url === '/api/me',
+    match: (url) => url === '/api/members/me',
     handle: ({ user }) => {
       const denied = requireUser(user);
       if (denied) {
@@ -335,7 +345,7 @@ export const HANDLERS = [
       return ok(body);
     },
   },
-  { method: 'get', match: (url) => url === '/api/codes', handle: () => ok(CODE_GROUPS) },
+  { method: 'get', match: (url) => url === '/api/regions', handle: () => ok(CODE_GROUPS.regions) },
   {
     method: 'get',
     match: (url) => url === '/api/policies/card-news',

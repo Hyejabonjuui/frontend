@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import * as codeApi from '@/api/codeApi';
 import { getErrorMessage } from '@/utils/getErrorMessage';
@@ -14,6 +14,7 @@ const EMPTY_CODES = {
 
 /** F-03: 조건 등록 화면의 선택지를 서버에서 받아온다. */
 export const useCodes = () => {
+  const [reloadToken, setReloadToken] = useState(0);
   const [state, setState] = useState({ codes: EMPTY_CODES, isLoading: true, errorMessage: '' });
 
   useEffect(() => {
@@ -42,7 +43,12 @@ export const useCodes = () => {
     return () => {
       isActive = false;
     };
+  }, [reloadToken]);
+
+  const refetch = useCallback(() => {
+    setState((previous) => ({ ...previous, isLoading: true, errorMessage: '' }));
+    setReloadToken((previous) => previous + 1);
   }, []);
 
-  return state;
+  return { ...state, refetch };
 };
