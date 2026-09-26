@@ -61,10 +61,10 @@ function LoginDialog({ isOpen, onClose, onLoggedIn }) {
     setErrorMessage('');
 
     try {
-      await login(form);
+      const authenticatedUser = await login(form);
       setForm(INITIAL_FORM);
       // 설계서 S-02: 모달만 닫고, 원래 하려던 동작을 이어서 실행한다.
-      onLoggedIn();
+      onLoggedIn(authenticatedUser);
     } catch (error) {
       const message = getErrorMessage(error);
       setErrorMessage(message);

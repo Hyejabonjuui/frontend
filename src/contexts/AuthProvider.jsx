@@ -41,13 +41,15 @@ function AuthProvider({ children }) {
 
   const applySession = useCallback(async ({ accessToken, refreshToken, user: sessionUser }) => {
     tokenStorage.setTokens({ accessToken, refreshToken });
-    setUser(sessionUser ?? (await userApi.getMyProfile()));
+    const authenticatedUser = sessionUser ?? (await userApi.getMyProfile());
+    setUser(authenticatedUser);
+    return authenticatedUser;
   }, []);
 
   const login = useCallback(
     async (credentials) => {
       const session = await authApi.login(credentials);
-      await applySession(session);
+      return applySession(session);
     },
     [applySession],
   );
@@ -56,7 +58,7 @@ function AuthProvider({ children }) {
   const signup = useCallback(
     async (signupForm) => {
       const session = await authApi.signup(signupForm);
-      await applySession(session);
+      return applySession(session);
     },
     [applySession],
   );
