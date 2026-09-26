@@ -20,7 +20,7 @@ const chooseOption = async (page, comboboxName, optionName) => {
   await page.getByRole('option', { name: optionName, exact: true }).click();
 };
 
-test('가입하면 조건 등록으로 이어지고, 저장 후 검색하면 추천 결과를 본다', async ({ page }) => {
+test('계정과 조건을 함께 등록하고 검색하면 추천 결과를 본다', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('banner').getByRole('link', { name: '회원가입' }).click();
 
@@ -28,19 +28,15 @@ test('가입하면 조건 등록으로 이어지고, 저장 후 검색하면 추
   await page.getByLabel('비밀번호', { exact: true }).fill(NEW_ACCOUNT.password);
   await page.getByLabel('비밀번호 확인').fill(NEW_ACCOUNT.password);
   await page.getByLabel('닉네임').fill(NEW_ACCOUNT.nickname);
-  await page.getByRole('button', { name: '가입하고 내 조건 등록하기' }).click();
-
-  // 조건이 없는 새 회원은 조건 등록(S-04)으로 이동한다.
-  await expect(page).toHaveURL('/conditions');
   await page.getByLabel('생년월일').fill('1999-03-12');
   await chooseOption(page, '시도 선택', '서울특별시');
   await chooseOption(page, '시군구 선택', '마포구');
-  await page.getByRole('radio', { name: '구직 중' }).check();
+  await page.getByRole('radio', { name: '미취업자' }).check();
   await page.getByRole('radio', { name: '예, 무주택이에요' }).check();
-  await page.getByRole('button', { name: '저장하고 시작하기' }).click();
+  await page.getByRole('button', { name: '회원가입' }).click();
 
   await expect(page).toHaveURL('/');
-  await expect(page.getByText('내 조건을 저장했어요')).toBeVisible();
+  await expect(page.getByText('가입이 완료됐어요')).toBeVisible();
 
   await page.getByRole('textbox', { name: '정책 검색' }).fill('월세');
   await page.getByRole('button', { name: '검색', exact: true }).click();

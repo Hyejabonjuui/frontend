@@ -1,9 +1,9 @@
 /**
  * I-5 조건 등록 폼 (S-04)
  *
- * notice: 실제 백엔드 없이 MSW가 선택지(/api/codes)와 조건 저장(PUT /api/me/profile)에 응답한다.
+ * notice: 실제 백엔드 없이 MSW가 지역 선택지(/api/regions)와 조건 저장(PUT /api/me/profile)에 응답한다.
  *         선택지는 목 데이터(src/mocks/data/codes.js)라서, 실제 코드 테이블이 들어오면 옵션 이름이 바뀔 수 있다.
- *         그때는 이 파일의 옵션 이름(서울특별시, 마포구, 구직 중)만 fixture 값으로 맞춘다.
+ *         그때는 이 파일의 옵션 이름을 fixture 값으로 맞춘다.
  */
 import { screen, waitFor, within } from '@testing-library/react';
 import { http } from 'msw';
@@ -80,7 +80,7 @@ describe('조건 등록 폼', () => {
     await user.type(await findBirthDateInput(), '1999-03-12');
     await chooseOption(user, '시도 선택', '서울특별시');
     await chooseOption(user, '시군구 선택', '마포구');
-    await user.click(screen.getByRole('radio', { name: '구직 중' }));
+    await user.click(screen.getByRole('radio', { name: '미취업자' }));
     await user.click(screen.getByRole('radio', { name: '예, 무주택이에요' }));
     await user.click(screen.getByRole('button', { name: SUBMIT_LABEL }));
 
@@ -89,7 +89,7 @@ describe('조건 등록 폼', () => {
       birthDate: '1999-03-12',
       sidoCode: '11',
       regionCode: '11440',
-      employmentCode: 'JOB_SEEKING',
+      employmentCode: 'UNEMPLOYED',
       houseless: true,
     });
     expect(screen.getByText(TOAST_MESSAGES.CONDITION_SAVED)).toBeInTheDocument();
