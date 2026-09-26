@@ -14,13 +14,14 @@ export const useFavorites = () => {
   const { showSuccess, showError } = useToast();
   const [reloadToken, setReloadToken] = useState(0);
   const [state, setState] = useState({
+    memberId: null,
     favorites: [],
     isLoading: isAuthenticated,
     errorMessage: '',
   });
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || memberId == null) {
       return;
     }
 
@@ -31,11 +32,21 @@ export const useFavorites = () => {
         const data = await favoriteApi.getFavorites({ memberId });
 
         if (isActive) {
-          setState({ favorites: data.content ?? [], isLoading: false, errorMessage: '' });
+          setState({
+            memberId,
+            favorites: data.content ?? [],
+            isLoading: false,
+            errorMessage: '',
+          });
         }
       } catch (error) {
         if (isActive) {
-          setState({ favorites: [], isLoading: false, errorMessage: getErrorMessage(error) });
+          setState({
+            memberId,
+            favorites: [],
+            isLoading: false,
+            errorMessage: getErrorMessage(error),
+          });
         }
       }
     };
@@ -48,8 +59,8 @@ export const useFavorites = () => {
   }, [isAuthenticated, memberId, reloadToken]);
 
   const favorites = useMemo(
-    () => (isAuthenticated ? state.favorites : []),
-    [isAuthenticated, state.favorites],
+    () => (isAuthenticated && state.memberId === memberId ? state.favorites : []),
+    [isAuthenticated, memberId, state.favorites, state.memberId],
   );
 
   const isFavorite = useCallback(
@@ -113,8 +124,8 @@ export const useFavorites = () => {
 
   return {
     favorites,
-    isLoading: isAuthenticated && state.isLoading,
-    errorMessage: isAuthenticated ? state.errorMessage : '',
+    isLoading: isAuthenticated && (state.memberId !== memberId || state.isLoading),
+    errorMessage: isAuthenticated && state.memberId === memberId ? state.errorMessage : '',
     isFavorite,
     toggleFavorite,
     refetch,
