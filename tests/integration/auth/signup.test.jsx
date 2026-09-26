@@ -3,12 +3,13 @@ import { http } from 'msw';
 import { describe, expect, it } from 'vitest';
 
 import { ENDPOINTS } from '@/api/endpoints';
+import { ERROR_MESSAGES } from '@/constants/messages';
 import { ROUTES } from '@/constants/routes';
 import { tokenStorage } from '@/utils/tokenStorage';
 
 import { renderApp } from '../../helpers/renderApp';
 import { TOKENS } from '../../msw/fixtures';
-import { apiUrl, ok } from '../../msw/respond';
+import { apiUrl, fail, ok } from '../../msw/respond';
 import { server } from '../../msw/server';
 
 const chooseOption = async (user, comboboxName, optionName) => {
@@ -17,6 +18,18 @@ const chooseOption = async (user, comboboxName, optionName) => {
 };
 
 describe('회원가입', () => {
+  it('지역 목록 조회가 실패하면 다시 시도해 가입 폼을 표시한다', async () => {
+    server.use(http.get(apiUrl(ENDPOINTS.CODE.REGIONS), () => fail(500), { once: true }));
+    const { user } = renderApp(ROUTES.SIGNUP);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(ERROR_MESSAGES.SERVER);
+
+    await user.click(screen.getByRole('button', { name: '다시 시도' }));
+
+    expect(await screen.findByLabelText('이메일')).toBeInTheDocument();
+    expect(screen.getByLabelText('생년월일')).toBeInTheDocument();
+  });
+
   it('계정과 profile을 한 요청으로 저장한 뒤 로그인한다', async () => {
     let signupBody;
 

@@ -32,7 +32,7 @@ const INITIAL_FORM = { email: '', password: '', passwordConfirm: '', nickname: '
 function SignupPage() {
   const { signup } = useAuth();
   const { showSuccess, showError, showInfo } = useToast();
-  const { codes, isLoading, errorMessage } = useCodes();
+  const { codes, isLoading, errorMessage, refetch } = useCodes();
   const {
     form: profile,
     fieldErrors: profileErrors,
@@ -120,7 +120,7 @@ function SignupPage() {
   }
 
   if (errorMessage) {
-    return <ErrorState message={errorMessage} />;
+    return <ErrorState message={errorMessage} onRetry={refetch} />;
   }
 
   return (
