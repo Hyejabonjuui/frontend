@@ -12,6 +12,7 @@ npm run dev      # 개발 서버
 npm run build    # 프로덕션 빌드
 npm run lint     # ESLint 검사
 npm run format   # Prettier 포맷팅
+npm run format:check  # Prettier 포맷 검사 (CI와 동일)
 ```
 
 환경 변수는 `.env.example`을 복사해 사용합니다. (`VITE_API_BASE_URL`, `VITE_USE_MOCK`)
