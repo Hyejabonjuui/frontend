@@ -5,13 +5,17 @@
  *         로그인 성공 계정은 목 데이터의 민지 계정(MEMBER_CREDENTIALS)만 받는다.
  */
 import { screen, waitFor, within } from '@testing-library/react';
+import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
+import { ENDPOINTS } from '@/api/endpoints';
 import { VALIDATION_MESSAGES } from '@/constants/messages';
 import { tokenStorage } from '@/utils/tokenStorage';
 
 import { findHeader, renderApp } from '../../helpers/renderApp';
 import { MEMBER_CREDENTIALS, MEMBER_USER, TOKENS } from '../../msw/fixtures';
+import { apiUrl, ok } from '../../msw/respond';
+import { server } from '../../msw/server';
 
 const openLoginDialog = async (user) => {
   const header = await findHeader();
@@ -51,6 +55,30 @@ describe('로그인 모달', () => {
   });
 
   it('로그인에 성공하면 모달이 닫히고 헤더가 로그인 상태로 바뀐다', async () => {
+    let loginBody;
+    let authorizationHeader;
+
+    server.use(
+      http.post(apiUrl(ENDPOINTS.AUTH.LOGIN), async ({ request }) => {
+        loginBody = await request.json();
+
+        return HttpResponse.json({
+          isSuccess: true,
+          code: 'SUCCESS_001',
+          message: '요청에 성공했습니다.',
+          result: {
+            accessToken: TOKENS.MEMBER,
+            memberId: MEMBER_USER.id,
+            nickname: MEMBER_USER.nickname,
+          },
+        });
+      }),
+      http.get(apiUrl(ENDPOINTS.NOTIFICATION.LIST), ({ request }) => {
+        authorizationHeader = request.headers.get('Authorization');
+        return ok({ content: [] });
+      }),
+    );
+
     const { user } = renderApp('/');
     const dialog = await openLoginDialog(user);
 
@@ -62,15 +90,31 @@ describe('로그인 모달', () => {
     expect(header.getByRole('button', { name: '알림 열기' })).toBeInTheDocument();
     expect(header.queryByRole('button', { name: '로그인' })).not.toBeInTheDocument();
     expect(tokenStorage.getAccessToken()).toBe(TOKENS.MEMBER);
+    expect(loginBody).toEqual(MEMBER_CREDENTIALS);
+    await waitFor(() => expect(authorizationHeader).toBe(`Bearer ${TOKENS.MEMBER}`));
   });
 
   it('로그인에 실패하면 모달에 오류를 남기고 토스트로도 알린다', async () => {
+    server.use(
+      http.post(apiUrl(ENDPOINTS.AUTH.LOGIN), () =>
+        HttpResponse.json(
+          {
+            isSuccess: false,
+            code: 'MEMBER_005',
+            message: '이메일 또는 비밀번호가 올바르지 않아요.',
+            result: null,
+          },
+          { status: 401 },
+        ),
+      ),
+    );
+
     const { user } = renderApp('/');
     const dialog = await openLoginDialog(user);
 
     await submitLogin(user, dialog, { email: 'wrong@hyeja.kr', password: 'wrong1234!' });
 
-    const message = '이메일 또는 비밀번호가 올바르지 않아요';
+    const message = '이메일 또는 비밀번호가 올바르지 않아요.';
     expect(await within(dialog).findByText(message)).toBeInTheDocument();
     // 같은 문구가 모달 입력칸 아래와 토스트에 한 번씩 나온다.
     expect(screen.getAllByText(message)).toHaveLength(2);

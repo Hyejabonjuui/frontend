@@ -1,5 +1,6 @@
 import { ENDPOINTS } from './endpoints';
 import httpClient from './httpClient';
+import { tokenStorage } from '@/utils/tokenStorage';
 
 const unwrapResult = (response) => response?.result ?? response;
 
@@ -19,6 +20,7 @@ const toProfileRequest = (profile) => ({
 const toSession = (credentials, response, account) => {
   const result = unwrapResult(response);
   const memberId = result.memberId ?? account?.memberId;
+  const role = tokenStorage.getRole(result.accessToken) ?? account?.role ?? 'USER';
 
   return {
     accessToken: result.accessToken,
@@ -29,7 +31,7 @@ const toSession = (credentials, response, account) => {
       email: account?.email ?? credentials.email,
       nickname: result.nickname ?? account?.nickname,
       joinedAt: account?.createdAt?.slice(0, 10),
-      role: 'USER',
+      role,
       hasProfile: true,
     },
   };
@@ -38,8 +40,7 @@ const toSession = (credentials, response, account) => {
 export const login = async (credentials) => {
   const response = await httpClient.post(ENDPOINTS.AUTH.LOGIN, credentials);
 
-  // 로컬 목 API는 기존 세션 모양을 그대로 반환한다.
-  return response?.user ? response : toSession(credentials, response);
+  return toSession(credentials, response);
 };
 
 export const signup = async ({ profile, ...accountForm }) => {
