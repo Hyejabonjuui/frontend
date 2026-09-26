@@ -8,12 +8,17 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
-import AppIcon from '@/components/common/AppIcon';
+import ErrorState from '@/components/common/ErrorState';
 import FieldError from '@/components/common/FieldError';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { TOAST_MESSAGES, VALIDATION_MESSAGES } from '@/constants/messages';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
+import { useCodes } from '@/hooks/useCodes';
+import { useConditionForm } from '@/hooks/useConditionForm';
 import { useToast } from '@/hooks/useToast';
+import ConditionForm from '@/pages/onboarding/ConditionForm';
+import { conditionDraft } from '@/utils/conditionDraft';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 import {
   getEmailError,
@@ -27,6 +32,13 @@ const INITIAL_FORM = { email: '', password: '', passwordConfirm: '', nickname: '
 function SignupPage() {
   const { signup } = useAuth();
   const { showSuccess, showError, showInfo } = useToast();
+  const { codes, isLoading, errorMessage } = useCodes();
+  const {
+    form: profile,
+    fieldErrors: profileErrors,
+    changeField: changeProfileField,
+    validate: validateProfile,
+  } = useConditionForm();
   const [form, setForm] = useState(INITIAL_FORM);
   const [fieldErrors, setFieldErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,9 +75,13 @@ function SignupPage() {
     event.preventDefault();
 
     const errors = validate();
+    const isProfileValid = validateProfile();
     setFieldErrors(errors);
 
-    if (Object.keys(errors).length > 0) {
+    if (Object.keys(errors).length > 0 || !isProfileValid) {
+      if (!isProfileValid) {
+        showError(TOAST_MESSAGES.CONDITION_REQUIRED);
+      }
       return;
     }
 
@@ -76,7 +92,9 @@ function SignupPage() {
         email: form.email,
         nickname: form.nickname,
         password: form.password,
+        profile,
       });
+      conditionDraft.clear();
       isCompletedRef.current = true;
       showSuccess(TOAST_MESSAGES.SIGNUP_DONE);
       // 이동은 PublicOnlyRoute가 조건 등록 여부를 보고 처리한다.
@@ -84,7 +102,12 @@ function SignupPage() {
       const message = getErrorMessage(error);
 
       if (error?.response?.status === 409) {
-        setFieldErrors({ email: VALIDATION_MESSAGES.DUPLICATED_EMAIL });
+        const field = error.response.data?.code === 'MEMBER_003' ? 'nickname' : 'email';
+        const duplicateMessage =
+          field === 'nickname'
+            ? VALIDATION_MESSAGES.DUPLICATED_NICKNAME
+            : VALIDATION_MESSAGES.DUPLICATED_EMAIL;
+        setFieldErrors((previous) => ({ ...previous, [field]: duplicateMessage }));
       }
       showError(message);
     } finally {
@@ -92,19 +115,20 @@ function SignupPage() {
     }
   };
 
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (errorMessage) {
+    return <ErrorState message={errorMessage} />;
+  }
+
   return (
     <Stack sx={{ alignItems: 'center' }}>
-      <Card variant="outlined" sx={{ width: '100%', maxWidth: 440, p: { xs: 2, sm: 4 } }}>
+      <Card variant="outlined" sx={{ width: '100%', maxWidth: 620, p: { xs: 2, sm: 4 } }}>
         <Stack spacing={1.5}>
           <Typography variant="h1">회원가입</Typography>
-
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Chip label="1 계정 만들기" size="small" color="primary" />
-            <Typography variant="caption" color="text.disabled">
-              <AppIcon name="arrow-right" size={12} />
-            </Typography>
-            <Chip label="2 내 조건 등록" size="small" variant="outlined" />
-          </Stack>
+          <Chip label="계정과 내 조건을 함께 등록해요" size="small" color="primary" />
         </Stack>
 
         <Stack component="form" spacing={2} onSubmit={handleSubmit} sx={{ mt: 3 }}>
@@ -173,8 +197,15 @@ function SignupPage() {
             fullWidth
           />
 
+          <ConditionForm
+            form={profile}
+            fieldErrors={profileErrors}
+            codes={codes}
+            onChange={changeProfileField}
+          />
+
           <Button type="submit" variant="contained" disabled={isSubmitting} fullWidth>
-            가입하고 내 조건 등록하기
+            회원가입
           </Button>
 
           <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>

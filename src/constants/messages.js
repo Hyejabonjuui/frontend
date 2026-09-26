@@ -59,6 +59,7 @@ export const VALIDATION_MESSAGES = {
   REQUIRED_EMAIL: '이메일을 입력해 주세요',
   INVALID_EMAIL: '이메일 형식이 올바르지 않아요',
   DUPLICATED_EMAIL: '이미 가입된 이메일이에요',
+  DUPLICATED_NICKNAME: '이미 사용 중인 닉네임이에요',
   REQUIRED_PASSWORD: '비밀번호를 입력해 주세요',
   WEAK_PASSWORD: '8자 이상, 영문과 숫자, 특수문자를 섞어 주세요',
   PASSWORD_MISMATCH: '비밀번호가 일치하지 않아요',
