@@ -49,9 +49,7 @@ function ToastProvider({ children }) {
           <Alert
             onClose={hideToast}
             severity={toast.severity}
-            icon={
-              <AppIcon name={icon.name} size={22} sx={{ color: 'common.white' }} />
-            }
+            icon={<AppIcon name={icon.name} size={22} sx={{ color: 'common.white' }} />}
             sx={{
               width: 420,
               maxWidth: '90vw',

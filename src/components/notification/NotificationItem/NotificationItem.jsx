@@ -68,7 +68,11 @@ function NotificationItem({ notification, onRead, onDelete }) {
         applyEndDate={notification.applyEndDate}
       />
 
-      <Typography variant="caption" color="text.disabled" sx={{ display: { xs: 'none', sm: 'block' }, width: 68, textAlign: 'right', flexShrink: 0 }}>
+      <Typography
+        variant="caption"
+        color="text.disabled"
+        sx={{ display: { xs: 'none', sm: 'block' }, width: 68, textAlign: 'right', flexShrink: 0 }}
+      >
         {formatRelativeTime(notification.createdAt)}
       </Typography>
 

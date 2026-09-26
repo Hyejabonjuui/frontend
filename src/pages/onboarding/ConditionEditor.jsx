@@ -67,12 +67,7 @@ function ConditionEditor({ initialConditions, draft, submitLabel, onSaved }) {
     <Stack component="form" spacing={3} onSubmit={handleSubmit}>
       {draft && <Alert severity="info">{TOAST_MESSAGES.CONDITION_DRAFT_LOADED}</Alert>}
 
-      <ConditionForm
-        form={form}
-        fieldErrors={fieldErrors}
-        codes={codes}
-        onChange={changeField}
-      />
+      <ConditionForm form={form} fieldErrors={fieldErrors} codes={codes} onChange={changeField} />
 
       <Button
         type="submit"

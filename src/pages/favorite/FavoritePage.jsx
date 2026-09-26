@@ -33,7 +33,8 @@ function FavoritePage() {
       <Stack spacing={0.5}>
         <Typography variant="h1">관심 정책</Typography>
         <Typography variant="body1" color="text.secondary">
-          <AppIcon name="heart-outline" size={14} /> 저장한 정책을 모아 두고, 마감 7일 전에 알려드려요.
+          <AppIcon name="heart-outline" size={14} /> 저장한 정책을 모아 두고, 마감 7일 전에
+          알려드려요.
         </Typography>
       </Stack>
 

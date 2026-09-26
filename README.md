@@ -4,12 +4,15 @@ Vite + React 19 + MUI 기반 SPA입니다. 화면 설계서(Figma `화면 전체
 
 ## 실행
 
+Node 24 LTS를 사용합니다. (`.nvmrc`, nvm 사용 시 `nvm use`)
+
 ```bash
 npm install
 npm run dev      # 개발 서버
 npm run build    # 프로덕션 빌드
 npm run lint     # ESLint 검사
 npm run format   # Prettier 포맷팅
+npm run format:check  # Prettier 포맷 검사 (CI와 동일)
 ```
 
 환경 변수는 `.env.example`을 복사해 사용합니다. (`VITE_API_BASE_URL`, `VITE_USE_MOCK`)
@@ -19,10 +22,10 @@ npm run format   # Prettier 포맷팅
 `VITE_USE_MOCK=true`이면 axios 어댑터가 `src/mocks`의 목 API로 바뀝니다.
 로그인·조건 저장·관심 정책·알림까지 실제 화면 흐름을 그대로 확인할 수 있습니다.
 
-| 계정 | 비밀번호 | 역할 |
-|---|---|---|
+| 계정             | 비밀번호     | 역할                                        |
+| ---------------- | ------------ | ------------------------------------------- |
 | `minji@hyeja.kr` | `hyeja1234!` | 일반 회원 (조건·관심 정책·알림 채워져 있음) |
-| `admin@hyeja.kr` | `hyeja1234!` | 관리자 (정책 수집 화면 접근) |
+| `admin@hyeja.kr` | `hyeja1234!` | 관리자 (정책 수집 화면 접근)                |
 
 - 저장한 내용은 브라우저 `localStorage`에 남습니다. `window.hyejaMock.reset()`은 목 데이터, 로그인 토큰, 작성 중인 조건을 초기화합니다.
 - 검색어에 `AI실패`를 넣으면 추천 결과의 AI 실패 안내를 확인할 수 있습니다.
@@ -34,20 +37,20 @@ npm run format   # Prettier 포맷팅
 
 ## 화면 구성
 
-| 설계서 | 경로 | 접근 |
-|---|---|---|
-| S-01 홈 | `/` | 공개 |
-| S-02 로그인 | 모달 (전역) | 비로그인 |
-| S-03 회원가입 | `/signup` | 비로그인 |
-| S-04 내 조건 등록 | `/conditions` | 로그인 |
-| S-05 추천 결과 | `/recommendations` | 공개 |
-| S-06 정책 상세 | `/policies/:policyId` | 공개 |
-| S-08 마이페이지 | `/mypage?tab=condition\|account\|notification` | 로그인 |
-| S-09 알림함 | `/notifications` | 로그인 |
-| S-10 정책 관리 | `/admin` | 관리자 |
-| S-14 관심 정책 | `/favorites` | 로그인 |
-| S-15 이메일 찾기 | `/find-email` | 비로그인 |
-| S-16 비밀번호 재발급 | `/reset-password` | 비로그인 |
+| 설계서               | 경로                                           | 접근     |
+| -------------------- | ---------------------------------------------- | -------- |
+| S-01 홈              | `/`                                            | 공개     |
+| S-02 로그인          | 모달 (전역)                                    | 비로그인 |
+| S-03 회원가입        | `/signup`                                      | 비로그인 |
+| S-04 내 조건 등록    | `/conditions`                                  | 로그인   |
+| S-05 추천 결과       | `/recommendations`                             | 공개     |
+| S-06 정책 상세       | `/policies/:policyId`                          | 공개     |
+| S-08 마이페이지      | `/mypage?tab=condition\|account\|notification` | 로그인   |
+| S-09 알림함          | `/notifications`                               | 로그인   |
+| S-10 정책 관리       | `/admin`                                       | 관리자   |
+| S-14 관심 정책       | `/favorites`                                   | 로그인   |
+| S-15 이메일 찾기     | `/find-email`                                  | 비로그인 |
+| S-16 비밀번호 재발급 | `/reset-password`                              | 비로그인 |
 
 ## 디렉터리 구조
 
@@ -102,18 +105,18 @@ src/
 
 설계서 주석에 적힌 경로는 그대로 따랐습니다.
 
-| 기능 | 경로 |
-|---|---|
-| F-01 회원가입 | `POST /api/auth/signup` → 자동 로그인 후 조건 등록 |
-| F-03 조건 저장 | `PUT /api/me/profile` · 선택지 `GET /api/codes` |
-| F-05 회원 탈퇴 | `DELETE /api/me` |
-| F-09 정책 수집 | `POST /api/admin/collect` |
-| F-11 정책 상세 | `GET /api/policies/{id}` (로그인 시 조건 판정 포함) |
-| F-13 용어 풀이 | `GET /api/terms` |
-| F-14 추천 | `POST /api/recommendations` body `{ query }` |
-| F-16 관심 저장·해제 | `POST` / `DELETE /api/me/favorites/{policyId}` |
-| F-17 준비 상태 변경 | `PATCH /api/me/favorites/{policyId}` |
-| F-18 관심 목록 | `GET /api/me/favorites` |
+| 기능                | 경로                                                |
+| ------------------- | --------------------------------------------------- |
+| F-01 회원가입       | `POST /api/auth/signup` → 자동 로그인 후 조건 등록  |
+| F-03 조건 저장      | `PUT /api/me/profile` · 선택지 `GET /api/codes`     |
+| F-05 회원 탈퇴      | `DELETE /api/me`                                    |
+| F-09 정책 수집      | `POST /api/admin/collect`                           |
+| F-11 정책 상세      | `GET /api/policies/{id}` (로그인 시 조건 판정 포함) |
+| F-13 용어 풀이      | `GET /api/terms`                                    |
+| F-14 추천           | `POST /api/recommendations` body `{ query }`        |
+| F-16 관심 저장·해제 | `POST` / `DELETE /api/me/favorites/{policyId}`      |
+| F-17 준비 상태 변경 | `PATCH /api/me/favorites/{policyId}`                |
+| F-18 관심 목록      | `GET /api/me/favorites`                             |
 
 ## 아직 확정되지 않은 것
 

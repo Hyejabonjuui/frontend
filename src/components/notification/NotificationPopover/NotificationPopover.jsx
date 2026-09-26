@@ -34,7 +34,9 @@ function NotificationPopover({
       onClose={onClose}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-      slotProps={{ paper: { sx: { width: 'min(380px, calc(100vw - 32px))', maxWidth: 'calc(100vw - 32px)' } } }}
+      slotProps={{
+        paper: { sx: { width: 'min(380px, calc(100vw - 32px))', maxWidth: 'calc(100vw - 32px)' } },
+      }}
     >
       <Stack
         direction="row"

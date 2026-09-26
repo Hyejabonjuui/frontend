@@ -114,7 +114,11 @@ function HomePage() {
       </Stack>
 
       <Box component="section">
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ alignItems: { xs: 'flex-start', sm: 'baseline' }, mb: 2 }}>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={1}
+          sx={{ alignItems: { xs: 'flex-start', sm: 'baseline' }, mb: 2 }}
+        >
           <Typography variant="h2">혜자가 추천해요</Typography>
           <Typography variant="caption" color="text.secondary">
             마감이 가깝고 많이 본 정책이에요 · 누르면 카드뉴스 4장을 한 번에 보여드려요
@@ -142,7 +146,11 @@ function HomePage() {
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
           spacing={1}
-          sx={{ alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', py: 2 }}
+          sx={{
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            justifyContent: 'space-between',
+            py: 2,
+          }}
         >
           <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
             <Select
@@ -170,9 +178,7 @@ function HomePage() {
               control={
                 <Switch
                   checked={onlyMatched}
-                  onChange={(event) =>
-                    changeListOption(() => setOnlyMatched(event.target.checked))
-                  }
+                  onChange={(event) => changeListOption(() => setOnlyMatched(event.target.checked))}
                 />
               }
               label={<Typography variant="body1">나에게 맞는 것만</Typography>}

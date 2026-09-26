@@ -17,9 +17,19 @@ function CardSkeleton() {
   return (
     <Card variant="outlined" sx={{ p: 2 }}>
       <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-        <Skeleton variant="rounded" width={41} height={22} sx={{ borderRadius: `${RADIUS.chip}px` }} />
+        <Skeleton
+          variant="rounded"
+          width={41}
+          height={22}
+          sx={{ borderRadius: `${RADIUS.chip}px` }}
+        />
         <Skeleton variant="text" sx={{ flexGrow: 1, maxWidth: 260 }} />
-        <Skeleton variant="rounded" width={39} height={24} sx={{ borderRadius: `${RADIUS.dday}px` }} />
+        <Skeleton
+          variant="rounded"
+          width={39}
+          height={24}
+          sx={{ borderRadius: `${RADIUS.dday}px` }}
+        />
         <Skeleton variant="circular" width={24} height={24} />
       </Stack>
 
@@ -52,7 +62,12 @@ function RecommendationSkeleton() {
 
       <Stack component="section" spacing={1.5}>
         <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-          <Skeleton variant="rounded" width={150} height={24} sx={{ borderRadius: `${RADIUS.chip}px` }} />
+          <Skeleton
+            variant="rounded"
+            width={150}
+            height={24}
+            sx={{ borderRadius: `${RADIUS.chip}px` }}
+          />
           <Skeleton variant="text" width={320} />
         </Stack>
 

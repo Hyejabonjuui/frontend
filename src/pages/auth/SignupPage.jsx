@@ -42,7 +42,6 @@ function SignupPage() {
     [showInfo],
   );
 
-
   const handleChange = (event) => {
     const { name, value } = event.target;
     setForm((previous) => ({ ...previous, [name]: value }));
@@ -117,7 +116,13 @@ function SignupPage() {
             onChange={handleChange}
             placeholder="example@email.com"
             error={Boolean(fieldErrors.email)}
-            helperText={fieldErrors.email ? <FieldError>{fieldErrors.email}</FieldError> : '로그인 아이디로 써요'}
+            helperText={
+              fieldErrors.email ? (
+                <FieldError>{fieldErrors.email}</FieldError>
+              ) : (
+                '로그인 아이디로 써요'
+              )
+            }
             fullWidth
           />
           <TextField
@@ -128,9 +133,11 @@ function SignupPage() {
             onChange={handleChange}
             error={Boolean(fieldErrors.password)}
             helperText={
-              fieldErrors.password
-                ? <FieldError>{fieldErrors.password}</FieldError>
-                : '8자 이상, 영문과 숫자, 특수문자를 섞어 주세요'
+              fieldErrors.password ? (
+                <FieldError>{fieldErrors.password}</FieldError>
+              ) : (
+                '8자 이상, 영문과 숫자, 특수문자를 섞어 주세요'
+              )
             }
             fullWidth
           />
@@ -141,7 +148,13 @@ function SignupPage() {
             value={form.passwordConfirm}
             onChange={handleChange}
             error={Boolean(fieldErrors.passwordConfirm)}
-            helperText={fieldErrors.passwordConfirm ? <FieldError>{fieldErrors.passwordConfirm}</FieldError> : ' '}
+            helperText={
+              fieldErrors.passwordConfirm ? (
+                <FieldError>{fieldErrors.passwordConfirm}</FieldError>
+              ) : (
+                ' '
+              )
+            }
             fullWidth
           />
           <TextField
@@ -151,9 +164,11 @@ function SignupPage() {
             onChange={handleChange}
             error={Boolean(fieldErrors.nickname)}
             helperText={
-              fieldErrors.nickname
-                ? <FieldError>{fieldErrors.nickname}</FieldError>
-                : `홈페이지에서 사용하는 닉네임 (최대 ${NICKNAME_MAX_LENGTH}자)`
+              fieldErrors.nickname ? (
+                <FieldError>{fieldErrors.nickname}</FieldError>
+              ) : (
+                `홈페이지에서 사용하는 닉네임 (최대 ${NICKNAME_MAX_LENGTH}자)`
+              )
             }
             fullWidth
           />

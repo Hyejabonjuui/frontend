@@ -7,7 +7,8 @@ import { useToast } from '@/hooks/useToast';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 
 const NOTIFICATIONS_UPDATED_EVENT = 'hyeja:notifications-updated';
-const notifyNotificationsUpdated = () => window.dispatchEvent(new Event(NOTIFICATIONS_UPDATED_EVENT));
+const notifyNotificationsUpdated = () =>
+  window.dispatchEvent(new Event(NOTIFICATIONS_UPDATED_EVENT));
 
 export const useNotifications = () => {
   const { isAuthenticated } = useAuth();
@@ -55,7 +56,8 @@ export const useNotifications = () => {
     const handleNotificationsUpdated = () => setReloadToken((previous) => previous + 1);
     window.addEventListener(NOTIFICATIONS_UPDATED_EVENT, handleNotificationsUpdated);
 
-    return () => window.removeEventListener(NOTIFICATIONS_UPDATED_EVENT, handleNotificationsUpdated);
+    return () =>
+      window.removeEventListener(NOTIFICATIONS_UPDATED_EVENT, handleNotificationsUpdated);
   }, [isAuthenticated]);
 
   const notifications = useMemo(

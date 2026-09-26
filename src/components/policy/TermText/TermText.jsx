@@ -47,7 +47,10 @@ function TermText({ text, terms = [] }) {
                   {chunk.term.easyDescription}
                 </Typography>
                 {chunk.term.example && (
-                  <Typography variant="caption" sx={{ color: 'grey.400', display: 'block', mt: 0.5 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: 'grey.400', display: 'block', mt: 0.5 }}
+                  >
                     {chunk.term.example}
                   </Typography>
                 )}

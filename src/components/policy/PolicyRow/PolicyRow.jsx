@@ -35,18 +35,39 @@ function PolicyRow({ policy, isFavorite = false, onToggleFavorite }) {
     >
       <Chip label={policy.subtypeName} variant="outlined" size="small" sx={{ flexShrink: 0 }} />
 
-      <Typography variant="body2" sx={{ flexGrow: 1, minWidth: 0, width: { xs: 'calc(100% - 110px)', sm: 'auto' }, overflowWrap: 'anywhere' }}>
+      <Typography
+        variant="body2"
+        sx={{
+          flexGrow: 1,
+          minWidth: 0,
+          width: { xs: 'calc(100% - 110px)', sm: 'auto' },
+          overflowWrap: 'anywhere',
+        }}
+      >
         {policy.title}
       </Typography>
 
-      <Typography variant="body1" color="text.secondary" sx={{ width: { xs: 'auto', sm: 100 }, textAlign: { xs: 'left', sm: 'right' }, ml: { xs: 0, sm: 'auto' } }}>
+      <Typography
+        variant="body1"
+        color="text.secondary"
+        sx={{
+          width: { xs: 'auto', sm: 100 },
+          textAlign: { xs: 'left', sm: 'right' },
+          ml: { xs: 0, sm: 'auto' },
+        }}
+      >
         {policy.regionName}
       </Typography>
 
       <Stack
         direction="row"
         spacing={1}
-        sx={{ alignItems: 'center', width: { xs: 'auto', sm: 110 }, ml: { xs: 'auto', sm: 0 }, justifyContent: 'flex-end' }}
+        sx={{
+          alignItems: 'center',
+          width: { xs: 'auto', sm: 110 },
+          ml: { xs: 'auto', sm: 0 },
+          justifyContent: 'flex-end',
+        }}
       >
         <DdayBadge applyPeriodType={policy.applyPeriodType} applyEndDate={policy.applyEndDate} />
 

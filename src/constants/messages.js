@@ -27,7 +27,8 @@ export const LOGIN_NOTICE = {
   },
   SEARCH: {
     title: '로그인하고 1초만에 찾아보기',
-    description: '검색은 로그인한 뒤에 쓸 수 있어요. 한 번 로그인하면 내 조건으로 바로 판정해드려요',
+    description:
+      '검색은 로그인한 뒤에 쓸 수 있어요. 한 번 로그인하면 내 조건으로 바로 판정해드려요',
   },
   CONFIRM_LABEL: '로그인하고 확인하기',
 };
