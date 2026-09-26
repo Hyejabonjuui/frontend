@@ -54,8 +54,8 @@ export const handlers = [
 
     return ok({
       accessToken: TOKENS.MEMBER,
-      refreshToken: 'test-refresh-token',
-      user: MEMBER_USER,
+      memberId: MEMBER_USER.id,
+      nickname: MEMBER_USER.nickname,
     });
   }),
   http.post(apiUrl(ENDPOINTS.AUTH.SIGNUP), async ({ request }) => {
