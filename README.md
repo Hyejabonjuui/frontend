@@ -17,6 +17,22 @@ npm run format:check  # Prettier 포맷 검사 (CI와 동일)
 
 환경 변수는 `.env.example`을 복사해 사용합니다. (`VITE_API_BASE_URL`, `VITE_USE_MOCK`)
 
+## 테스트
+
+```bash
+npm test                  # Vitest watch (단위 + 통합)
+npm run test:unit         # 단위 테스트
+npm run test:integration  # 통합 테스트 (MSW)
+npm run test:coverage     # 단위 + 통합 커버리지 → coverage/index.html
+npx playwright install chromium   # E2E 브라우저 (처음 한 번)
+npm run test:e2e          # E2E (목 모드로 빌드 후 실행)
+```
+
+- 지금은 세 층 모두 **실제 백엔드 없이** 돕니다. 통합은 MSW, E2E는 목 모드 빌드(`VITE_USE_MOCK=true`)를 씁니다.
+- 층별 역할, 목 기반으로 검증하는 범위, 백엔드 확정 후 바꿀 곳은 [`tests/README.md`](tests/README.md)에 있습니다.
+- PR마다 CI가 `verify`(lint → format → 단위 → 통합 → 커버리지 → build)와 `e2e`를 병렬로 돌립니다.
+  커버리지 리포트는 `verify` 실행의 Summary와 `coverage-report` artifact에서 봅니다.
+
 ## 백엔드 없이 화면 테스트하기
 
 `VITE_USE_MOCK=true`이면 axios 어댑터가 `src/mocks`의 목 API로 바뀝니다.
