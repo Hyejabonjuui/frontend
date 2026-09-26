@@ -4,6 +4,8 @@ Vite + React 19 + MUI 기반 SPA입니다. 화면 설계서(Figma `화면 전체
 
 ## 실행
 
+Node 24 LTS를 사용합니다. (`.nvmrc`, nvm 사용 시 `nvm use`)
+
 ```bash
 npm install
 npm run dev      # 개발 서버
