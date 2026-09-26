@@ -121,18 +121,18 @@ src/
 
 설계서 주석에 적힌 경로는 그대로 따랐습니다.
 
-| 기능                | 경로                                                     |
-| ------------------- | -------------------------------------------------------- |
-| F-01 회원가입       | `POST /api/auth/signup` → 자동 로그인 후 조건 등록       |
-| F-03 조건 저장      | `PUT /api/me/profile` · 선택지 `GET /api/codes`          |
-| F-05 회원 탈퇴      | `DELETE /api/me`                                         |
-| F-09 정책 수집      | `POST /api/admin/collect`                                |
-| F-11 정책 상세      | `GET /api/policies/{id}` (로그인 시 조건 판정 포함)      |
-| F-13 용어 풀이      | `GET /api/terms`                                         |
-| F-14 추천           | `POST /api/recommendations` body `{ query }`             |
-| F-16 관심 저장·해제 | `POST` / `DELETE /api/favorite/{policyId}?memberId={id}` |
-| F-17 준비 상태 변경 | 미지원                                                   |
-| F-18 관심 목록      | `GET /api/favorite?memberId={id}`                        |
+| 기능                | 경로                                                                        |
+| ------------------- | --------------------------------------------------------------------------- |
+| F-01 회원가입       | `POST /api/auth/signup` → 자동 로그인 후 조건 등록                          |
+| F-03 조건 조회·수정 | `GET/PATCH /api/members/me/profile?memberId={id}` · 선택지 `GET /api/codes` |
+| F-05 회원 탈퇴      | `DELETE /api/me`                                                            |
+| F-09 정책 수집      | `POST /api/admin/collect`                                                   |
+| F-11 정책 상세      | `GET /api/policies/{id}` (로그인 시 조건 판정 포함)                         |
+| F-13 용어 풀이      | `GET /api/terms`                                                            |
+| F-14 추천           | `POST /api/recommendations` body `{ query }`                                |
+| F-16 관심 저장·해제 | `POST` / `DELETE /api/favorite/{policyId}?memberId={id}`                    |
+| F-17 준비 상태 변경 | 미지원                                                                      |
+| F-18 관심 목록      | `GET /api/favorite?memberId={id}`                                           |
 
 ## 아직 확정되지 않은 것
 
