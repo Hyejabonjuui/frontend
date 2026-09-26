@@ -68,7 +68,7 @@ export const handlers = [
     apiUrl(ENDPOINTS.USER.PROFILE),
     withUser(() => ok(MEMBER_PROFILE)),
   ),
-  http.put(
+  http.patch(
     apiUrl(ENDPOINTS.USER.PROFILE),
     withUser(async ({ request }) => ok(await request.json())),
   ),

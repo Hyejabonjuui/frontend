@@ -313,26 +313,53 @@ export const HANDLERS = [
   },
   {
     method: 'get',
-    match: (url) => url === '/api/me/profile',
-    handle: ({ user }) => requireUser(user) ?? ok(user.profile ?? {}),
-  },
-  {
-    method: 'put',
-    match: (url) => url === '/api/me/profile',
-    handle: ({ user, body }) => {
+    match: (url) => url === '/api/members/me/profile',
+    handle: ({ user, params }) => {
       const denied = requireUser(user);
       if (denied) {
         return denied;
       }
 
+      if (Number(params.memberId) !== user.id) {
+        return fail(404, '회원을 찾을 수 없어요');
+      }
+
+      return ok(user.profile ?? {});
+    },
+  },
+  {
+    method: 'patch',
+    match: (url) => url === '/api/members/me/profile',
+    handle: ({ user, params, body }) => {
+      const denied = requireUser(user);
+      if (denied) {
+        return denied;
+      }
+
+      if (Number(params.memberId) !== user.id) {
+        return fail(404, '회원을 찾을 수 없어요');
+      }
+
+      const profile = {
+        birthDate: body.birth ?? '',
+        sidoCode: body.regionCode?.slice(0, 2) ?? '',
+        regionCode: body.regionCode ?? '',
+        employmentCode: body.employmentCode ?? '',
+        houseless: body.houselessYn ?? null,
+        marriageCode: body.marriageCode ?? '',
+        incomeRange: body.incomeRangeCode ?? '',
+        educationCode: body.educationCode ?? '',
+        housingType: body.housingType ?? '',
+      };
+
       mockStore.update((state) => {
         const target = state.users.find((item) => item.id === user.id);
-        target.profile = { ...target.profile, ...body };
+        target.profile = { ...target.profile, ...profile };
 
         return state;
       });
 
-      return ok(body);
+      return ok(profile);
     },
   },
   { method: 'get', match: (url) => url === '/api/codes', handle: () => ok(CODE_GROUPS) },

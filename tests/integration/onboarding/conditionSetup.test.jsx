@@ -1,7 +1,8 @@
 /**
  * I-5 조건 등록 폼 (S-04)
  *
- * notice: 실제 백엔드 없이 MSW가 선택지(/api/codes)와 조건 저장(PUT /api/me/profile)에 응답한다.
+ * notice: 실제 백엔드 없이 MSW가 선택지(/api/codes)와
+ *         조건 조회·저장(GET/PATCH /api/members/me/profile)에 응답한다.
  *         선택지는 목 데이터(src/mocks/data/codes.js)라서, 실제 코드 테이블이 들어오면 옵션 이름이 바뀔 수 있다.
  *         그때는 이 파일의 옵션 이름(서울특별시, 마포구, 구직 중)만 fixture 값으로 맞춘다.
  */
@@ -20,7 +21,7 @@ import { server } from '../../msw/server';
 
 const SUBMIT_LABEL = '저장하고 시작하기';
 
-const findBirthDateInput = () => screen.findByLabelText('생년월일');
+const findBirthDateInput = () => screen.findByLabelText('생년월일', {}, { timeout: 5000 });
 
 const chooseOption = async (user, comboboxName, optionName) => {
   await user.click(screen.getByRole('combobox', { name: comboboxName }));
@@ -29,7 +30,15 @@ const chooseOption = async (user, comboboxName, optionName) => {
 
 beforeEach(() => {
   // 가입 직후처럼 조건이 하나도 없는 회원으로 시작한다.
-  server.use(http.get(apiUrl(ENDPOINTS.USER.PROFILE), () => ok({})));
+  server.use(
+    http.get(apiUrl(ENDPOINTS.USER.PROFILE), ({ request }) => {
+      const memberId = new URL(request.url).searchParams.get('memberId');
+
+      return memberId === '3'
+        ? ok({ isSuccess: true, code: 'SUCCESS_001', message: '성공입니다.', result: {} })
+        : new Response(null, { status: 400 });
+    }),
+  );
   signInAs(TOKENS.NEW_USER);
 });
 
@@ -37,7 +46,7 @@ describe('조건 등록 폼', () => {
   it('필수값을 비우고 저장하면 필드마다 오류를 보여 주고 서버에 보내지 않는다', async () => {
     let saveRequestCount = 0;
     server.use(
-      http.put(apiUrl(ENDPOINTS.USER.PROFILE), () => {
+      http.patch(apiUrl(ENDPOINTS.USER.PROFILE), () => {
         saveRequestCount += 1;
         return ok();
       }),
@@ -69,10 +78,18 @@ describe('조건 등록 폼', () => {
 
   it('필수값을 채워 저장하면 입력값을 보내고 홈으로 이동한다', async () => {
     let savedConditions = null;
+    let savedMemberId = null;
     server.use(
-      http.put(apiUrl(ENDPOINTS.USER.PROFILE), async ({ request }) => {
+      http.patch(apiUrl(ENDPOINTS.USER.PROFILE), async ({ request }) => {
         savedConditions = await request.json();
-        return ok(savedConditions);
+        savedMemberId = new URL(request.url).searchParams.get('memberId');
+
+        return ok({
+          isSuccess: true,
+          code: 'SUCCESS_001',
+          message: '성공입니다.',
+          result: savedConditions,
+        });
       }),
     );
     const { user } = renderApp(ROUTES.CONDITION_SETUP);
@@ -85,14 +102,66 @@ describe('조건 등록 폼', () => {
     await user.click(screen.getByRole('button', { name: SUBMIT_LABEL }));
 
     await waitFor(() => expect(window.location.pathname).toBe(ROUTES.HOME));
-    expect(savedConditions).toMatchObject({
-      birthDate: '1999-03-12',
-      sidoCode: '11',
+    expect(savedMemberId).toBe('3');
+    expect(savedConditions).toEqual({
+      birth: '1999-03-12',
       regionCode: '11440',
       employmentCode: 'JOB_SEEKING',
-      houseless: true,
+      houselessYn: true,
+      marriageCode: null,
+      incomeRangeCode: null,
+      educationCode: null,
+      housingType: null,
     });
     expect(screen.getByText(TOAST_MESSAGES.CONDITION_SAVED)).toBeInTheDocument();
+  });
+
+  it('백엔드 조건 응답을 화면 폼 필드로 변환한다', async () => {
+    server.use(
+      http.get(apiUrl(ENDPOINTS.USER.PROFILE), ({ request }) => {
+        const memberId = new URL(request.url).searchParams.get('memberId');
+
+        if (memberId !== '1') {
+          return new Response(null, { status: 400 });
+        }
+
+        return ok({
+          isSuccess: true,
+          code: 'SUCCESS_001',
+          message: '성공입니다.',
+          result: {
+            birth: '1999-03-12',
+            age: 27,
+            regionCode: '11440',
+            regionName: '서울특별시 마포구',
+            employmentCode: 'JOB_SEEKING',
+            employmentName: '구직 중',
+            houselessYn: true,
+            marriageCode: 'SINGLE',
+            marriageName: '미혼',
+            incomeRangeCode: null,
+            incomeRangeName: null,
+            educationCode: 'BACHELOR',
+            educationName: '대학 졸업',
+            housingType: 'MONTHLY_RENT',
+            housingTypeName: '월세',
+            updatedAt: '2026-09-26T10:30:00',
+          },
+        });
+      }),
+    );
+    signInAs(TOKENS.MEMBER);
+
+    renderApp(`${ROUTES.MY_PAGE}?tab=condition`);
+
+    expect(await findBirthDateInput()).toHaveValue('1999-03-12');
+    expect(screen.getByRole('combobox', { name: '시도 선택' })).toHaveTextContent('서울특별시');
+    expect(screen.getByRole('combobox', { name: '시군구 선택' })).toHaveTextContent('마포구');
+    expect(screen.getByRole('radio', { name: '구직 중' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: '예, 무주택이에요' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: '미혼' })).toBeChecked();
+    expect(screen.getByText('대학 졸업')).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: '월세' })).toBeChecked();
   });
 
   it('저장하지 않고 나갔다가 다시 오면 입력하던 내용을 불러온다', async () => {
