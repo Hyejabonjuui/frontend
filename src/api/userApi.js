@@ -1,7 +1,21 @@
 import { ENDPOINTS } from './endpoints';
 import httpClient from './httpClient';
 
-export const getMyProfile = () => httpClient.get(ENDPOINTS.USER.ME);
+const unwrapResult = (response) => response?.result ?? response;
+
+export const getMyProfile = async (memberId) => {
+  const response = await httpClient.get(ENDPOINTS.USER.ME, {
+    params: memberId == null ? undefined : { memberId },
+  });
+  const account = unwrapResult(response);
+
+  return {
+    ...account,
+    id: account.id ?? account.memberId,
+    joinedAt: account.joinedAt ?? account.createdAt?.slice(0, 10),
+    hasProfile: account.hasProfile ?? (account.memberId == null ? undefined : true),
+  };
+};
 
 export const getMyConditions = () => httpClient.get(ENDPOINTS.USER.PROFILE);
 

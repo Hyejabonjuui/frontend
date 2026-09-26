@@ -1,6 +1,6 @@
 /**
  * 설계서 S-04의 필드명을 그대로 쓴다.
- * 선택지(지역·취업·혼인·소득·학력·주거형태)는 GET /api/codes 응답으로 채운다.
+ * 지역은 GET /api/regions에서 받고, 나머지는 백엔드 enum과 같은 고정 코드표를 쓴다.
  */
 export const CONDITION_FIELDS = {
   BIRTH_DATE: 'birthDate',
