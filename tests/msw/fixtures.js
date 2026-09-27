@@ -111,20 +111,48 @@ export const JUDGEMENTS = [
   },
 ];
 
-/** 로그인 여부에 따라 판정 결과를 붙이거나 비운다. 판정은 로그인한 회원에게만 준다. */
+const RESULT_TO_API_STATUS = {
+  [JUDGE_RESULT.MET]: 'ABLE',
+  [JUDGE_RESULT.NOT_MET]: 'DISABLE',
+  [JUDGE_RESULT.NEED_CHECK]: 'UNKNOWN',
+};
+
+const toApiCondition = (judgement) => ({
+  type: judgement.conditionKey,
+  status: RESULT_TO_API_STATUS[judgement.result],
+  policyCondition: judgement.requirement,
+  memberValue: judgement.myValue,
+});
+
+/** 실제 정책 상세 API 계약을 재현한다. */
 export const buildPolicyDetail = (policy, { isAuthenticated }) => ({
-  ...toPolicySummary(policy),
-  cardNews: buildCardNews(policy),
+  policyId: String(policy.id),
+  policyName: policy.title,
+  categories: [policy.subtype],
+  categoryLabels: [findSubtypeName(policy.subtype)],
+  apiSubCategory: findSubtypeName(policy.subtype),
+  keywords: '',
   description: policy.description,
-  benefit: policy.benefit,
-  target: policy.target,
+  supportContent: policy.benefit,
+  extraQualification: policy.requirement?.extraQualification ?? '',
+  applyPeriod: policy.applyPeriodType === 'ALWAYS' ? 'ALWAYS' : 'SPECIFIC_PERIOD',
+  applyPeriodLabel: policy.applyPeriodType === 'ALWAYS' ? '상시' : '특정기간',
+  applyStartDate: policy.applyStartDate,
+  applyEndDate: policy.applyEndDate,
   applyMethod: policy.applyMethod,
   applyUrl: policy.applyUrl,
-  extraQualification: '',
-  rawConditions: RAW_CONDITIONS,
-  judgements: isAuthenticated ? JUDGEMENTS : [],
-  judgementSummary: isAuthenticated ? '소득을 입력하면 더 정확히 알려드려요' : '',
-  judgementGroup: isAuthenticated ? RECOMMENDATION_GROUP.NEED_CHECK : null,
+  refUrl: policy.applyUrl,
+  activeYn: true,
+  isFavorite: isAuthenticated,
+  overallStatus: isAuthenticated ? 'DISABLE' : 'UNKNOWN',
+  conditions: isAuthenticated
+    ? JUDGEMENTS.map(toApiCondition)
+    : RAW_CONDITIONS.map((condition) => ({
+        type: condition.key,
+        status: 'UNKNOWN',
+        policyCondition: condition.value,
+        memberValue: '',
+      })),
 });
 
 const toRecommendation = (policy, reason) => ({

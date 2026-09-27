@@ -100,7 +100,12 @@ export const handlers = [
       return fail(404, '요청한 정보를 찾을 수 없어요');
     }
 
-    return ok(buildPolicyDetail(policy, { isAuthenticated: Boolean(findUser(request)) }));
+    return ok({
+      isSuccess: true,
+      code: 'SUCCESS_001',
+      message: '요청에 성공했습니다.',
+      result: buildPolicyDetail(policy, { isAuthenticated: Boolean(findUser(request)) }),
+    });
   }),
   http.post(apiUrl(ENDPOINTS.POLICY.RECOMMENDATIONS), () => ok(RECOMMENDATIONS)),
 
