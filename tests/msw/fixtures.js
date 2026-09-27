@@ -67,6 +67,21 @@ export const USER_BY_TOKEN = {
 
 export const CODES = CODE_GROUPS;
 
+/** 실제 시군구 목록 API의 응답 계약을 재현한다. */
+export const REGION_LIST_RESPONSE = {
+  isSuccess: true,
+  code: 'SUCCESS_001',
+  message: '시군구 목록 조회에 성공했습니다.',
+  result: CODES.regions.map((sido) => ({
+    sidoCode: sido.sidoCode,
+    sidoName: sido.sidoName,
+    sigungu: sido.sigungu.map((region) => ({
+      regionCode: region.code,
+      sigunguName: region.name,
+    })),
+  })),
+};
+
 export const TERM_LIST = { content: TERMS };
 
 export const POLICY = POLICIES[0];
