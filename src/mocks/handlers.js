@@ -357,10 +357,17 @@ export const HANDLERS = [
     method: 'post',
     match: (url) => url === '/api/members',
     handle: ({ body }) => {
-      const isDuplicated = mockStore.getState().users.some((item) => item.email === body.email);
+      const users = mockStore.getState().users;
+      const isDuplicated = users.some((item) => item.email === body.email);
 
       if (isDuplicated) {
         return fail(409, '이미 가입된 이메일이에요');
+      }
+
+      const isNicknameDuplicated = users.some((item) => item.nickname === body.nickname);
+
+      if (isNicknameDuplicated) {
+        return fail(409, '이미 사용 중인 닉네임이에요');
       }
 
       const verification = mockStore.getState().emailVerifications?.[body.email];
