@@ -79,6 +79,35 @@ const toPolicySummary = (policy) => ({
   viewCount: policy.viewCount,
 });
 
+const UI_TO_API_CATEGORY = {
+  SUBSCRIPTION: 'PURCHASE',
+  PUBLIC_HOUSING: 'PUBLIC_RENT',
+  ETC_HOUSING: 'OTHER',
+};
+
+const API_TO_UI_CATEGORY = Object.fromEntries(
+  Object.entries(UI_TO_API_CATEGORY).map(([uiCategory, apiCategory]) => [apiCategory, uiCategory]),
+);
+
+const toApiPolicyListItem = (policy, user) => ({
+  policy_id: String(policy.id),
+  policy_name: policy.title,
+  category_codes: [UI_TO_API_CATEGORY[policy.subtype] ?? policy.subtype],
+  category_names: [findSubtypeName(policy.subtype)],
+  regions:
+    policy.regionCode === NATIONWIDE_REGION_CODE
+      ? []
+      : [{ region_code: policy.regionCode, region_name: policy.regionName }],
+  nationwide: policy.regionCode === NATIONWIDE_REGION_CODE,
+  apply_end_date: policy.applyEndDate,
+  apply_period_code:
+    policy.applyPeriodType === APPLY_PERIOD_TYPE.ALWAYS ? 'ALWAYS' : 'SPECIFIC_PERIOD',
+  d_day: policy.applyPeriodType === APPLY_PERIOD_TYPE.ALWAYS ? null : remainingDays(policy),
+  ...(user
+    ? { favorite_yn: getFavorites(user.id).some((favorite) => favorite.policyId === policy.id) }
+    : {}),
+});
+
 const SUBTYPE_NAMES = {
   MONTHLY_RENT: '월세',
   JEONSE: '전세',
@@ -128,12 +157,13 @@ const findActivePolicyById = (policyId) =>
   getActivePolicies().find((policy) => policy.id === Number(policyId));
 
 const listPolicies = (params, user) => {
-  const { subtype = 'ALL', sort = 'DEADLINE', onlyMatched, page = 1, size = 8 } = params;
+  const { category, sort = 'DEADLINE', onlyEligible, page = 0, size = 8 } = params;
+  const subtype = API_TO_UI_CATEGORY[category] ?? category ?? 'ALL';
   let filtered = getActivePolicies().filter(
     (policy) => subtype === 'ALL' || policy.subtype === subtype,
   );
 
-  if (onlyMatched === 'true' || onlyMatched === true) {
+  if (onlyEligible === 'true' || onlyEligible === true) {
     filtered = filtered.filter((policy) => {
       if (!user) {
         return false;
@@ -149,15 +179,26 @@ const listPolicies = (params, user) => {
     });
   }
 
-  const sorted = sortPolicies(filtered, sort);
+  const sorted = sortPolicies(filtered, sort === 'VIEW_COUNT' ? 'VIEWS' : sort);
   const pageNumber = Number(page);
   const pageSize = Number(size);
-  const start = (pageNumber - 1) * pageSize;
+  const start = pageNumber * pageSize;
+  const totalPages = Math.ceil(filtered.length / pageSize);
 
   return ok({
-    content: sorted.slice(start, start + pageSize).map(toPolicySummary),
-    totalCount: sorted.length,
-    totalPages: Math.ceil(sorted.length / pageSize),
+    isSuccess: true,
+    code: 'SUCCESS_001',
+    message: '요청에 성공했습니다.',
+    result: {
+      policies: sorted
+        .slice(start, start + pageSize)
+        .map((policy) => toApiPolicyListItem(policy, user)),
+      page: pageNumber,
+      size: pageSize,
+      totalElements: sorted.length,
+      totalPages,
+      hasNext: pageNumber + 1 < totalPages,
+    },
   });
 };
 
@@ -416,8 +457,13 @@ export const HANDLERS = [
   },
   {
     method: 'get',
-    match: (url) => url === '/api/policies',
-    handle: ({ params, user }) => listPolicies(params, user),
+    match: (url) => url === '/api/policies/housing',
+    handle: ({ params }) => listPolicies(params, null),
+  },
+  {
+    method: 'get',
+    match: (url) => url === '/api/policies/housing/me',
+    handle: ({ params, user }) => requireUser(user) ?? listPolicies(params, user),
   },
   {
     method: 'get',
