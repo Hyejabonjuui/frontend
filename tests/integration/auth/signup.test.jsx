@@ -70,6 +70,9 @@ describe('회원가입', () => {
     const { user } = renderApp(ROUTES.SIGNUP);
 
     await user.type(await screen.findByLabelText('이메일'), 'new@hyeja.kr');
+    screen
+      .getAllByRole('radio', { name: '선택 안 함' })
+      .forEach((radio) => expect(radio).toBeChecked());
     await user.type(screen.getByLabelText('비밀번호', { exact: true }), 'hyeja1234!');
     await user.type(screen.getByLabelText('비밀번호 확인'), 'hyeja1234!');
     await user.type(screen.getByLabelText('닉네임'), '새내기');
@@ -79,8 +82,7 @@ describe('회원가입', () => {
     await user.click(screen.getByRole('radio', { name: '재직자' }));
     await user.click(screen.getByRole('radio', { name: '예, 무주택이에요' }));
 
-    await user.click(screen.getByRole('button', { name: '회원가입' }));
-    expect(await screen.findByText('이메일 인증을 완료해 주세요')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '회원가입' })).toBeDisabled();
     expect(signupBody).toBeUndefined();
 
     await user.click(screen.getByRole('button', { name: '인증 코드 발송' }));
@@ -90,6 +92,7 @@ describe('회원가입', () => {
     await user.click(screen.getByRole('button', { name: '인증 코드 확인' }));
     expect(await screen.findByText(/이메일 인증 완료/)).toBeInTheDocument();
     expect(screen.getByLabelText('이메일')).toBeEnabled();
+    expect(screen.getByRole('button', { name: '회원가입' })).toBeEnabled();
     await user.click(screen.getByRole('button', { name: '회원가입' }));
 
     await waitFor(() => expect(window.location.pathname).toBe(ROUTES.HOME));

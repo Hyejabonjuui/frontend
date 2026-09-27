@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import Chip from '@mui/material/Chip';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
@@ -13,6 +12,11 @@ import ErrorState from '@/components/common/ErrorState';
 import FieldError from '@/components/common/FieldError';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { TOAST_MESSAGES, VALIDATION_MESSAGES } from '@/constants/messages';
+import {
+  isConditionValueBlank,
+  isWholeRegionCode,
+  REQUIRED_CONDITION_FIELDS,
+} from '@/constants/condition';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
 import { useCodes } from '@/hooks/useCodes';
@@ -246,6 +250,13 @@ function SignupPage() {
     return Object.fromEntries(Object.entries(errors).filter(([, message]) => message));
   };
 
+  const isAccountFormValid = Object.keys(validate()).length === 0;
+  const isRequiredProfileComplete =
+    REQUIRED_CONDITION_FIELDS.every((field) => !isConditionValueBlank(profile[field])) &&
+    !isWholeRegionCode(profile.regionCode);
+  const canSubmit =
+    isAccountFormValid && isRequiredProfileComplete && verificationStatus === 'verified';
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -322,9 +333,15 @@ function SignupPage() {
   return (
     <Stack sx={{ alignItems: 'center' }}>
       <Card variant="outlined" sx={{ width: '100%', maxWidth: 620, p: { xs: 2, sm: 4 } }}>
-        <Stack spacing={1.5}>
+        <Stack
+          direction="row"
+          spacing={1.5}
+          sx={{ alignItems: 'baseline', flexWrap: 'wrap', rowGap: 0.5 }}
+        >
           <Typography variant="h1">회원가입</Typography>
-          <Chip label="계정과 내 조건을 함께 등록해요" size="small" color="primary" />
+          <Typography variant="body2" color="text.secondary">
+            계정과 내 조건을 함께 등록해요
+          </Typography>
         </Stack>
 
         <Stack component="form" spacing={2} onSubmit={handleSubmit} sx={{ mt: 3 }}>
@@ -470,7 +487,7 @@ function SignupPage() {
             onChange={changeProfileField}
           />
 
-          <Button type="submit" variant="contained" disabled={isSubmitting} fullWidth>
+          <Button type="submit" variant="contained" disabled={isSubmitting || !canSubmit} fullWidth>
             회원가입
           </Button>
 
