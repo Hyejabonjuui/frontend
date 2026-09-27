@@ -64,4 +64,5 @@ export const updateMyConditions = async (conditionForm) =>
   );
 
 /** F-05: 탈퇴하면 조건·관심 정책·알림이 함께 지워진다. */
-export const deleteAccount = () => httpClient.patch(ENDPOINTS.USER.DELETE);
+export const deleteAccount = async () =>
+  unwrapResult(await httpClient.patch(ENDPOINTS.USER.DELETE));
