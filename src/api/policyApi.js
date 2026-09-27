@@ -41,10 +41,13 @@ const SORT_TO_API = {
   VIEWS: 'VIEW_COUNT',
 };
 
-export const toPolicyListParams = ({ subtype, sort, onlyMatched, page, size } = {}) => ({
+export const toPolicyListParams = (
+  { subtype, sort, onlyMatched, page, size } = {},
+  { includeEligibility = false } = {},
+) => ({
   ...(subtype && subtype !== 'ALL' ? { category: CATEGORY_TO_API[subtype] ?? subtype } : {}),
   sort: SORT_TO_API[sort] ?? sort ?? 'DEADLINE',
-  onlyEligible: Boolean(onlyMatched),
+  ...(includeEligibility ? { onlyEligible: Boolean(onlyMatched) } : {}),
   page: Math.max(Number(page ?? 1) - 1, 0),
   size: Number(size ?? 8),
 });
@@ -126,7 +129,11 @@ export const toPolicyDetail = (response) => {
 export const getPolicies = async (params, { isAuthenticated = false } = {}) => {
   const endpoint = isAuthenticated ? ENDPOINTS.POLICY.MEMBER_LIST : ENDPOINTS.POLICY.LIST;
 
-  return toPolicyList(await httpClient.get(endpoint, { params: toPolicyListParams(params) }));
+  return toPolicyList(
+    await httpClient.get(endpoint, {
+      params: toPolicyListParams(params, { includeEligibility: isAuthenticated }),
+    }),
+  );
 };
 
 export const getPolicyDetail = async (policyId) =>

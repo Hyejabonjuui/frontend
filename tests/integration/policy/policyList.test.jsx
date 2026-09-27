@@ -11,15 +11,49 @@ import { ENDPOINTS } from '@/api/endpoints';
 import { EMPTY_MESSAGES, ERROR_MESSAGES } from '@/constants/messages';
 
 import { renderApp, signInAs } from '../../helpers/renderApp';
-import { EMPTY_POLICY_PAGE, POLICY, POLICY_PAGE, TOKENS } from '../../msw/fixtures';
+import {
+  EMPTY_POLICY_PAGE,
+  POLICY,
+  POLICY_PAGE,
+  TOKENS,
+  buildPolicyList,
+} from '../../msw/fixtures';
 import { apiUrl, fail, ok } from '../../msw/respond';
 import { server } from '../../msw/server';
 
 describe('홈 정책 목록', () => {
-  it('정책을 받으면 목록과 건수를 보여 준다', async () => {
+  it('비로그인 목록 API에 명세 파라미터만 전달하고 정책과 건수를 보여 준다', async () => {
+    let requestInfo;
+
+    server.use(
+      http.get(apiUrl(ENDPOINTS.POLICY.LIST), ({ request }) => {
+        const url = new URL(request.url);
+        requestInfo = {
+          authorization: request.headers.get('Authorization'),
+          category: url.searchParams.get('category'),
+          sort: url.searchParams.get('sort'),
+          onlyEligible: url.searchParams.get('onlyEligible'),
+          page: url.searchParams.get('page'),
+          size: url.searchParams.get('size'),
+        };
+
+        return ok({
+          isSuccess: true,
+          result: buildPolicyList({ isAuthenticated: false }),
+        });
+      }),
+    );
     renderApp('/');
 
     expect(await screen.findByText(`신청 중 ${POLICY_PAGE.totalCount}건`)).toBeInTheDocument();
+    expect(requestInfo).toEqual({
+      authorization: null,
+      category: null,
+      sort: 'DEADLINE',
+      onlyEligible: null,
+      page: '0',
+      size: '8',
+    });
     POLICY_PAGE.content.forEach((policy) => {
       expect(screen.getAllByText(policy.title).length).toBeGreaterThan(0);
     });
