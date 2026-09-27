@@ -52,15 +52,29 @@ export const MEMBER_CREDENTIALS = { email: MEMBER.email, password: MEMBER.passwo
 
 export const MEMBER_PROFILE = { ...MEMBER.profile };
 
+export const buildMemberAccountResponse = (member) => ({
+  isSuccess: true,
+  code: 'SUCCESS_001',
+  message: '계정 조회에 성공했습니다.',
+  result: {
+    memberId: member.id,
+    email: member.email,
+    nickname: member.nickname,
+    createdAt: `${member.joinedAt}T00:00:00.000Z`,
+  },
+});
+
+export const MEMBER_ACCOUNT_RESPONSE = buildMemberAccountResponse(MEMBER_USER);
+
 export const FIND_EMAIL_RESULT = {
   email: 'min***@hyeja.kr',
   joinedAt: MEMBER.joinedAt,
 };
 
 export const TOKENS = {
-  MEMBER: 'test-access-token-member',
-  ADMIN: 'test-access-token-admin',
-  NEW_USER: 'test-access-token-new-user',
+  MEMBER: 'test.eyJzdWIiOiIxIiwicm9sZSI6IlVTRVIifQ.signature',
+  ADMIN: 'test.eyJzdWIiOiIyIiwicm9sZSI6IkFETUlOIn0.signature',
+  NEW_USER: 'test.eyJzdWIiOiIzIiwicm9sZSI6IlVTRVIifQ.signature',
 };
 
 /** Authorization 헤더의 토큰으로 로그인한 회원을 찾는다. */
