@@ -44,20 +44,40 @@ const formatRemainingTime = (seconds) => {
 
 const useCountdown = () => {
   const [seconds, setSeconds] = useState(0);
+  const [expiresAt, setExpiresAt] = useState(null);
 
   useEffect(() => {
-    if (seconds <= 0) {
+    if (!expiresAt) {
       return undefined;
     }
 
-    const timerId = window.setTimeout(() => {
-      setSeconds((previous) => Math.max(previous - 1, 0));
-    }, 1000);
+    const updateRemainingSeconds = () => {
+      const nextSeconds = Math.max(Math.ceil((expiresAt - Date.now()) / 1000), 0);
+      setSeconds(nextSeconds);
 
-    return () => window.clearTimeout(timerId);
-  }, [seconds]);
+      if (nextSeconds === 0) {
+        setExpiresAt(null);
+      }
+    };
 
-  return [seconds, setSeconds];
+    updateRemainingSeconds();
+    const timerId = window.setInterval(updateRemainingSeconds, 1000);
+
+    return () => window.clearInterval(timerId);
+  }, [expiresAt]);
+
+  const startCountdown = (durationSeconds) => {
+    if (durationSeconds <= 0) {
+      setExpiresAt(null);
+      setSeconds(0);
+      return;
+    }
+
+    setSeconds(durationSeconds);
+    setExpiresAt(Date.now() + durationSeconds * 1000);
+  };
+
+  return [seconds, startCountdown];
 };
 
 function SignupPage() {
@@ -82,6 +102,7 @@ function SignupPage() {
   const [isConfirmingCode, setIsConfirmingCode] = useState(false);
   const isCompletedRef = useRef(false);
   const verifiedAtRef = useRef(null);
+  const verificationRequestGenerationRef = useRef(0);
 
   // 설계서 S-03: 가입 도중 화면을 벗어나면 처음부터 다시 한다고 알린다.
   useEffect(
@@ -97,18 +118,23 @@ function SignupPage() {
     const { name, value } = event.target;
 
     if (name === 'email' && value !== form.email) {
+      verificationRequestGenerationRef.current += 1;
       setVerificationStatus('idle');
       setVerificationCode('');
       setVerificationError('');
       setRemainingSeconds(0);
       setResendRemainingSeconds(0);
+      setIsSendingCode(false);
+      setIsConfirmingCode(false);
       verifiedAtRef.current = null;
     }
     setForm((previous) => ({ ...previous, [name]: value }));
   };
 
   const handleSendVerification = async () => {
-    const emailError = getEmailError(form.email);
+    const requestEmail = form.email;
+    const requestGeneration = verificationRequestGenerationRef.current;
+    const emailError = getEmailError(requestEmail);
     setFieldErrors((previous) => ({ ...previous, email: emailError }));
 
     if (emailError) {
@@ -119,13 +145,22 @@ function SignupPage() {
     setVerificationError('');
 
     try {
-      const result = await sendEmailVerification(form.email);
+      const result = await sendEmailVerification(requestEmail);
+
+      if (requestGeneration !== verificationRequestGenerationRef.current) {
+        return;
+      }
+
       setVerificationStatus('sent');
       setVerificationCode('');
       setRemainingSeconds(result?.expiresInSeconds ?? 300);
       setResendRemainingSeconds(RESEND_COOLDOWN_SECONDS);
       showSuccess(TOAST_MESSAGES.EMAIL_VERIFICATION_SENT);
     } catch (error) {
+      if (requestGeneration !== verificationRequestGenerationRef.current) {
+        return;
+      }
+
       const message = getErrorMessage(error);
       setVerificationError(message);
 
@@ -140,7 +175,9 @@ function SignupPage() {
       }
       showError(message);
     } finally {
-      setIsSendingCode(false);
+      if (requestGeneration === verificationRequestGenerationRef.current) {
+        setIsSendingCode(false);
+      }
     }
   };
 
@@ -155,11 +192,18 @@ function SignupPage() {
       return;
     }
 
+    const requestEmail = form.email;
+    const requestGeneration = verificationRequestGenerationRef.current;
+
     setIsConfirmingCode(true);
     setVerificationError('');
 
     try {
-      const result = await confirmEmailVerification(form.email, verificationCode);
+      const result = await confirmEmailVerification(requestEmail, verificationCode);
+
+      if (requestGeneration !== verificationRequestGenerationRef.current) {
+        return;
+      }
 
       if (!result?.verified) {
         setVerificationError(VALIDATION_MESSAGES.VERIFICATION_CODE_INVALID);
@@ -173,6 +217,10 @@ function SignupPage() {
       setFieldErrors((previous) => ({ ...previous, email: '' }));
       showSuccess(TOAST_MESSAGES.EMAIL_VERIFICATION_DONE);
     } catch (error) {
+      if (requestGeneration !== verificationRequestGenerationRef.current) {
+        return;
+      }
+
       const message = getErrorMessage(error);
       setVerificationError(message);
       if (error?.response?.data?.code === 'VERIFY_002') {
@@ -180,7 +228,9 @@ function SignupPage() {
       }
       showError(message);
     } finally {
-      setIsConfirmingCode(false);
+      if (requestGeneration === verificationRequestGenerationRef.current) {
+        setIsConfirmingCode(false);
+      }
     }
   };
 
@@ -286,7 +336,6 @@ function SignupPage() {
               value={form.email}
               onChange={handleChange}
               placeholder="example@email.com"
-              disabled={verificationStatus === 'verified'}
               error={Boolean(fieldErrors.email)}
               helperText={
                 fieldErrors.email ? (

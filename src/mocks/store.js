@@ -17,6 +17,7 @@ const buildInitialState = () => ({
     2: [],
   },
   notifications: { 1: NOTIFICATIONS.map((item) => ({ ...item })), 2: [] },
+  emailVerifications: {},
   collectLog: {
     status: 'SUCCESS',
     startedAt: '2026-09-18T03:00:02+09:00',
