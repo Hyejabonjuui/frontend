@@ -286,8 +286,15 @@ export const HANDLERS = [
         return fail(401, '이메일 또는 비밀번호가 올바르지 않아요');
       }
 
+      const accessToken = buildAccessToken(user.id, user.role);
+      mockStore.update((state) => {
+        state.revokedTokens = (state.revokedTokens ?? []).filter((token) => token !== accessToken);
+
+        return state;
+      });
+
       return ok({
-        accessToken: buildAccessToken(user.id, user.role),
+        accessToken,
         memberId: user.id,
         nickname: user.nickname,
       });
@@ -401,7 +408,40 @@ export const HANDLERS = [
       });
     },
   },
-  { method: 'post', match: (url) => url === '/api/members/logout', handle: () => ok({}) },
+  {
+    method: 'post',
+    match: (url) => url === '/api/members/logout',
+    handle: ({ user, authorization }) => {
+      if (!user) {
+        return {
+          status: 401,
+          data: {
+            isSuccess: false,
+            code: 'COMMON_002',
+            message: '인증이 필요합니다.',
+            result: null,
+          },
+        };
+      }
+
+      const token = authorization.replace('Bearer ', '');
+      mockStore.update((state) => {
+        state.revokedTokens ??= [];
+        if (!state.revokedTokens.includes(token)) {
+          state.revokedTokens.push(token);
+        }
+
+        return state;
+      });
+
+      return ok({
+        isSuccess: true,
+        code: 'SUCCESS_001',
+        message: '로그아웃에 성공했습니다.',
+        result: '로그아웃되었습니다.',
+      });
+    },
+  },
   {
     method: 'get',
     match: (url) => url === '/api/members/find-email',

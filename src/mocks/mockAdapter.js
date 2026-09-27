@@ -50,6 +50,7 @@ export const mockAdapter = async (config) => {
     url,
     params: config.params ?? {},
     body: parseBody(config.data),
+    authorization,
     user: findUserByToken(authorization),
   });
 

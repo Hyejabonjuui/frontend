@@ -18,6 +18,7 @@ const buildInitialState = () => ({
   },
   notifications: { 1: NOTIFICATIONS.map((item) => ({ ...item })), 2: [] },
   emailVerifications: {},
+  revokedTokens: [],
   collectLog: {
     status: 'SUCCESS',
     startedAt: '2026-09-18T03:00:02+09:00',
@@ -80,6 +81,10 @@ export const buildAccessToken = (userId, role = 'USER') =>
 export const findUserByToken = (authorization) => {
   const token = authorization?.replace('Bearer ', '');
   let userId;
+
+  if (!token || (state.revokedTokens ?? []).includes(token)) {
+    return null;
+  }
 
   try {
     const payload = token?.split('.')[1]?.replace(/-/g, '+').replace(/_/g, '/');
