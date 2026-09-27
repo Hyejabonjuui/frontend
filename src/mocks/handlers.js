@@ -438,7 +438,19 @@ export const HANDLERS = [
   {
     method: 'get',
     match: (url) => url === '/api/members/me',
-    handle: ({ user }) => requireUser(user) ?? ok(toPublicUser(user)),
+    handle: ({ user }) =>
+      requireUser(user) ??
+      ok({
+        isSuccess: true,
+        code: 'SUCCESS_001',
+        message: '계정 조회에 성공했습니다.',
+        result: {
+          memberId: user.id,
+          email: user.email,
+          nickname: user.nickname,
+          createdAt: `${user.joinedAt}T00:00:00.000Z`,
+        },
+      }),
   },
   {
     method: 'patch',
