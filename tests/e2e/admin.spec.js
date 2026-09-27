@@ -33,6 +33,6 @@ test('일반 회원은 관리자 화면 주소로 들어가도 홈으로 돌아�
 
   await page.goto('/admin');
 
-  await expect(page).toHaveURL('/');
+  await expect(page).toHaveURL('/home');
   await expect(page.getByRole('heading', { name: ADMIN_HEADING })).toBeHidden();
 });

@@ -11,7 +11,7 @@ import { expect, test } from '@playwright/test';
 test('비로그인 사용자는 검색 대신 로그인 안내를 보고, 정책 상세를 둘러본 뒤 홈으로 돌아온다', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/home');
   const homeHeading = page.getByRole('heading', { name: '받을 수 있는 주거 혜택, 한 번에 찾아요' });
   await expect(homeHeading).toBeVisible();
 
@@ -31,6 +31,6 @@ test('비로그인 사용자는 검색 대신 로그인 안내를 보고, 정책
 
   await page.goBack();
 
-  await expect(page).toHaveURL('/');
+  await expect(page).toHaveURL('/home');
   await expect(homeHeading).toBeVisible();
 });

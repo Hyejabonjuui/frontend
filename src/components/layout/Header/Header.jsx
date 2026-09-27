@@ -70,7 +70,7 @@ function Header() {
       >
         <Box
           component={RouterLink}
-          to={ROUTES.HOME}
+          to={ROUTES.LANDING}
           aria-label="혜자 홈"
           sx={{ display: 'flex', flexShrink: 0 }}
         >
