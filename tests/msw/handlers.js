@@ -110,7 +110,14 @@ export const handlers = [
   ),
   http.patch(
     apiUrl(ENDPOINTS.USER.DELETE),
-    withUser(() => ok()),
+    withUser(() =>
+      ok({
+        isSuccess: true,
+        code: 'SUCCESS_001',
+        message: '회원 탈퇴에 성공했습니다.',
+        result: '회원 탈퇴가 완료되었습니다.',
+      }),
+    ),
   ),
 
   http.get(apiUrl(ENDPOINTS.CODE.REGIONS), () => ok(REGION_LIST_RESPONSE)),
