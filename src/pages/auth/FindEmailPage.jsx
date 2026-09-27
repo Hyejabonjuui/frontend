@@ -12,16 +12,18 @@ import { getErrorMessage } from '@/utils/getErrorMessage';
 function FindEmailPage() {
   const { showError } = useToast();
   const [nickname, setNickname] = useState('');
-  const [foundEmail, setFoundEmail] = useState('');
+  const [birth, setBirth] = useState('');
+  const [foundAccount, setFoundAccount] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setIsSubmitting(true);
+    setFoundAccount(null);
 
     try {
-      const data = await authApi.findEmail({ nickname });
-      setFoundEmail(data.email ?? '');
+      const data = await authApi.findEmail({ nickname, birth });
+      setFoundAccount(data);
     } catch (error) {
       showError(getErrorMessage(error));
     } finally {
@@ -38,6 +40,17 @@ function FindEmailPage() {
           label="닉네임"
           value={nickname}
           onChange={(event) => setNickname(event.target.value)}
+          required
+          fullWidth
+        />
+
+        <TextField
+          label="생년월일"
+          type="date"
+          value={birth}
+          onChange={(event) => setBirth(event.target.value)}
+          slotProps={{ inputLabel: { shrink: true } }}
+          required
           fullWidth
         />
 
@@ -46,7 +59,13 @@ function FindEmailPage() {
         </Button>
       </Stack>
 
-      {foundEmail && <Alert severity="success">가입된 이메일은 {foundEmail} 이에요</Alert>}
+      {foundAccount && (
+        <Alert severity="success">
+          가입된 이메일은 {foundAccount.email} 이에요
+          <br />
+          가입일: {foundAccount.joinedAt}
+        </Alert>
+      )}
     </Stack>
   );
 }
