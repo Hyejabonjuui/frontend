@@ -1,6 +1,7 @@
 import {
   APPLY_PERIOD_TYPE,
   FAVORITE_STATUS,
+  JUDGE_RESULT,
   NATIONWIDE_REGION_CODE,
   RECOMMENDATION_GROUP,
 } from '@/constants/policy';
@@ -420,7 +421,7 @@ export const HANDLERS = [
   },
   {
     method: 'get',
-    match: (url) => /^\/api\/policies\/\d+$/.test(url),
+    match: (url) => /^\/api\/policies\/[^/]+$/.test(url),
     handle: ({ url, user }) => {
       const policy = findActivePolicyById(url.split('/').at(-1));
 
@@ -429,22 +430,62 @@ export const HANDLERS = [
       }
 
       const judgements = user ? buildJudgements(policy, user.profile ?? {}) : [];
+      const group = judgements.length ? getRecommendationGroup(judgements) : null;
+      const resultStatus = {
+        [JUDGE_RESULT.MET]: 'ABLE',
+        [JUDGE_RESULT.NOT_MET]: 'DISABLE',
+        [JUDGE_RESULT.NEED_CHECK]: 'UNKNOWN',
+      };
+      const conditions = judgements.length
+        ? judgements.map((judgement) => ({
+            type: judgement.conditionKey,
+            status: resultStatus[judgement.result],
+            policyCondition: judgement.requirement,
+            memberValue: judgement.myValue,
+          }))
+        : buildRawConditions(policy).map((condition) => ({
+            type: condition.key,
+            status: 'UNKNOWN',
+            policyCondition: condition.value,
+            memberValue: '',
+          }));
+      const overallStatus =
+        group === RECOMMENDATION_GROUP.POSSIBLE
+          ? 'ABLE'
+          : group === RECOMMENDATION_GROUP.IMPOSSIBLE
+            ? 'DISABLE'
+            : 'UNKNOWN';
 
       return ok({
-        ...toPolicySummary(policy),
-        cardNews: buildCardNews(policy),
-        description: policy.description,
-        benefit: policy.benefit,
-        target: policy.target,
-        applyMethod: policy.applyMethod,
-        applyUrl: policy.applyUrl,
-        extraQualification: policy.requirement?.extraQualification ?? '',
-        rawConditions: buildRawConditions(policy),
-        judgements,
-        judgementSummary: judgements.length
-          ? buildJudgementReason(judgements, getRecommendationGroup(judgements))
-          : '',
-        judgementGroup: judgements.length ? getRecommendationGroup(judgements) : null,
+        isSuccess: true,
+        code: 'SUCCESS_001',
+        message: '요청에 성공했습니다.',
+        result: {
+          policyId: String(policy.id),
+          policyName: policy.title,
+          categories: [policy.subtype],
+          categoryLabels: [findSubtypeName(policy.subtype)],
+          apiSubCategory: findSubtypeName(policy.subtype),
+          keywords: '',
+          description: policy.description,
+          supportContent: policy.benefit,
+          extraQualification: policy.requirement?.extraQualification ?? '',
+          applyPeriod:
+            policy.applyPeriodType === APPLY_PERIOD_TYPE.ALWAYS ? 'ALWAYS' : 'SPECIFIC_PERIOD',
+          applyPeriodLabel:
+            policy.applyPeriodType === APPLY_PERIOD_TYPE.ALWAYS ? '상시' : '특정기간',
+          applyStartDate: policy.applyStartDate,
+          applyEndDate: policy.applyEndDate,
+          applyMethod: policy.applyMethod,
+          applyUrl: policy.applyUrl,
+          refUrl: policy.applyUrl,
+          activeYn: true,
+          isFavorite: Boolean(
+            user && getFavorites(user.id).some((favorite) => favorite.policyId === policy.id),
+          ),
+          overallStatus,
+          conditions,
+        },
       });
     },
   },
