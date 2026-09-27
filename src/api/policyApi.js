@@ -31,6 +31,53 @@ const STATUS_SUMMARIES = {
 
 const unwrapResult = (response) => response?.result ?? response;
 
+const CATEGORY_TO_API = {
+  SUBSCRIPTION: 'PURCHASE',
+  PUBLIC_HOUSING: 'PUBLIC_RENT',
+  ETC_HOUSING: 'OTHER',
+};
+
+const SORT_TO_API = {
+  VIEWS: 'VIEW_COUNT',
+};
+
+export const toPolicyListParams = ({ subtype, sort, onlyMatched, page, size } = {}) => ({
+  ...(subtype && subtype !== 'ALL' ? { category: CATEGORY_TO_API[subtype] ?? subtype } : {}),
+  sort: SORT_TO_API[sort] ?? sort ?? 'DEADLINE',
+  onlyEligible: Boolean(onlyMatched),
+  page: Math.max(Number(page ?? 1) - 1, 0),
+  size: Number(size ?? 8),
+});
+
+export const toPolicyList = (response) => {
+  const result = unwrapResult(response) ?? {};
+
+  return {
+    content: (result.policies ?? []).map((policy) => ({
+      id: policy.policy_id,
+      title: policy.policy_name,
+      subtype: policy.category_codes?.[0] ?? '',
+      subtypeName: policy.category_names?.[0] ?? '기타 주거',
+      categoryNames: policy.category_names ?? [],
+      regionName: policy.nationwide
+        ? '전국'
+        : (policy.regions ?? []).map((region) => region.region_name).join(', '),
+      regions: policy.regions ?? [],
+      nationwide: Boolean(policy.nationwide),
+      applyPeriodType:
+        policy.apply_period_code === 'ALWAYS' ? APPLY_PERIOD_TYPE.ALWAYS : APPLY_PERIOD_TYPE.PERIOD,
+      applyEndDate: policy.apply_end_date,
+      remainingDays: policy.d_day,
+      isFavorite: Boolean(policy.favorite_yn),
+    })),
+    page: Number(result.page ?? 0) + 1,
+    size: Number(result.size ?? 8),
+    totalCount: Number(result.totalElements ?? 0),
+    totalPages: Number(result.totalPages ?? 0),
+    hasNext: Boolean(result.hasNext),
+  };
+};
+
 export const toPolicyDetail = (response) => {
   const result = unwrapResult(response);
 
@@ -76,7 +123,11 @@ export const toPolicyDetail = (response) => {
   };
 };
 
-export const getPolicies = (params) => httpClient.get(ENDPOINTS.POLICY.LIST, { params });
+export const getPolicies = async (params, { isAuthenticated = false } = {}) => {
+  const endpoint = isAuthenticated ? ENDPOINTS.POLICY.MEMBER_LIST : ENDPOINTS.POLICY.LIST;
+
+  return toPolicyList(await httpClient.get(endpoint, { params: toPolicyListParams(params) }));
+};
 
 export const getPolicyDetail = async (policyId) =>
   toPolicyDetail(await httpClient.get(ENDPOINTS.POLICY.DETAIL(policyId)));

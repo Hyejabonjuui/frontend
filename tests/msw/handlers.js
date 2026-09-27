@@ -22,11 +22,11 @@ import {
   MEMBER_PROFILE,
   MEMBER_USER,
   NOTIFICATION_LIST,
-  POLICY_PAGE,
   RECOMMENDATIONS,
   TERM_LIST,
   TOKENS,
   USER_BY_TOKEN,
+  buildPolicyList,
   buildPolicyDetail,
 } from './fixtures';
 import { apiUrl, fail, ok } from './respond';
@@ -92,7 +92,13 @@ export const handlers = [
   http.get(apiUrl(ENDPOINTS.CODE.REGIONS), () => ok(CODES.regions)),
   http.get(apiUrl(ENDPOINTS.POLICY.TERMS), () => ok(TERM_LIST)),
   http.get(apiUrl(ENDPOINTS.POLICY.CARD_NEWS), () => ok(CARD_NEWS)),
-  http.get(apiUrl(ENDPOINTS.POLICY.LIST), () => ok(POLICY_PAGE)),
+  http.get(apiUrl(ENDPOINTS.POLICY.LIST), () =>
+    ok({ isSuccess: true, result: buildPolicyList({ isAuthenticated: false }) }),
+  ),
+  http.get(
+    apiUrl(ENDPOINTS.POLICY.MEMBER_LIST),
+    withUser(() => ok({ isSuccess: true, result: buildPolicyList({ isAuthenticated: true }) })),
+  ),
   http.get(apiUrl(ENDPOINTS.POLICY.DETAIL(':policyId')), ({ params, request }) => {
     const policy = POLICIES.find((item) => item.id === Number(params.policyId));
 

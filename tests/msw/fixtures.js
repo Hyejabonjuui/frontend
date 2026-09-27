@@ -77,6 +77,37 @@ export const POLICY_PAGE = {
   totalPages: Math.ceil(POLICIES.length / 8),
 };
 
+const UI_TO_API_CATEGORY = {
+  SUBSCRIPTION: 'PURCHASE',
+  PUBLIC_HOUSING: 'PUBLIC_RENT',
+  ETC_HOUSING: 'OTHER',
+};
+
+const toApiPolicyListItem = (policy, { isAuthenticated }) => ({
+  policy_id: String(policy.id),
+  policy_name: policy.title,
+  category_codes: [UI_TO_API_CATEGORY[policy.subtype] ?? policy.subtype],
+  category_names: [findSubtypeName(policy.subtype)],
+  regions:
+    policy.regionCode === 'ALL'
+      ? []
+      : [{ region_code: policy.regionCode, region_name: policy.regionName }],
+  nationwide: policy.regionCode === 'ALL',
+  apply_end_date: policy.applyEndDate,
+  apply_period_code: policy.applyPeriodType === 'ALWAYS' ? 'ALWAYS' : 'SPECIFIC_PERIOD',
+  d_day: null,
+  ...(isAuthenticated ? { favorite_yn: policy.id === POLICY.id } : {}),
+});
+
+export const buildPolicyList = ({ isAuthenticated }) => ({
+  policies: POLICIES.slice(0, 8).map((policy) => toApiPolicyListItem(policy, { isAuthenticated })),
+  page: 0,
+  size: 8,
+  totalElements: POLICIES.length,
+  totalPages: Math.ceil(POLICIES.length / 8),
+  hasNext: POLICIES.length > 8,
+});
+
 export const EMPTY_POLICY_PAGE = { content: [], totalCount: 0, totalPages: 0 };
 
 export const CARD_NEWS = { content: POLICIES.slice(0, 4).map(buildCardNews) };
