@@ -7,6 +7,8 @@ export const ENDPOINTS = {
   AUTH: {
     LOGIN: '/api/members/login',
     SIGNUP: '/api/members', // 계정 + profile 동시 저장
+    EMAIL_VERIFICATION: '/api/members/email-verifications',
+    EMAIL_VERIFICATION_CONFIRMATION: '/api/members/email-verifications/confirmation',
     LOGOUT: '/api/members/logout',
     FIND_EMAIL: '/api/auth/find-email',
     RESET_PASSWORD: '/api/auth/reset-password',

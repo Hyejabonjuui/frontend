@@ -25,6 +25,10 @@ test('계정과 조건을 함께 등록하고 검색하면 추천 결과를 본�
   await page.getByRole('banner').getByRole('link', { name: '회원가입' }).click();
 
   await page.getByLabel('이메일').fill(NEW_ACCOUNT.email);
+  await page.getByRole('button', { name: '인증 코드 발송' }).click();
+  await page.getByLabel('인증 코드').fill('384021');
+  await page.getByRole('button', { name: '인증 코드 확인' }).click();
+  await expect(page.getByText('이메일 인증 완료 · 30분 안에 가입해 주세요')).toBeVisible();
   await page.getByLabel('비밀번호', { exact: true }).fill(NEW_ACCOUNT.password);
   await page.getByLabel('비밀번호 확인').fill(NEW_ACCOUNT.password);
   await page.getByLabel('닉네임').fill(NEW_ACCOUNT.nickname);

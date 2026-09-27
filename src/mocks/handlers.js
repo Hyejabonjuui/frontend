@@ -233,12 +233,69 @@ export const HANDLERS = [
   },
   {
     method: 'post',
+    match: (url) => url === '/api/members/email-verifications',
+    handle: ({ body }) => {
+      const isDuplicated = mockStore.getState().users.some((item) => item.email === body.email);
+
+      if (isDuplicated) {
+        return fail(409, '이미 가입된 이메일이에요');
+      }
+
+      mockStore.update((state) => {
+        state.emailVerifications ??= {};
+        state.emailVerifications[body.email] = {
+          code: '384021',
+          expiresAt: Date.now() + 5 * 60 * 1000,
+          verifiedUntil: null,
+        };
+
+        return state;
+      });
+
+      return ok({ expiresInSeconds: 300 });
+    },
+  },
+  {
+    method: 'post',
+    match: (url) => url === '/api/members/email-verifications/confirmation',
+    handle: ({ body }) => {
+      const verification = mockStore.getState().emailVerifications?.[body.email];
+
+      if (!verification || verification.expiresAt <= Date.now()) {
+        return fail(400, '인증 코드가 만료됐어요. 다시 받아 주세요');
+      }
+
+      if (verification.code !== body.code) {
+        return fail(400, '인증 코드가 올바르지 않아요');
+      }
+
+      mockStore.update((state) => {
+        state.emailVerifications[body.email] = {
+          code: null,
+          expiresAt: null,
+          verifiedUntil: Date.now() + 30 * 60 * 1000,
+        };
+
+        return state;
+      });
+
+      return ok({ verified: true });
+    },
+  },
+  {
+    method: 'post',
     match: (url) => url === '/api/members',
     handle: ({ body }) => {
       const isDuplicated = mockStore.getState().users.some((item) => item.email === body.email);
 
       if (isDuplicated) {
         return fail(409, '이미 가입된 이메일이에요');
+      }
+
+      const verification = mockStore.getState().emailVerifications?.[body.email];
+
+      if (!verification?.verifiedUntil || verification.verifiedUntil <= Date.now()) {
+        return fail(400, '이메일 인증을 먼저 완료해 주세요');
       }
 
       const created = mockStore.update((state) => {
@@ -266,6 +323,7 @@ export const HANDLERS = [
         state.users.push(user);
         state.favorites[id] = [];
         state.notifications[id] = [];
+        delete state.emailVerifications[body.email];
         state.lastUserId = id;
 
         return state;

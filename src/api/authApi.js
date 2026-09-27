@@ -43,6 +43,21 @@ export const login = async (credentials) => {
   return toSession(credentials, response);
 };
 
+export const sendEmailVerification = async (email) => {
+  const response = await httpClient.post(ENDPOINTS.AUTH.EMAIL_VERIFICATION, { email });
+
+  return unwrapResult(response);
+};
+
+export const confirmEmailVerification = async (email, code) => {
+  const response = await httpClient.post(ENDPOINTS.AUTH.EMAIL_VERIFICATION_CONFIRMATION, {
+    email,
+    code,
+  });
+
+  return unwrapResult(response);
+};
+
 export const signup = async ({ profile, ...accountForm }) => {
   const response = await httpClient.post(ENDPOINTS.AUTH.SIGNUP, {
     ...accountForm,
