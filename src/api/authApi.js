@@ -77,7 +77,7 @@ export const signup = async ({ profile, ...accountForm }) => {
   return toSession(accountForm, loginResponse, account);
 };
 
-export const logout = () => httpClient.post(ENDPOINTS.AUTH.LOGOUT);
+export const logout = async () => unwrapResult(await httpClient.post(ENDPOINTS.AUTH.LOGOUT));
 
 export const toFindEmailParams = ({ nickname, birth }) => ({ nickname, birth });
 
