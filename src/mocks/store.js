@@ -93,5 +93,5 @@ export const findUserByToken = (authorization) => {
     return null;
   }
 
-  return state.users.find((user) => user.id === userId) ?? null;
+  return state.users.find((user) => user.id === userId && !user.deletedAt) ?? null;
 };

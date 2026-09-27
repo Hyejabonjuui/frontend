@@ -14,6 +14,7 @@ const CODE_MESSAGES = {
 };
 
 const API_CODE_MESSAGES = {
+  MEMBER_001: '이미 탈퇴했거나 존재하지 않는 회원이에요',
   VERIFY_001: '인증 코드가 올바르지 않아요',
   VERIFY_002: '인증 코드가 만료됐어요. 다시 받아 주세요',
   VERIFY_003: '이메일 인증을 먼저 완료해 주세요',

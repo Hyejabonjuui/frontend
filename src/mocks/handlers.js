@@ -280,7 +280,9 @@ export const HANDLERS = [
     method: 'post',
     match: (url) => url === '/api/members/login',
     handle: ({ body }) => {
-      const user = mockStore.getState().users.find((item) => item.email === body.email);
+      const user = mockStore
+        .getState()
+        .users.find((item) => item.email === body.email && !item.deletedAt);
 
       if (!user || user.password !== body.password) {
         return fail(401, '이메일 또는 비밀번호가 올바르지 않아요');
@@ -355,10 +357,17 @@ export const HANDLERS = [
     method: 'post',
     match: (url) => url === '/api/members',
     handle: ({ body }) => {
-      const isDuplicated = mockStore.getState().users.some((item) => item.email === body.email);
+      const users = mockStore.getState().users;
+      const isDuplicated = users.some((item) => item.email === body.email);
 
       if (isDuplicated) {
         return fail(409, '이미 가입된 이메일이에요');
+      }
+
+      const isNicknameDuplicated = users.some((item) => item.nickname === body.nickname);
+
+      if (isNicknameDuplicated) {
+        return fail(409, '이미 사용 중인 닉네임이에요');
       }
 
       const verification = mockStore.getState().emailVerifications?.[body.email];
@@ -449,7 +458,10 @@ export const HANDLERS = [
       const user = mockStore
         .getState()
         .users.find(
-          (item) => item.nickname === params.nickname && item.profile?.birthDate === params.birth,
+          (item) =>
+            !item.deletedAt &&
+            item.nickname === params.nickname &&
+            item.profile?.birthDate === params.birth,
         );
 
       return user
@@ -495,21 +507,41 @@ export const HANDLERS = [
   {
     method: 'patch',
     match: (url) => url === '/api/members/me/delete',
-    handle: ({ user }) => {
-      const denied = requireUser(user);
-      if (denied) {
-        return denied;
+    handle: ({ user, authorization }) => {
+      if (!user) {
+        return {
+          status: 404,
+          data: {
+            isSuccess: false,
+            code: 'MEMBER_001',
+            message: '이미 탈퇴했거나 존재하지 않는 회원입니다.',
+            result: null,
+          },
+        };
       }
 
       mockStore.update((state) => {
-        state.users = state.users.filter((item) => item.id !== user.id);
+        const target = state.users.find((item) => item.id === user.id);
+        const deletedAt = new Date().toISOString();
+        target.deletedAt = deletedAt;
+        target.profile = { ...target.profile, deletedAt };
         delete state.favorites[user.id];
         delete state.notifications[user.id];
+        state.revokedTokens ??= [];
+        const token = authorization.replace('Bearer ', '');
+        if (!state.revokedTokens.includes(token)) {
+          state.revokedTokens.push(token);
+        }
 
         return state;
       });
 
-      return ok({});
+      return ok({
+        isSuccess: true,
+        code: 'SUCCESS_001',
+        message: '회원 탈퇴에 성공했습니다.',
+        result: '회원 탈퇴가 완료되었습니다.',
+      });
     },
   },
   {
