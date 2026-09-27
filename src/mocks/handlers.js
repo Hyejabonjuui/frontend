@@ -1,6 +1,7 @@
 import {
   APPLY_PERIOD_TYPE,
   FAVORITE_STATUS,
+  JUDGE_RESULT,
   NATIONWIDE_REGION_CODE,
   RECOMMENDATION_GROUP,
 } from '@/constants/policy';
@@ -78,6 +79,35 @@ const toPolicySummary = (policy) => ({
   viewCount: policy.viewCount,
 });
 
+const UI_TO_API_CATEGORY = {
+  SUBSCRIPTION: 'PURCHASE',
+  PUBLIC_HOUSING: 'PUBLIC_RENT',
+  ETC_HOUSING: 'OTHER',
+};
+
+const API_TO_UI_CATEGORY = Object.fromEntries(
+  Object.entries(UI_TO_API_CATEGORY).map(([uiCategory, apiCategory]) => [apiCategory, uiCategory]),
+);
+
+const toApiPolicyListItem = (policy, user) => ({
+  policy_id: String(policy.id),
+  policy_name: policy.title,
+  category_codes: [UI_TO_API_CATEGORY[policy.subtype] ?? policy.subtype],
+  category_names: [findSubtypeName(policy.subtype)],
+  regions:
+    policy.regionCode === NATIONWIDE_REGION_CODE
+      ? []
+      : [{ region_code: policy.regionCode, region_name: policy.regionName }],
+  nationwide: policy.regionCode === NATIONWIDE_REGION_CODE,
+  apply_end_date: policy.applyEndDate,
+  apply_period_code:
+    policy.applyPeriodType === APPLY_PERIOD_TYPE.ALWAYS ? 'ALWAYS' : 'SPECIFIC_PERIOD',
+  d_day: policy.applyPeriodType === APPLY_PERIOD_TYPE.ALWAYS ? null : remainingDays(policy),
+  ...(user
+    ? { favorite_yn: getFavorites(user.id).some((favorite) => favorite.policyId === policy.id) }
+    : {}),
+});
+
 const SUBTYPE_NAMES = {
   MONTHLY_RENT: '월세',
   JEONSE: '전세',
@@ -127,12 +157,13 @@ const findActivePolicyById = (policyId) =>
   getActivePolicies().find((policy) => policy.id === Number(policyId));
 
 const listPolicies = (params, user) => {
-  const { subtype = 'ALL', sort = 'DEADLINE', onlyMatched, page = 1, size = 8 } = params;
+  const { category, sort = 'DEADLINE', onlyEligible, page = 0, size = 8 } = params;
+  const subtype = API_TO_UI_CATEGORY[category] ?? category ?? 'ALL';
   let filtered = getActivePolicies().filter(
     (policy) => subtype === 'ALL' || policy.subtype === subtype,
   );
 
-  if (onlyMatched === 'true' || onlyMatched === true) {
+  if (onlyEligible === 'true' || onlyEligible === true) {
     filtered = filtered.filter((policy) => {
       if (!user) {
         return false;
@@ -148,15 +179,26 @@ const listPolicies = (params, user) => {
     });
   }
 
-  const sorted = sortPolicies(filtered, sort);
+  const sorted = sortPolicies(filtered, sort === 'VIEW_COUNT' ? 'VIEWS' : sort);
   const pageNumber = Number(page);
   const pageSize = Number(size);
-  const start = (pageNumber - 1) * pageSize;
+  const start = pageNumber * pageSize;
+  const totalPages = Math.ceil(filtered.length / pageSize);
 
   return ok({
-    content: sorted.slice(start, start + pageSize).map(toPolicySummary),
-    totalCount: sorted.length,
-    totalPages: Math.ceil(sorted.length / pageSize),
+    isSuccess: true,
+    code: 'SUCCESS_001',
+    message: '요청에 성공했습니다.',
+    result: {
+      policies: sorted
+        .slice(start, start + pageSize)
+        .map((policy) => toApiPolicyListItem(policy, user)),
+      page: pageNumber,
+      size: pageSize,
+      totalElements: sorted.length,
+      totalPages,
+      hasNext: pageNumber + 1 < totalPages,
+    },
   });
 };
 
@@ -216,7 +258,7 @@ const requireUser = (user) => (user ? null : fail(401, '로그인이 필요한 �
 export const HANDLERS = [
   {
     method: 'post',
-    match: (url) => url === '/api/auth/login',
+    match: (url) => url === '/api/members/login',
     handle: ({ body }) => {
       const user = mockStore.getState().users.find((item) => item.email === body.email);
 
@@ -225,20 +267,77 @@ export const HANDLERS = [
       }
 
       return ok({
-        accessToken: buildAccessToken(user.id),
-        refreshToken: `mock-refresh-token-${user.id}`,
-        user: toPublicUser(user),
+        accessToken: buildAccessToken(user.id, user.role),
+        memberId: user.id,
+        nickname: user.nickname,
       });
     },
   },
   {
     method: 'post',
-    match: (url) => url === '/api/auth/signup',
+    match: (url) => url === '/api/members/email-verifications',
     handle: ({ body }) => {
       const isDuplicated = mockStore.getState().users.some((item) => item.email === body.email);
 
       if (isDuplicated) {
         return fail(409, '이미 가입된 이메일이에요');
+      }
+
+      mockStore.update((state) => {
+        state.emailVerifications ??= {};
+        state.emailVerifications[body.email] = {
+          code: '384021',
+          expiresAt: Date.now() + 5 * 60 * 1000,
+          verifiedUntil: null,
+        };
+
+        return state;
+      });
+
+      return ok({ expiresInSeconds: 300 });
+    },
+  },
+  {
+    method: 'post',
+    match: (url) => url === '/api/members/email-verifications/confirmation',
+    handle: ({ body }) => {
+      const verification = mockStore.getState().emailVerifications?.[body.email];
+
+      if (!verification || verification.expiresAt <= Date.now()) {
+        return fail(400, '인증 코드가 만료됐어요. 다시 받아 주세요');
+      }
+
+      if (verification.code !== body.code) {
+        return fail(400, '인증 코드가 올바르지 않아요');
+      }
+
+      mockStore.update((state) => {
+        state.emailVerifications[body.email] = {
+          code: null,
+          expiresAt: null,
+          verifiedUntil: Date.now() + 30 * 60 * 1000,
+        };
+
+        return state;
+      });
+
+      return ok({ verified: true });
+    },
+  },
+  {
+    method: 'post',
+    match: (url) => url === '/api/members',
+    handle: ({ body }) => {
+      const isDuplicated = mockStore.getState().users.some((item) => item.email === body.email);
+
+      if (isDuplicated) {
+        return fail(409, '이미 가입된 이메일이에요');
+      }
+
+      const verification = mockStore.getState().emailVerifications?.[body.email];
+
+      if (!verification?.verifiedUntil || verification.verifiedUntil <= Date.now()) {
+        return fail(400, '이메일 인증을 먼저 완료해 주세요');
       }
 
       const created = mockStore.update((state) => {
@@ -250,12 +349,23 @@ export const HANDLERS = [
           nickname: body.nickname,
           role: 'USER',
           joinedAt: new Date().toISOString().slice(0, 10),
-          profile: {},
+          profile: {
+            birthDate: body.profile.birth,
+            sidoCode: body.profile.regionCode.slice(0, 2),
+            regionCode: body.profile.regionCode,
+            employmentCode: body.profile.employmentCode,
+            houseless: body.profile.houselessYn,
+            marriageCode: body.profile.marriageCode ?? '',
+            incomeRange: body.profile.incomeRangeCode ?? '',
+            educationCode: body.profile.educationCode ?? '',
+            housingType: body.profile.housingType ?? '',
+          },
         };
 
         state.users.push(user);
         state.favorites[id] = [];
         state.notifications[id] = [];
+        delete state.emailVerifications[body.email];
         state.lastUserId = id;
 
         return state;
@@ -265,13 +375,13 @@ export const HANDLERS = [
 
       // 설계서 F-01: 가입하면 자동 로그인 후 조건 등록으로 이어진다.
       return ok({
-        accessToken: buildAccessToken(user.id),
+        accessToken: buildAccessToken(user.id, user.role),
         refreshToken: `mock-refresh-token-${user.id}`,
         user: toPublicUser(user),
       });
     },
   },
-  { method: 'post', match: (url) => url === '/api/auth/logout', handle: () => ok({}) },
+  { method: 'post', match: (url) => url === '/api/members/logout', handle: () => ok({}) },
   {
     method: 'post',
     match: (url) => url === '/api/auth/find-email',
@@ -288,12 +398,12 @@ export const HANDLERS = [
   },
   {
     method: 'get',
-    match: (url) => url === '/api/me',
+    match: (url) => url === '/api/members/me',
     handle: ({ user }) => requireUser(user) ?? ok(toPublicUser(user)),
   },
   {
-    method: 'delete',
-    match: (url) => url === '/api/me',
+    method: 'patch',
+    match: (url) => url === '/api/members/me/delete',
     handle: ({ user }) => {
       const denied = requireUser(user);
       if (denied) {
@@ -314,55 +424,28 @@ export const HANDLERS = [
   {
     method: 'get',
     match: (url) => url === '/api/members/me/profile',
-    handle: ({ user, params }) => {
-      const denied = requireUser(user);
-      if (denied) {
-        return denied;
-      }
-
-      if (Number(params.memberId) !== user.id) {
-        return fail(404, '회원을 찾을 수 없어요');
-      }
-
-      return ok(user.profile ?? {});
-    },
+    handle: ({ user }) => requireUser(user) ?? ok(user.profile ?? {}),
   },
   {
     method: 'patch',
     match: (url) => url === '/api/members/me/profile',
-    handle: ({ user, params, body }) => {
+    handle: ({ user, body }) => {
       const denied = requireUser(user);
       if (denied) {
         return denied;
       }
 
-      if (Number(params.memberId) !== user.id) {
-        return fail(404, '회원을 찾을 수 없어요');
-      }
-
-      const profile = {
-        birthDate: body.birth ?? '',
-        sidoCode: body.regionCode?.slice(0, 2) ?? '',
-        regionCode: body.regionCode ?? '',
-        employmentCode: body.employmentCode ?? '',
-        houseless: body.houselessYn ?? null,
-        marriageCode: body.marriageCode ?? '',
-        incomeRange: body.incomeRangeCode ?? '',
-        educationCode: body.educationCode ?? '',
-        housingType: body.housingType ?? '',
-      };
-
       mockStore.update((state) => {
         const target = state.users.find((item) => item.id === user.id);
-        target.profile = { ...target.profile, ...profile };
+        target.profile = { ...target.profile, ...body };
 
         return state;
       });
 
-      return ok(profile);
+      return ok(body);
     },
   },
-  { method: 'get', match: (url) => url === '/api/codes', handle: () => ok(CODE_GROUPS) },
+  { method: 'get', match: (url) => url === '/api/regions', handle: () => ok(CODE_GROUPS.regions) },
   {
     method: 'get',
     match: (url) => url === '/api/policies/card-news',
@@ -374,12 +457,17 @@ export const HANDLERS = [
   },
   {
     method: 'get',
-    match: (url) => url === '/api/policies',
-    handle: ({ params, user }) => listPolicies(params, user),
+    match: (url) => url === '/api/policies/housing',
+    handle: ({ params }) => listPolicies(params, null),
   },
   {
     method: 'get',
-    match: (url) => /^\/api\/policies\/\d+$/.test(url),
+    match: (url) => url === '/api/policies/housing/me',
+    handle: ({ params, user }) => requireUser(user) ?? listPolicies(params, user),
+  },
+  {
+    method: 'get',
+    match: (url) => /^\/api\/policies\/[^/]+$/.test(url),
     handle: ({ url, user }) => {
       const policy = findActivePolicyById(url.split('/').at(-1));
 
@@ -388,22 +476,62 @@ export const HANDLERS = [
       }
 
       const judgements = user ? buildJudgements(policy, user.profile ?? {}) : [];
+      const group = judgements.length ? getRecommendationGroup(judgements) : null;
+      const resultStatus = {
+        [JUDGE_RESULT.MET]: 'ABLE',
+        [JUDGE_RESULT.NOT_MET]: 'DISABLE',
+        [JUDGE_RESULT.NEED_CHECK]: 'UNKNOWN',
+      };
+      const conditions = judgements.length
+        ? judgements.map((judgement) => ({
+            type: judgement.conditionKey,
+            status: resultStatus[judgement.result],
+            policyCondition: judgement.requirement,
+            memberValue: judgement.myValue,
+          }))
+        : buildRawConditions(policy).map((condition) => ({
+            type: condition.key,
+            status: 'UNKNOWN',
+            policyCondition: condition.value,
+            memberValue: '',
+          }));
+      const overallStatus =
+        group === RECOMMENDATION_GROUP.POSSIBLE
+          ? 'ABLE'
+          : group === RECOMMENDATION_GROUP.IMPOSSIBLE
+            ? 'DISABLE'
+            : 'UNKNOWN';
 
       return ok({
-        ...toPolicySummary(policy),
-        cardNews: buildCardNews(policy),
-        description: policy.description,
-        benefit: policy.benefit,
-        target: policy.target,
-        applyMethod: policy.applyMethod,
-        applyUrl: policy.applyUrl,
-        extraQualification: policy.requirement?.extraQualification ?? '',
-        rawConditions: buildRawConditions(policy),
-        judgements,
-        judgementSummary: judgements.length
-          ? buildJudgementReason(judgements, getRecommendationGroup(judgements))
-          : '',
-        judgementGroup: judgements.length ? getRecommendationGroup(judgements) : null,
+        isSuccess: true,
+        code: 'SUCCESS_001',
+        message: '요청에 성공했습니다.',
+        result: {
+          policyId: String(policy.id),
+          policyName: policy.title,
+          categories: [policy.subtype],
+          categoryLabels: [findSubtypeName(policy.subtype)],
+          apiSubCategory: findSubtypeName(policy.subtype),
+          keywords: '',
+          description: policy.description,
+          supportContent: policy.benefit,
+          extraQualification: policy.requirement?.extraQualification ?? '',
+          applyPeriod:
+            policy.applyPeriodType === APPLY_PERIOD_TYPE.ALWAYS ? 'ALWAYS' : 'SPECIFIC_PERIOD',
+          applyPeriodLabel:
+            policy.applyPeriodType === APPLY_PERIOD_TYPE.ALWAYS ? '상시' : '특정기간',
+          applyStartDate: policy.applyStartDate,
+          applyEndDate: policy.applyEndDate,
+          applyMethod: policy.applyMethod,
+          applyUrl: policy.applyUrl,
+          refUrl: policy.applyUrl,
+          activeYn: true,
+          isFavorite: Boolean(
+            user && getFavorites(user.id).some((favorite) => favorite.policyId === policy.id),
+          ),
+          overallStatus,
+          conditions,
+        },
       });
     },
   },
@@ -486,7 +614,7 @@ export const HANDLERS = [
   },
   {
     method: 'get',
-    match: (url) => url === '/api/me/notifications',
+    match: (url) => url === '/api/notification',
     handle: ({ user }) => {
       const denied = requireUser(user);
       if (denied) {
@@ -508,28 +636,7 @@ export const HANDLERS = [
   },
   {
     method: 'patch',
-    match: (url) => url === '/api/me/notifications/read-all',
-    handle: ({ user }) => {
-      const denied = requireUser(user);
-      if (denied) {
-        return denied;
-      }
-
-      mockStore.update((state) => {
-        state.notifications[user.id] = getNotifications(user.id).map((item) => ({
-          ...item,
-          isRead: true,
-        }));
-
-        return state;
-      });
-
-      return ok({});
-    },
-  },
-  {
-    method: 'patch',
-    match: (url) => /^\/api\/me\/notifications\/\d+\/read$/.test(url),
+    match: (url) => /^\/api\/notification\/\d+\/read$/.test(url),
     handle: ({ url, user }) => {
       const denied = requireUser(user);
       if (denied) {
@@ -554,7 +661,7 @@ export const HANDLERS = [
   },
   {
     method: 'delete',
-    match: (url) => /^\/api\/me\/notifications\/\d+$/.test(url),
+    match: (url) => /^\/api\/notification\/\d+$/.test(url),
     handle: ({ url, user }) => {
       const denied = requireUser(user);
       if (denied) {

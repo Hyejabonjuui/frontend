@@ -3,7 +3,7 @@ import httpClient from './httpClient';
 
 const unwrapResult = (response) => response?.result ?? response;
 
-const toConditionForm = (profile) => {
+export const toConditionForm = (profile) => {
   if (!profile) {
     return {};
   }
@@ -28,7 +28,7 @@ const toConditionForm = (profile) => {
 
 const emptyToNull = (value) => (value === '' || value === undefined ? null : value);
 
-const toProfileRequest = (conditionForm) => ({
+export const toProfileRequest = (conditionForm) => ({
   birth: conditionForm.birthDate,
   regionCode: conditionForm.regionCode,
   employmentCode: conditionForm.employmentCode,
@@ -39,21 +39,25 @@ const toProfileRequest = (conditionForm) => ({
   housingType: emptyToNull(conditionForm.housingType),
 });
 
-export const getMyProfile = () => httpClient.get(ENDPOINTS.USER.ME);
+export const getMyProfile = async () => {
+  const response = await httpClient.get(ENDPOINTS.USER.ME);
+  const account = unwrapResult(response);
 
-export const getMyConditions = async (memberId) => {
-  const response = await httpClient.get(ENDPOINTS.USER.PROFILE, { params: { memberId } });
-
-  return toConditionForm(unwrapResult(response));
+  return {
+    ...account,
+    id: account.id ?? account.memberId,
+    joinedAt: account.joinedAt ?? account.createdAt?.slice(0, 10),
+    hasProfile: account.hasProfile ?? (account.memberId == null ? undefined : true),
+  };
 };
 
-export const updateMyConditions = async (conditionForm, memberId) => {
-  const response = await httpClient.patch(ENDPOINTS.USER.PROFILE, toProfileRequest(conditionForm), {
-    params: { memberId },
-  });
+export const getMyConditions = async () =>
+  toConditionForm(unwrapResult(await httpClient.get(ENDPOINTS.USER.PROFILE)));
 
-  return toConditionForm(unwrapResult(response));
-};
+export const updateMyConditions = async (conditionForm) =>
+  toConditionForm(
+    unwrapResult(await httpClient.patch(ENDPOINTS.USER.PROFILE, toProfileRequest(conditionForm))),
+  );
 
 /** F-05: 탈퇴하면 조건·관심 정책·알림이 함께 지워진다. */
-export const deleteAccount = () => httpClient.delete(ENDPOINTS.USER.ME);
+export const deleteAccount = () => httpClient.patch(ENDPOINTS.USER.DELETE);

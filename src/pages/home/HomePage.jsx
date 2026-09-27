@@ -46,6 +46,17 @@ function HomePage() {
   });
   const { isFavorite, toggleFavorite } = useFavorites();
 
+  const isPolicyFavorite = (policyId) => {
+    const policy = policies.find((item) => String(item.id) === String(policyId));
+
+    return policy?.isFavorite ?? isFavorite(policyId);
+  };
+
+  const handlePolicyFavoriteToggle = async (policyId) => {
+    await toggleFavorite(policyId);
+    refetch();
+  };
+
   // 설계서 S-01: 목록이나 카드뉴스를 못 불러오면 오류 toast로 알린다.
   useEffect(() => {
     if (errorMessage || cardNewsState.errorMessage) {
@@ -194,8 +205,8 @@ function HomePage() {
           page={page}
           totalPages={totalPages}
           onPageChange={setPage}
-          isFavorite={isFavorite}
-          onToggleFavorite={toggleFavorite}
+          isFavorite={isPolicyFavorite}
+          onToggleFavorite={handlePolicyFavoriteToggle}
           onRetry={refetch}
         />
       </Box>

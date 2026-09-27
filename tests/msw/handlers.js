@@ -22,11 +22,11 @@ import {
   MEMBER_PROFILE,
   MEMBER_USER,
   NOTIFICATION_LIST,
-  POLICY_PAGE,
   RECOMMENDATIONS,
   TERM_LIST,
   TOKENS,
   USER_BY_TOKEN,
+  buildPolicyList,
   buildPolicyDetail,
 } from './fixtures';
 import { apiUrl, fail, ok } from './respond';
@@ -54,10 +54,22 @@ export const handlers = [
 
     return ok({
       accessToken: TOKENS.MEMBER,
-      refreshToken: 'test-refresh-token',
-      user: MEMBER_USER,
+      memberId: MEMBER_USER.id,
+      nickname: MEMBER_USER.nickname,
     });
   }),
+  http.post(apiUrl(ENDPOINTS.AUTH.SIGNUP), async ({ request }) => {
+    const body = await request.json();
+
+    return ok({
+      memberId: 3,
+      email: body.email,
+      nickname: body.nickname,
+      createdAt: '2026-09-27T00:00:00',
+    });
+  }),
+  http.post(apiUrl(ENDPOINTS.AUTH.EMAIL_VERIFICATION), () => ok({ expiresInSeconds: 300 })),
+  http.post(apiUrl(ENDPOINTS.AUTH.EMAIL_VERIFICATION_CONFIRMATION), () => ok({ verified: true })),
   http.post(apiUrl(ENDPOINTS.AUTH.LOGOUT), () => ok()),
 
   http.get(
@@ -72,11 +84,21 @@ export const handlers = [
     apiUrl(ENDPOINTS.USER.PROFILE),
     withUser(async ({ request }) => ok(await request.json())),
   ),
+  http.patch(
+    apiUrl(ENDPOINTS.USER.DELETE),
+    withUser(() => ok()),
+  ),
 
-  http.get(apiUrl(ENDPOINTS.CODE.LIST), () => ok(CODES)),
+  http.get(apiUrl(ENDPOINTS.CODE.REGIONS), () => ok(CODES.regions)),
   http.get(apiUrl(ENDPOINTS.POLICY.TERMS), () => ok(TERM_LIST)),
   http.get(apiUrl(ENDPOINTS.POLICY.CARD_NEWS), () => ok(CARD_NEWS)),
-  http.get(apiUrl(ENDPOINTS.POLICY.LIST), () => ok(POLICY_PAGE)),
+  http.get(apiUrl(ENDPOINTS.POLICY.LIST), () =>
+    ok({ isSuccess: true, result: buildPolicyList({ isAuthenticated: false }) }),
+  ),
+  http.get(
+    apiUrl(ENDPOINTS.POLICY.MEMBER_LIST),
+    withUser(() => ok({ isSuccess: true, result: buildPolicyList({ isAuthenticated: true }) })),
+  ),
   http.get(apiUrl(ENDPOINTS.POLICY.DETAIL(':policyId')), ({ params, request }) => {
     const policy = POLICIES.find((item) => item.id === Number(params.policyId));
 
@@ -84,7 +106,12 @@ export const handlers = [
       return fail(404, '요청한 정보를 찾을 수 없어요');
     }
 
-    return ok(buildPolicyDetail(policy, { isAuthenticated: Boolean(findUser(request)) }));
+    return ok({
+      isSuccess: true,
+      code: 'SUCCESS_001',
+      message: '요청에 성공했습니다.',
+      result: buildPolicyDetail(policy, { isAuthenticated: Boolean(findUser(request)) }),
+    });
   }),
   http.post(apiUrl(ENDPOINTS.POLICY.RECOMMENDATIONS), () => ok(RECOMMENDATIONS)),
 
@@ -104,6 +131,14 @@ export const handlers = [
   http.get(
     apiUrl(ENDPOINTS.NOTIFICATION.LIST),
     withUser(() => ok(NOTIFICATION_LIST)),
+  ),
+  http.patch(
+    apiUrl(ENDPOINTS.NOTIFICATION.READ(':notificationId')),
+    withUser(() => ok()),
+  ),
+  http.delete(
+    apiUrl(ENDPOINTS.NOTIFICATION.DETAIL(':notificationId')),
+    withUser(() => ok()),
   ),
 
   http.post(

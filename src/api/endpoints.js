@@ -5,21 +5,25 @@
  */
 export const ENDPOINTS = {
   AUTH: {
-    LOGIN: '/api/auth/login',
-    SIGNUP: '/api/auth/signup', // F-01
-    LOGOUT: '/api/auth/logout',
+    LOGIN: '/api/members/login',
+    SIGNUP: '/api/members', // 계정 + profile 동시 저장
+    EMAIL_VERIFICATION: '/api/members/email-verifications',
+    EMAIL_VERIFICATION_CONFIRMATION: '/api/members/email-verifications/confirmation',
+    LOGOUT: '/api/members/logout',
     FIND_EMAIL: '/api/auth/find-email',
     RESET_PASSWORD: '/api/auth/reset-password',
   },
   USER: {
-    ME: '/api/me', // F-05 (DELETE = 회원 탈퇴)
+    ME: '/api/members/me',
+    DELETE: '/api/members/me/delete',
     PROFILE: '/api/members/me/profile', // F-03
   },
   CODE: {
-    LIST: '/api/codes', // F-03 선택지
+    REGIONS: '/api/regions',
   },
   POLICY: {
-    LIST: '/api/policies',
+    LIST: '/api/policies/housing',
+    MEMBER_LIST: '/api/policies/housing/me',
     DETAIL: (policyId) => `/api/policies/${policyId}`, // F-11
     CARD_NEWS: '/api/policies/card-news',
     RECOMMENDATIONS: '/api/recommendations', // F-14 (POST { query })
@@ -30,10 +34,9 @@ export const ENDPOINTS = {
     DETAIL: (policyId) => `/api/favorite/${policyId}`, // F-16 POST/DELETE
   },
   NOTIFICATION: {
-    LIST: '/api/me/notifications',
-    DETAIL: (notificationId) => `/api/me/notifications/${notificationId}`,
-    READ: (notificationId) => `/api/me/notifications/${notificationId}/read`,
-    READ_ALL: '/api/me/notifications/read-all',
+    LIST: '/api/notification',
+    DETAIL: (notificationId) => `/api/notification/${notificationId}`,
+    READ: (notificationId) => `/api/notification/${notificationId}/read`,
   },
   ADMIN: {
     COLLECT: '/api/admin/collect', // F-09

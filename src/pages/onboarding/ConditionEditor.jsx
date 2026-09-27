@@ -17,9 +17,8 @@ import { getErrorMessage } from '@/utils/getErrorMessage';
 
 function ConditionEditor({ initialConditions, draft, submitLabel, onSaved }) {
   const { showSuccess, showError, showInfo } = useToast();
-  const { user, refreshUser } = useAuth();
-  const memberId = user?.id ?? user?.memberId;
-  const { codes, isLoading, errorMessage } = useCodes();
+  const { refreshUser } = useAuth();
+  const { codes, isLoading, errorMessage, refetch } = useCodes();
   const { form, fieldErrors, changeField, validate } = useConditionForm({
     ...initialConditions,
     ...draft,
@@ -44,7 +43,7 @@ function ConditionEditor({ initialConditions, draft, submitLabel, onSaved }) {
     setIsSubmitting(true);
 
     try {
-      await userApi.updateMyConditions(form, memberId);
+      await userApi.updateMyConditions(form);
       conditionDraft.clear();
       await refreshUser();
       showSuccess(TOAST_MESSAGES.CONDITION_SAVED);
@@ -61,7 +60,7 @@ function ConditionEditor({ initialConditions, draft, submitLabel, onSaved }) {
   }
 
   if (errorMessage) {
-    return <ErrorState message={errorMessage} />;
+    return <ErrorState message={errorMessage} onRetry={refetch} />;
   }
 
   return (

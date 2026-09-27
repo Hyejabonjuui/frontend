@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import * as policyApi from '@/api/policyApi';
+import { useAuth } from '@/hooks/useAuth';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 
 const INITIAL_LIST_STATE = {
@@ -12,16 +13,21 @@ const INITIAL_LIST_STATE = {
 };
 
 export const usePolicies = (params = {}) => {
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const paramsKey = JSON.stringify(params);
   const [reloadToken, setReloadToken] = useState(0);
   const [state, setState] = useState(INITIAL_LIST_STATE);
 
   useEffect(() => {
+    if (isAuthLoading) {
+      return undefined;
+    }
+
     let isActive = true;
 
     const loadPolicies = async () => {
       try {
-        const data = await policyApi.getPolicies(JSON.parse(paramsKey));
+        const data = await policyApi.getPolicies(JSON.parse(paramsKey), { isAuthenticated });
 
         if (isActive) {
           setState({
@@ -48,7 +54,7 @@ export const usePolicies = (params = {}) => {
     return () => {
       isActive = false;
     };
-  }, [paramsKey, reloadToken]);
+  }, [isAuthenticated, isAuthLoading, paramsKey, reloadToken]);
 
   const refetch = useCallback(() => {
     setState((previous) => ({ ...previous, isLoading: true, errorMessage: '' }));

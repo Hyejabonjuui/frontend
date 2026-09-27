@@ -77,6 +77,37 @@ export const POLICY_PAGE = {
   totalPages: Math.ceil(POLICIES.length / 8),
 };
 
+const UI_TO_API_CATEGORY = {
+  SUBSCRIPTION: 'PURCHASE',
+  PUBLIC_HOUSING: 'PUBLIC_RENT',
+  ETC_HOUSING: 'OTHER',
+};
+
+const toApiPolicyListItem = (policy, { isAuthenticated }) => ({
+  policy_id: String(policy.id),
+  policy_name: policy.title,
+  category_codes: [UI_TO_API_CATEGORY[policy.subtype] ?? policy.subtype],
+  category_names: [findSubtypeName(policy.subtype)],
+  regions:
+    policy.regionCode === 'ALL'
+      ? []
+      : [{ region_code: policy.regionCode, region_name: policy.regionName }],
+  nationwide: policy.regionCode === 'ALL',
+  apply_end_date: policy.applyEndDate,
+  apply_period_code: policy.applyPeriodType === 'ALWAYS' ? 'ALWAYS' : 'SPECIFIC_PERIOD',
+  d_day: null,
+  ...(isAuthenticated ? { favorite_yn: policy.id === POLICY.id } : {}),
+});
+
+export const buildPolicyList = ({ isAuthenticated }) => ({
+  policies: POLICIES.slice(0, 8).map((policy) => toApiPolicyListItem(policy, { isAuthenticated })),
+  page: 0,
+  size: 8,
+  totalElements: POLICIES.length,
+  totalPages: Math.ceil(POLICIES.length / 8),
+  hasNext: POLICIES.length > 8,
+});
+
 export const EMPTY_POLICY_PAGE = { content: [], totalCount: 0, totalPages: 0 };
 
 export const CARD_NEWS = { content: POLICIES.slice(0, 4).map(buildCardNews) };
@@ -111,20 +142,48 @@ export const JUDGEMENTS = [
   },
 ];
 
-/** 로그인 여부에 따라 판정 결과를 붙이거나 비운다. 판정은 로그인한 회원에게만 준다. */
+const RESULT_TO_API_STATUS = {
+  [JUDGE_RESULT.MET]: 'ABLE',
+  [JUDGE_RESULT.NOT_MET]: 'DISABLE',
+  [JUDGE_RESULT.NEED_CHECK]: 'UNKNOWN',
+};
+
+const toApiCondition = (judgement) => ({
+  type: judgement.conditionKey,
+  status: RESULT_TO_API_STATUS[judgement.result],
+  policyCondition: judgement.requirement,
+  memberValue: judgement.myValue,
+});
+
+/** 실제 정책 상세 API 계약을 재현한다. */
 export const buildPolicyDetail = (policy, { isAuthenticated }) => ({
-  ...toPolicySummary(policy),
-  cardNews: buildCardNews(policy),
+  policyId: String(policy.id),
+  policyName: policy.title,
+  categories: [policy.subtype],
+  categoryLabels: [findSubtypeName(policy.subtype)],
+  apiSubCategory: findSubtypeName(policy.subtype),
+  keywords: '',
   description: policy.description,
-  benefit: policy.benefit,
-  target: policy.target,
+  supportContent: policy.benefit,
+  extraQualification: policy.requirement?.extraQualification ?? '',
+  applyPeriod: policy.applyPeriodType === 'ALWAYS' ? 'ALWAYS' : 'SPECIFIC_PERIOD',
+  applyPeriodLabel: policy.applyPeriodType === 'ALWAYS' ? '상시' : '특정기간',
+  applyStartDate: policy.applyStartDate,
+  applyEndDate: policy.applyEndDate,
   applyMethod: policy.applyMethod,
   applyUrl: policy.applyUrl,
-  extraQualification: '',
-  rawConditions: RAW_CONDITIONS,
-  judgements: isAuthenticated ? JUDGEMENTS : [],
-  judgementSummary: isAuthenticated ? '소득을 입력하면 더 정확히 알려드려요' : '',
-  judgementGroup: isAuthenticated ? RECOMMENDATION_GROUP.NEED_CHECK : null,
+  refUrl: policy.applyUrl,
+  activeYn: true,
+  isFavorite: isAuthenticated,
+  overallStatus: isAuthenticated ? 'DISABLE' : 'UNKNOWN',
+  conditions: isAuthenticated
+    ? JUDGEMENTS.map(toApiCondition)
+    : RAW_CONDITIONS.map((condition) => ({
+        type: condition.key,
+        status: 'UNKNOWN',
+        policyCondition: condition.value,
+        memberValue: '',
+      })),
 });
 
 const toRecommendation = (policy, reason) => ({

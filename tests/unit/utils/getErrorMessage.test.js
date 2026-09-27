@@ -7,10 +7,22 @@ import { getErrorMessage, isCanceledError } from '@/utils/getErrorMessage';
 const responseError = (status, data = {}) => ({ response: { status, data } });
 
 describe('getErrorMessage', () => {
-  it('서버가 보낸 message를 가장 먼저 쓴다', () => {
+  it('알려진 API 코드가 없으면 서버가 보낸 message를 쓴다', () => {
     expect(getErrorMessage(responseError(400, { message: '이미 가입된 이메일이에요' }))).toBe(
       '이미 가입된 이메일이에요',
     );
+  });
+
+  it.each([
+    ['VERIFY_001', '인증 코드가 올바르지 않아요'],
+    ['VERIFY_002', '인증 코드가 만료됐어요. 다시 받아 주세요'],
+    ['VERIFY_003', '이메일 인증을 먼저 완료해 주세요'],
+    ['VERIFY_004', '인증 코드는 60초 후 다시 받을 수 있어요'],
+    ['VERIFY_005', '인증 코드 입력 횟수를 초과했어요. 코드를 다시 받아 주세요'],
+    ['MEMBER_002', '이미 가입된 이메일이에요'],
+    ['MAIL_001', '인증 메일을 보내지 못했어요. 잠시 후 다시 시도해 주세요'],
+  ])('알려진 API 코드 %s를 사용자용 문구로 바꾼다', (code, message) => {
+    expect(getErrorMessage(responseError(400, { code, message: '서버 원문' }))).toBe(message);
   });
 
   it.each([

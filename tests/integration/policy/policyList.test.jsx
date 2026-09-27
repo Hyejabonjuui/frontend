@@ -10,16 +10,50 @@ import { describe, expect, it } from 'vitest';
 import { ENDPOINTS } from '@/api/endpoints';
 import { EMPTY_MESSAGES, ERROR_MESSAGES } from '@/constants/messages';
 
-import { renderApp } from '../../helpers/renderApp';
-import { EMPTY_POLICY_PAGE, POLICY_PAGE } from '../../msw/fixtures';
+import { renderApp, signInAs } from '../../helpers/renderApp';
+import {
+  EMPTY_POLICY_PAGE,
+  POLICY,
+  POLICY_PAGE,
+  TOKENS,
+  buildPolicyList,
+} from '../../msw/fixtures';
 import { apiUrl, fail, ok } from '../../msw/respond';
 import { server } from '../../msw/server';
 
 describe('홈 정책 목록', () => {
-  it('정책을 받으면 목록과 건수를 보여 준다', async () => {
+  it('비로그인 목록 API에 명세 파라미터만 전달하고 정책과 건수를 보여 준다', async () => {
+    let requestInfo;
+
+    server.use(
+      http.get(apiUrl(ENDPOINTS.POLICY.LIST), ({ request }) => {
+        const url = new URL(request.url);
+        requestInfo = {
+          authorization: request.headers.get('Authorization'),
+          category: url.searchParams.get('category'),
+          sort: url.searchParams.get('sort'),
+          onlyEligible: url.searchParams.get('onlyEligible'),
+          page: url.searchParams.get('page'),
+          size: url.searchParams.get('size'),
+        };
+
+        return ok({
+          isSuccess: true,
+          result: buildPolicyList({ isAuthenticated: false }),
+        });
+      }),
+    );
     renderApp('/');
 
     expect(await screen.findByText(`신청 중 ${POLICY_PAGE.totalCount}건`)).toBeInTheDocument();
+    expect(requestInfo).toEqual({
+      authorization: null,
+      category: null,
+      sort: 'DEADLINE',
+      onlyEligible: null,
+      page: '0',
+      size: '8',
+    });
     POLICY_PAGE.content.forEach((policy) => {
       expect(screen.getAllByText(policy.title).length).toBeGreaterThan(0);
     });
@@ -43,5 +77,61 @@ describe('홈 정책 목록', () => {
 
     expect(await screen.findByText(EMPTY_MESSAGES.POLICY_LIST)).toBeInTheDocument();
     expect(screen.getByText('신청 중 0건')).toBeInTheDocument();
+  });
+
+  it('로그인하면 토큰과 회원 필터를 회원용 목록 API에 전달한다', async () => {
+    let requestInfo;
+
+    server.use(
+      http.get(apiUrl(ENDPOINTS.POLICY.MEMBER_LIST), ({ request }) => {
+        const url = new URL(request.url);
+        requestInfo = {
+          authorization: request.headers.get('Authorization'),
+          category: url.searchParams.get('category'),
+          sort: url.searchParams.get('sort'),
+          onlyEligible: url.searchParams.get('onlyEligible'),
+          page: url.searchParams.get('page'),
+          size: url.searchParams.get('size'),
+        };
+
+        return ok({
+          isSuccess: true,
+          result: {
+            policies: [
+              {
+                policy_id: String(POLICY.id),
+                policy_name: POLICY.title,
+                category_codes: ['MONTHLY_RENT'],
+                category_names: ['월세'],
+                regions: [],
+                nationwide: true,
+                apply_end_date: POLICY.applyEndDate,
+                apply_period_code: 'SPECIFIC_PERIOD',
+                d_day: 4,
+                favorite_yn: true,
+              },
+            ],
+            page: 0,
+            size: 8,
+            totalElements: 1,
+            totalPages: 1,
+            hasNext: false,
+          },
+        });
+      }),
+    );
+    signInAs(TOKENS.MEMBER);
+    renderApp('/');
+
+    expect(await screen.findByText('신청 중 1건')).toBeInTheDocument();
+    expect(requestInfo).toEqual({
+      authorization: `Bearer ${TOKENS.MEMBER}`,
+      category: null,
+      sort: 'DEADLINE',
+      onlyEligible: 'false',
+      page: '0',
+      size: '8',
+    });
+    expect(screen.getByRole('button', { name: '관심 정책 해제' })).toBeInTheDocument();
   });
 });
