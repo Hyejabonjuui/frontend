@@ -10,7 +10,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 
 import NotificationPopover from '@/components/notification/NotificationPopover';
 import { TOAST_MESSAGES } from '@/constants/messages';
@@ -69,14 +68,19 @@ function Header() {
           py: { xs: 0.5, sm: 0 },
         }}
       >
-        <Typography
+        <Box
           component={RouterLink}
           to={ROUTES.HOME}
-          variant="h2"
-          sx={{ color: 'text.primary', textDecoration: 'none', flexShrink: 0 }}
+          aria-label="혜자 홈"
+          sx={{ display: 'flex', flexShrink: 0 }}
         >
-          혜자.
-        </Typography>
+          <Box
+            component="img"
+            src={`${import.meta.env.BASE_URL}icons/hyeja_header_simple.svg`}
+            alt="혜자"
+            sx={{ display: 'block', width: 'auto', height: { xs: 28, sm: 32 } }}
+          />
+        </Box>
 
         <Stack
           direction="row"
