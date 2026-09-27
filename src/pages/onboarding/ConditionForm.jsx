@@ -42,6 +42,8 @@ function FieldLabel({ label, isRequired }) {
 }
 
 function RadioField({ label, isRequired, field, options, value, error, helperText, onChange }) {
+  const items = isRequired ? options.items : [{ value: '', label: '선택 안 함' }, ...options.items];
+
   return (
     <FormControl error={Boolean(error)}>
       <FieldLabel label={label} isRequired={isRequired} />
@@ -50,7 +52,7 @@ function RadioField({ label, isRequired, field, options, value, error, helperTex
         value={String(value ?? '')}
         onChange={(event) => onChange(field, options.parse(event.target.value))}
       >
-        {options.items.map((option) => (
+        {items.map((option) => (
           <FormControlLabel
             key={String(option.value)}
             value={String(option.value)}
@@ -80,7 +82,7 @@ function ConditionForm({ form, fieldErrors, codes, onChange }) {
   return (
     <Stack spacing={3}>
       <Stack spacing={2}>
-        <Divider textAlign="left">
+        <Divider textAlign="center">
           <Typography variant="body2">필수 조건</Typography>
         </Divider>
 
@@ -177,7 +179,7 @@ function ConditionForm({ form, fieldErrors, codes, onChange }) {
       </Stack>
 
       <Stack spacing={2}>
-        <Divider textAlign="left">
+        <Divider textAlign="center">
           <Typography variant="body2">선택 조건</Typography>
         </Divider>
 
