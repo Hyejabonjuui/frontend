@@ -39,7 +39,7 @@ test('계정과 조건을 함께 등록하고 검색하면 추천 결과를 본�
   await page.getByRole('radio', { name: '예, 무주택이에요' }).check();
   await page.getByRole('button', { name: '회원가입' }).click();
 
-  await expect(page).toHaveURL('/');
+  await expect(page).toHaveURL('/home');
   await expect(page.getByText('가입이 완료됐어요')).toBeVisible();
 
   await page.getByRole('textbox', { name: '정책 검색' }).fill('월세');

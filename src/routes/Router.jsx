@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import MainLayout from '@/components/layout/MainLayout';
@@ -9,6 +9,7 @@ import ProtectedRoute from '@/routes/ProtectedRoute';
 import PublicOnlyRoute from '@/routes/PublicOnlyRoute';
 
 const HomePage = lazy(() => import('@/pages/home/HomePage'));
+const LandingPage = lazy(() => import('@/pages/landing/LandingPage'));
 const SignupPage = lazy(() => import('@/pages/auth/SignupPage'));
 const FindEmailPage = lazy(() => import('@/pages/auth/FindEmailPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
@@ -26,6 +27,8 @@ function Router() {
     <Suspense fallback={<LoadingSpinner />}>
       <Routes>
         <Route element={<MainLayout />}>
+          <Route path={ROUTES.ROOT} element={<Navigate to={ROUTES.LANDING} replace />} />
+          <Route path={ROUTES.LANDING} element={<LandingPage />} />
           <Route path={ROUTES.HOME} element={<HomePage />} />
           <Route path={ROUTES.POLICY_DETAIL} element={<PolicyDetailPage />} />
           <Route path={ROUTES.RECOMMENDATION} element={<RecommendationPage />} />

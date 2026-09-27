@@ -13,7 +13,7 @@ test('주소창으로 관심 정책에 들어오면 로그인을 요구하고, �
 }) => {
   await page.goto('/favorites');
 
-  await expect(page).toHaveURL('/');
+  await expect(page).toHaveURL('/home');
   await expect(page.getByRole('dialog')).toBeVisible();
   await expect(page.getByText('로그인하면 내 조건으로 판정해드려요').first()).toBeVisible();
 

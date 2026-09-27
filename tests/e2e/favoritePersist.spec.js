@@ -11,7 +11,7 @@ import { MEMBER } from './support/accounts.js';
 import { header, loginFromHeader } from './support/actions.js';
 
 test('관심 정책으로 저장한 정책은 새로고침해도 관심 목록에 남는다', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/home');
   await loginFromHeader(page, MEMBER);
 
   // 아직 저장하지 않은 첫 정책의 상세로 간다.

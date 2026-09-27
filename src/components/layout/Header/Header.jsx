@@ -71,7 +71,7 @@ function Header() {
       >
         <Typography
           component={RouterLink}
-          to={ROUTES.HOME}
+          to={ROUTES.LANDING}
           variant="h2"
           sx={{ color: 'text.primary', textDecoration: 'none', flexShrink: 0 }}
         >

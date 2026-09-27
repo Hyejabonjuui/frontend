@@ -43,7 +43,7 @@ describe('홈 정책 목록', () => {
         });
       }),
     );
-    renderApp('/');
+    renderApp('/home');
 
     expect(
       await screen.findByText(`신청 중 ${POLICY_PAGE.totalCount}건`, undefined, { timeout: 5000 }),
@@ -63,7 +63,7 @@ describe('홈 정책 목록', () => {
 
   it('서버 오류면 오류 상태와 토스트를 보여 주고, 다시 시도하면 목록을 불러온다', async () => {
     server.use(http.get(apiUrl(ENDPOINTS.POLICY.LIST), () => fail(500), { once: true }));
-    const { user } = renderApp('/');
+    const { user } = renderApp('/home');
 
     expect(await screen.findByText(ERROR_MESSAGES.SERVER)).toBeInTheDocument();
     expect(screen.getByText(ERROR_MESSAGES.POLICY_LOAD_FAILED)).toBeInTheDocument();
@@ -75,7 +75,7 @@ describe('홈 정책 목록', () => {
 
   it('정책이 없으면 빈 상태를 보여 준다', async () => {
     server.use(http.get(apiUrl(ENDPOINTS.POLICY.LIST), () => ok(EMPTY_POLICY_PAGE)));
-    renderApp('/');
+    renderApp('/home');
 
     expect(await screen.findByText(EMPTY_MESSAGES.POLICY_LIST)).toBeInTheDocument();
     expect(screen.getByText('신청 중 0건')).toBeInTheDocument();
@@ -123,7 +123,7 @@ describe('홈 정책 목록', () => {
       }),
     );
     signInAs(TOKENS.MEMBER);
-    renderApp('/');
+    renderApp('/home');
 
     expect(await screen.findByText('신청 중 1건')).toBeInTheDocument();
     expect(requestInfo).toEqual({
