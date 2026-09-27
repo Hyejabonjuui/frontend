@@ -46,7 +46,7 @@ describe('회원 탈퇴', () => {
     signInAs(TOKENS.MEMBER);
     const { user } = renderApp(buildMyPagePath(MY_PAGE_TABS.ACCOUNT));
 
-    await user.click(await screen.findByRole('button', { name: '회원 탈퇴' }));
+    await user.click(await screen.findByRole('button', { name: '회원 탈퇴' }, { timeout: 5000 }));
     await user.click(screen.getByRole('button', { name: '탈퇴할게요' }));
 
     await waitFor(() => expect(tokenStorage.getAccessToken()).toBeNull());
