@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { toPolicyDetail } from '@/api/policyApi';
+import { toPolicyDetail, toPolicyList, toPolicyListParams } from '@/api/policyApi';
 import { APPLY_PERIOD_TYPE, JUDGE_RESULT, RECOMMENDATION_GROUP } from '@/constants/policy';
 
 describe('정책 상세 API 응답 변환', () => {
@@ -73,6 +73,72 @@ describe('정책 상세 API 응답 변환', () => {
       conditionKey: 'CUSTOM',
       conditionName: 'CUSTOM',
       result: JUDGE_RESULT.NEED_CHECK,
+    });
+  });
+});
+
+describe('정책 목록 API 요청·응답 변환', () => {
+  it('화면 필터와 1부터 시작하는 페이지를 백엔드 쿼리로 변환한다', () => {
+    expect(
+      toPolicyListParams({
+        subtype: 'SUBSCRIPTION',
+        sort: 'VIEWS',
+        onlyMatched: true,
+        page: 2,
+        size: 8,
+      }),
+    ).toEqual({
+      category: 'PURCHASE',
+      sort: 'VIEW_COUNT',
+      onlyEligible: true,
+      page: 1,
+      size: 8,
+    });
+
+    expect(toPolicyListParams({ subtype: 'ALL', page: 1 })).not.toHaveProperty('category');
+  });
+
+  it('회원용 목록 응답과 페이지 정보를 화면 모델로 변환한다', () => {
+    const result = toPolicyList({
+      isSuccess: true,
+      result: {
+        policies: [
+          {
+            policy_id: 'R202609230001',
+            policy_name: '청년 월세 지원',
+            category_codes: ['MONTHLY_RENT'],
+            category_names: ['월세'],
+            regions: [{ region_code: '11440', region_name: '서울특별시 마포구' }],
+            nationwide: false,
+            apply_end_date: '2026-09-30',
+            apply_period_code: 'SPECIFIC_PERIOD',
+            d_day: 4,
+            favorite_yn: true,
+          },
+        ],
+        page: 0,
+        size: 8,
+        totalElements: 24,
+        totalPages: 3,
+        hasNext: true,
+      },
+    });
+
+    expect(result).toMatchObject({
+      page: 1,
+      size: 8,
+      totalCount: 24,
+      totalPages: 3,
+      hasNext: true,
+    });
+    expect(result.content[0]).toMatchObject({
+      id: 'R202609230001',
+      title: '청년 월세 지원',
+      subtypeName: '월세',
+      regionName: '서울특별시 마포구',
+      applyPeriodType: APPLY_PERIOD_TYPE.PERIOD,
+      remainingDays: 4,
+      isFavorite: true,
     });
   });
 });
