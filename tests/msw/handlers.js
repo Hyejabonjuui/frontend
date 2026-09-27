@@ -16,12 +16,12 @@ import { POLICIES } from '@/mocks/data/policies';
 
 import {
   CARD_NEWS,
-  CODES,
   COLLECT_LOG,
   FAVORITES,
   MEMBER_PROFILE,
   MEMBER_USER,
   NOTIFICATION_LIST,
+  REGION_LIST_RESPONSE,
   RECOMMENDATIONS,
   TERM_LIST,
   TOKENS,
@@ -89,7 +89,7 @@ export const handlers = [
     withUser(() => ok()),
   ),
 
-  http.get(apiUrl(ENDPOINTS.CODE.REGIONS), () => ok(CODES.regions)),
+  http.get(apiUrl(ENDPOINTS.CODE.REGIONS), () => ok(REGION_LIST_RESPONSE)),
   http.get(apiUrl(ENDPOINTS.POLICY.TERMS), () => ok(TERM_LIST)),
   http.get(apiUrl(ENDPOINTS.POLICY.CARD_NEWS), () => ok(CARD_NEWS)),
   http.get(apiUrl(ENDPOINTS.POLICY.LIST), () =>

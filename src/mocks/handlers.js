@@ -21,6 +21,20 @@ import { buildAccessToken, findUserByToken, mockStore } from '@/mocks/store';
 const ok = (data) => ({ status: 200, data });
 const fail = (status, message) => ({ status, data: { message } });
 
+const buildRegionListResponse = () => ({
+  isSuccess: true,
+  code: 'SUCCESS_001',
+  message: '시군구 목록 조회에 성공했습니다.',
+  result: CODE_GROUPS.regions.map((sido) => ({
+    sidoCode: sido.sidoCode,
+    sidoName: sido.sidoName,
+    sigungu: sido.sigungu.map((region) => ({
+      regionCode: region.code,
+      sigunguName: region.name,
+    })),
+  })),
+});
+
 const toPublicUser = (user) => ({
   id: user.id,
   email: user.email,
@@ -445,7 +459,11 @@ export const HANDLERS = [
       return ok(body);
     },
   },
-  { method: 'get', match: (url) => url === '/api/regions', handle: () => ok(CODE_GROUPS.regions) },
+  {
+    method: 'get',
+    match: (url) => url === '/api/regions',
+    handle: () => ok(buildRegionListResponse()),
+  },
   {
     method: 'get',
     match: (url) => url === '/api/policies/card-news',
