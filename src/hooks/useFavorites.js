@@ -64,7 +64,7 @@ export const useFavorites = () => {
   );
 
   const isFavorite = useCallback(
-    (policyId) => favorites.some((favorite) => favorite.policyId === policyId),
+    (policyId) => favorites.some((favorite) => String(favorite.policyId) === String(policyId)),
     [favorites],
   );
 

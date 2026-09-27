@@ -176,7 +176,7 @@ function PolicyDetailPage() {
   const { openLoginDialog } = useLoginDialog();
   const { showError } = useToast();
   const { policy, isLoading, errorMessage, refetch } = usePolicyDetail(policyId);
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { isFavorite, isLoading: isFavoritesLoading, toggleFavorite } = useFavorites();
   const terms = useTerms();
   const [isCardNewsOpen, setIsCardNewsOpen] = useState(false);
   const wasAuthenticatedRef = useRef(isAuthenticated);
@@ -210,7 +210,8 @@ function PolicyDetailPage() {
     window.open(policy.applyUrl, '_blank', 'noopener');
   };
 
-  const saved = isFavorite(policy.id);
+  const saved = isFavoritesLoading ? policy.isFavorite : isFavorite(policy.id);
+  const policySource = [policy.organization, policy.regionName].filter(Boolean).join(' · ');
 
   return (
     <Stack spacing={3}>
@@ -246,9 +247,11 @@ function PolicyDetailPage() {
               />
             </Stack>
 
-            <Typography variant="body1" color="text.secondary">
-              {policy.organization} · {policy.regionName}
-            </Typography>
+            {policySource && (
+              <Typography variant="body1" color="text.secondary">
+                {policySource}
+              </Typography>
+            )}
 
             <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
               <Button
@@ -260,9 +263,11 @@ function PolicyDetailPage() {
                 {saved ? '관심 해제' : '관심 저장'}
               </Button>
 
-              <Button variant="outlined" onClick={() => setIsCardNewsOpen(true)}>
-                카드뉴스로 보기
-              </Button>
+              {policy.cardNews && (
+                <Button variant="outlined" onClick={() => setIsCardNewsOpen(true)}>
+                  카드뉴스로 보기
+                </Button>
+              )}
 
               <Button variant="contained" onClick={handleApplyClick}>
                 신청하러 가기 <AppIcon name="arrow-up-right" size={16} />
