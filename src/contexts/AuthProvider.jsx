@@ -16,7 +16,7 @@ function AuthProvider({ children }) {
 
     const restoreSession = async () => {
       try {
-        const profile = await userApi.getMyProfile(tokenStorage.getMemberId());
+        const profile = await userApi.getMyProfile();
         setUser(profile);
       } catch (error) {
         // 서버에 닿지 못한 것뿐이라면 토큰을 지우지 않는다. 인증이 거절된 경우에만 정리한다.

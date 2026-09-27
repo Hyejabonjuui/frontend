@@ -5,7 +5,7 @@
  *         추천 결과는 목 서버의 판정 로직(src/mocks/judge.js)이 만든다.
  *         그래서 그룹별 건수는 검증하지 않고 "세 그룹이 보인다"까지만 본다.
  * notice: 실서버로 돌리면 가입 계정이 실제 DB에 남는다. 그때는 테스트마다 고유한 이메일을 쓰고
- *         테스트 후 회원 탈퇴(DELETE /api/me)로 정리하는 단계를 추가한다.
+ *         테스트 후 회원 탈퇴(PATCH /api/members/me/delete)로 정리하는 단계를 추가한다.
  */
 import { expect, test } from '@playwright/test';
 

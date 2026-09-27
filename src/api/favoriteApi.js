@@ -8,6 +8,9 @@ const toFavorite = (favorite) => {
     return favorite;
   }
 
+  const subtype = favorite.category_code ?? favorite.category_codes?.[0];
+  const subtypeName = favorite.category_name ?? favorite.category_names?.[0];
+
   return {
     favoriteId: favorite.favorite_id,
     policyId: favorite.policy_id,
@@ -16,8 +19,8 @@ const toFavorite = (favorite) => {
     policy: {
       id: favorite.policy_id,
       title: favorite.policy_name,
-      subtype: favorite.category_code,
-      subtypeName: favorite.category_name,
+      subtype,
+      subtypeName,
       regionName: '',
       organization: '',
       summary: favorite.support_content ?? '',
@@ -37,9 +40,9 @@ const unwrapResult = (response) => response?.result ?? response;
  * 백엔드의 ApiResponse/result + snake_case 계약을 화면에서 쓰는 모델로 변환한다.
  * 변환을 API 경계에 두어 훅과 컴포넌트가 서버 필드명에 의존하지 않게 한다.
  */
-export const getFavorites = async ({ memberId, ...params }) => {
+export const getFavorites = async (params = {}) => {
   const response = await httpClient.get(ENDPOINTS.FAVORITE.LIST, {
-    params: { memberId, ...params },
+    params,
   });
   const result = unwrapResult(response) ?? {};
 
@@ -53,8 +56,6 @@ export const getFavorites = async ({ memberId, ...params }) => {
   };
 };
 
-export const addFavorite = (policyId, memberId) =>
-  httpClient.post(ENDPOINTS.FAVORITE.DETAIL(policyId), null, { params: { memberId } });
+export const addFavorite = (policyId) => httpClient.post(ENDPOINTS.FAVORITE.DETAIL(policyId));
 
-export const removeFavorite = (policyId, memberId) =>
-  httpClient.delete(ENDPOINTS.FAVORITE.DETAIL(policyId), { params: { memberId } });
+export const removeFavorite = (policyId) => httpClient.delete(ENDPOINTS.FAVORITE.DETAIL(policyId));
