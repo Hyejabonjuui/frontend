@@ -9,7 +9,7 @@
  *
  * 예외 응답(500, 401, 빈 목록)은 각 테스트에서 server.use(...)로 이 핸들러를 덮어써서 만든다.
  */
-import { http } from 'msw';
+import { HttpResponse, http } from 'msw';
 
 import { ENDPOINTS } from '@/api/endpoints';
 import { POLICIES } from '@/mocks/data/policies';
@@ -72,7 +72,26 @@ export const handlers = [
   }),
   http.post(apiUrl(ENDPOINTS.AUTH.EMAIL_VERIFICATION), () => ok({ expiresInSeconds: 300 })),
   http.post(apiUrl(ENDPOINTS.AUTH.EMAIL_VERIFICATION_CONFIRMATION), () => ok({ verified: true })),
-  http.post(apiUrl(ENDPOINTS.AUTH.LOGOUT), () => ok()),
+  http.post(apiUrl(ENDPOINTS.AUTH.LOGOUT), ({ request }) => {
+    if (!findUser(request)) {
+      return HttpResponse.json(
+        {
+          isSuccess: false,
+          code: 'COMMON_002',
+          message: '인증이 필요합니다.',
+          result: null,
+        },
+        { status: 401 },
+      );
+    }
+
+    return ok({
+      isSuccess: true,
+      code: 'SUCCESS_001',
+      message: '로그아웃에 성공했습니다.',
+      result: '로그아웃되었습니다.',
+    });
+  }),
   http.get(apiUrl(ENDPOINTS.AUTH.FIND_EMAIL), () =>
     ok({ isSuccess: true, code: 'SUCCESS_001', result: FIND_EMAIL_RESULT }),
   ),
