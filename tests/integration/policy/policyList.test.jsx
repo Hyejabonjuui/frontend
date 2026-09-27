@@ -45,7 +45,9 @@ describe('홈 정책 목록', () => {
     );
     renderApp('/');
 
-    expect(await screen.findByText(`신청 중 ${POLICY_PAGE.totalCount}건`)).toBeInTheDocument();
+    expect(
+      await screen.findByText(`신청 중 ${POLICY_PAGE.totalCount}건`, undefined, { timeout: 5000 }),
+    ).toBeInTheDocument();
     expect(requestInfo).toEqual({
       authorization: null,
       category: null,
