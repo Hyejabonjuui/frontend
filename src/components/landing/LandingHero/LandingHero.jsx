@@ -101,13 +101,15 @@ function PolicyArtwork() {
           }}
         >
           청년 월세
-          <br />한시 특별지원
+          <br />
+          한시 특별지원
         </Typography>
         <Typography
           sx={{ mt: 0.75, fontSize: { xs: 9, sm: 12 }, lineHeight: 1.55, color: 'text.secondary' }}
         >
           부모님과 떨어져 사는 청년의
-          <br />월세 부담을 덜어드려요.
+          <br />
+          월세 부담을 덜어드려요.
         </Typography>
 
         <Stack direction="row" spacing={0.75} sx={{ mt: { xs: 1.25, sm: 2 } }}>
@@ -160,7 +162,9 @@ function PolicyArtwork() {
           <AppIcon name="check" size={18} />
         </Box>
         <Box>
-          <Typography sx={{ fontSize: { xs: 8, sm: 10 }, fontWeight: 700, color: 'text.secondary' }}>
+          <Typography
+            sx={{ fontSize: { xs: 8, sm: 10 }, fontWeight: 700, color: 'text.secondary' }}
+          >
             예상 지원 혜택
           </Typography>
           <Typography sx={{ fontSize: { xs: 12, sm: 16 }, fontWeight: 800 }}>
@@ -288,8 +292,8 @@ function LandingHero() {
                 wordBreak: 'keep-all',
               }}
             >
-              흩어진 청년 주거 정책을 일일이 찾지 마세요. 내 조건에 맞는 혜택부터 신청에
-              필요한 정보까지 혜자가 쉽게 정리해드려요.
+              흩어진 청년 주거 정책을 일일이 찾지 마세요. 내 조건에 맞는 혜택부터 신청에 필요한
+              정보까지 혜자가 쉽게 정리해드려요.
             </Typography>
 
             <Stack

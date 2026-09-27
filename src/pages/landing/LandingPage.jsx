@@ -158,7 +158,8 @@ function LandingPage() {
               }}
             >
               내게 맞는 주거 혜택,
-              <br />오늘부터 혜자와 찾아봐요.
+              <br />
+              오늘부터 혜자와 찾아봐요.
             </Typography>
             <Typography sx={{ mt: 1.5, fontSize: { xs: 13, sm: 15 }, color: '#c9c5df' }}>
               복잡했던 정책 찾기를 더 쉽고 빠르게 시작하세요.
