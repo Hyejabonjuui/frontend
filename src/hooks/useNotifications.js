@@ -89,22 +89,34 @@ export const useNotifications = () => {
   }, []);
 
   const markAllAsRead = useCallback(async () => {
-    try {
-      await Promise.all(
-        unreadNotifications.map((notification) =>
-          notificationApi.markNotificationAsRead(notification.id),
-        ),
-      );
+    const results = await Promise.allSettled(
+      unreadNotifications.map((notification) =>
+        notificationApi.markNotificationAsRead(notification.id),
+      ),
+    );
+    const readNotificationIds = new Set(
+      results.flatMap((result, index) =>
+        result.status === 'fulfilled' ? [unreadNotifications[index].id] : [],
+      ),
+    );
+    const failedResult = results.find((result) => result.status === 'rejected');
+
+    if (readNotificationIds.size > 0) {
       setState((previous) => ({
         ...previous,
-        notifications: previous.notifications.map((notification) => ({
-          ...notification,
-          isRead: true,
-        })),
+        notifications: previous.notifications.map((notification) =>
+          readNotificationIds.has(notification.id)
+            ? { ...notification, isRead: true }
+            : notification,
+        ),
+        errorMessage: failedResult ? getErrorMessage(failedResult.reason) : '',
       }));
       notifyNotificationsUpdated();
-    } catch (error) {
-      setState((previous) => ({ ...previous, errorMessage: getErrorMessage(error) }));
+    } else if (failedResult) {
+      setState((previous) => ({
+        ...previous,
+        errorMessage: getErrorMessage(failedResult.reason),
+      }));
     }
   }, [unreadNotifications]);
 
