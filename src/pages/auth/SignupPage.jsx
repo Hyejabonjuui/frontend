@@ -320,7 +320,11 @@ function SignupPage() {
 
           {verificationStatus !== 'idle' && (
             <Stack spacing={1}>
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ alignItems: 'start' }}>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={1}
+                sx={{ alignItems: 'start' }}
+              >
                 <TextField
                   label="인증 코드"
                   value={verificationCode}
@@ -330,7 +334,9 @@ function SignupPage() {
                   }}
                   disabled={verificationStatus === 'verified'}
                   error={Boolean(verificationError)}
-                  helperText={verificationError ? <FieldError>{verificationError}</FieldError> : ' '}
+                  helperText={
+                    verificationError ? <FieldError>{verificationError}</FieldError> : ' '
+                  }
                   slotProps={{
                     htmlInput: { inputMode: 'numeric', maxLength: VERIFICATION_CODE_LENGTH },
                   }}
@@ -341,9 +347,7 @@ function SignupPage() {
                   variant="outlined"
                   onClick={handleConfirmVerification}
                   disabled={
-                    isConfirmingCode ||
-                    verificationStatus === 'verified' ||
-                    remainingSeconds <= 0
+                    isConfirmingCode || verificationStatus === 'verified' || remainingSeconds <= 0
                   }
                   sx={{ minWidth: 132, minHeight: 56 }}
                 >

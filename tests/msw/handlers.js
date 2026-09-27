@@ -69,9 +69,7 @@ export const handlers = [
     });
   }),
   http.post(apiUrl(ENDPOINTS.AUTH.EMAIL_VERIFICATION), () => ok({ expiresInSeconds: 300 })),
-  http.post(apiUrl(ENDPOINTS.AUTH.EMAIL_VERIFICATION_CONFIRMATION), () =>
-    ok({ verified: true }),
-  ),
+  http.post(apiUrl(ENDPOINTS.AUTH.EMAIL_VERIFICATION_CONFIRMATION), () => ok({ verified: true })),
   http.post(apiUrl(ENDPOINTS.AUTH.LOGOUT), () => ok()),
 
   http.get(
