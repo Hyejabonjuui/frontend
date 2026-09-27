@@ -121,22 +121,23 @@ src/
 
 설계서 주석에 적힌 경로는 그대로 따랐습니다.
 
-| 기능                | 경로                                                            |
-| ------------------- | --------------------------------------------------------------- |
-| F-01 회원가입       | `POST /api/auth/signup` → 자동 로그인 후 조건 등록              |
-| F-03 조건 조회·수정 | `GET/PATCH /api/members/me/profile` · 선택지 `GET /api/regions` |
-| F-05 회원 탈퇴      | `DELETE /api/me`                                                |
-| F-09 정책 수집      | `POST /api/admin/collect`                                       |
-| F-11 정책 상세      | `GET /api/policies/{id}` (로그인 시 조건 판정 포함)             |
-| F-13 용어 풀이      | `GET /api/terms`                                                |
-| F-14 추천           | `POST /api/recommendations` body `{ query }`                    |
-| F-16 관심 저장·해제 | `POST` / `DELETE /api/favorite/{policyId}?memberId={id}`        |
-| F-17 준비 상태 변경 | 미지원                                                          |
-| F-18 관심 목록      | `GET /api/favorite?memberId={id}`                               |
+| 기능                | 경로                                                                                            |
+| ------------------- | ----------------------------------------------------------------------------------------------- |
+| F-01 회원가입       | `POST /api/auth/signup` → 자동 로그인 후 조건 등록                                              |
+| F-03 조건 조회·수정 | `GET/PATCH /api/members/me/profile` · 선택지 `GET /api/regions`                                 |
+| F-05 회원 탈퇴      | `DELETE /api/me`                                                                                |
+| F-09 정책 수집      | `POST /api/admin/collect`                                                                       |
+| F-11 정책 상세      | `GET /api/policies/{id}` (로그인 시 조건 판정 포함)                                             |
+| F-13 용어 풀이      | `GET /api/terms`                                                                                |
+| F-14 추천           | `POST /api/recommendations` body `{ query }`                                                    |
+| F-16 관심 저장·해제 | `POST` / `DELETE /api/favorite/{policyId}?memberId={id}`                                        |
+| F-17 준비 상태 변경 | 미지원                                                                                          |
+| F-18 관심 목록      | `GET /api/favorite?memberId={id}`                                                               |
+| 알림 목록·읽음·삭제 | `GET /api/notification` · `PATCH /api/notification/{id}/read` · `DELETE /api/notification/{id}` |
 
 ## 아직 확정되지 않은 것
 
-- 설계서에 경로가 없는 기능(로그인·로그아웃·이메일 찾기·비밀번호 재발급·정책 목록·카드뉴스·알림)은
+- 설계서에 경로가 없는 기능(로그인·로그아웃·이메일 찾기·비밀번호 재발급·정책 목록·카드뉴스)은
   같은 규칙(`/api` 접두사 + 리소스 중심)으로 맞춘 가정값입니다.
 - 응답 봉투(`content` / `totalCount` / `totalPages`)와 정렬 옵션 "최신순"은 가정값입니다.
 - 토큰 재발급 흐름은 설계서에 없어 만들지 않았습니다. 지금은 401이면 로그아웃됩니다.

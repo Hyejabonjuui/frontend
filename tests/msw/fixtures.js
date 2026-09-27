@@ -227,7 +227,32 @@ export const FAVORITES = {
 
 export const EMPTY_LIST = { content: [] };
 
-export const NOTIFICATION_LIST = { content: NOTIFICATIONS };
+export const NOTIFICATION_LIST = {
+  isSuccess: true,
+  code: 'SUCCESS_001',
+  message: '성공입니다.',
+  result: {
+    notifications: NOTIFICATIONS.map((notification) => {
+      const policy = POLICIES.find((item) => item.id === notification.policyId);
+
+      return {
+        notification_id: notification.id,
+        member_id: MEMBER_USER.id,
+        policy_id: String(notification.policyId),
+        policy_name: policy?.title ?? notification.body,
+        content: notification.title,
+        read_yn: notification.isRead,
+        apply_end_date: policy?.applyEndDate ?? null,
+        created_at: notification.createdAt,
+      };
+    }),
+    page: 0,
+    size: 8,
+    totalElements: NOTIFICATIONS.length,
+    totalPages: 1,
+    hasNext: false,
+  },
+};
 
 export const COLLECT_LOG = {
   status: 'SUCCESS',
