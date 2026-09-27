@@ -29,6 +29,7 @@ import {
   USER_BY_TOKEN,
   buildPolicyList,
   buildPolicyDetail,
+  buildMemberAccountResponse,
 } from './fixtures';
 import { apiUrl, fail, ok } from './respond';
 
@@ -78,7 +79,7 @@ export const handlers = [
 
   http.get(
     apiUrl(ENDPOINTS.USER.ME),
-    withUser(({ user }) => ok(user)),
+    withUser(({ user }) => ok(buildMemberAccountResponse(user))),
   ),
   http.get(
     apiUrl(ENDPOINTS.USER.PROFILE),
