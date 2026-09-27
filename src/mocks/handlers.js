@@ -615,23 +615,45 @@ export const HANDLERS = [
   {
     method: 'get',
     match: (url) => url === '/api/notification',
-    handle: ({ user }) => {
+    handle: ({ params, user }) => {
       const denied = requireUser(user);
       if (denied) {
         return denied;
       }
 
-      const content = getNotifications(user.id).map((notification) => {
+      const page = Math.max(Number(params.page ?? 0), 0);
+      const size = Math.max(Number(params.size ?? 8), 1);
+      const notifications = getNotifications(user.id);
+      const totalPages = Math.ceil(notifications.length / size);
+      const pageNotifications = notifications.slice(page * size, (page + 1) * size);
+      const items = pageNotifications.map((notification) => {
         const policy = findActivePolicyById(notification.policyId);
 
         return {
-          ...notification,
-          applyPeriodType: policy?.applyPeriodType,
-          applyEndDate: policy?.applyEndDate,
+          notification_id: notification.id,
+          member_id: user.id,
+          policy_id: String(notification.policyId),
+          policy_name: policy?.title ?? notification.body,
+          content: notification.title,
+          read_yn: notification.isRead,
+          apply_end_date: policy?.applyEndDate ?? null,
+          created_at: notification.createdAt,
         };
       });
 
-      return ok({ content });
+      return ok({
+        isSuccess: true,
+        code: 'SUCCESS_001',
+        message: '성공입니다.',
+        result: {
+          notifications: items,
+          page,
+          size,
+          totalElements: notifications.length,
+          totalPages,
+          hasNext: page + 1 < totalPages,
+        },
+      });
     },
   },
   {
@@ -644,6 +666,7 @@ export const HANDLERS = [
       }
 
       const notificationId = Number(url.split('/').at(-2));
+      let updatedNotification;
 
       mockStore.update((state) => {
         const notification = state.notifications[user.id]?.find(
@@ -651,12 +674,31 @@ export const HANDLERS = [
         );
         if (notification) {
           notification.isRead = true;
+          updatedNotification = { ...notification };
         }
 
         return state;
       });
 
-      return ok({});
+      const policy = findActivePolicyById(updatedNotification?.policyId);
+
+      return ok({
+        isSuccess: true,
+        code: 'SUCCESS_001',
+        message: '성공입니다.',
+        result: updatedNotification
+          ? {
+              notification_id: updatedNotification.id,
+              member_id: user.id,
+              policy_id: String(updatedNotification.policyId),
+              policy_name: policy?.title ?? updatedNotification.body,
+              content: updatedNotification.title,
+              read_yn: true,
+              apply_end_date: policy?.applyEndDate ?? null,
+              created_at: updatedNotification.createdAt,
+            }
+          : null,
+      });
     },
   },
   {
