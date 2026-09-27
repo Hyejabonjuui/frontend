@@ -78,7 +78,7 @@ describe('정책 상세 API 응답 변환', () => {
 });
 
 describe('정책 목록 API 요청·응답 변환', () => {
-  it('화면 필터와 1부터 시작하는 페이지를 백엔드 쿼리로 변환한다', () => {
+  it('비로그인 목록 필터와 1부터 시작하는 페이지를 백엔드 쿼리로 변환한다', () => {
     expect(
       toPolicyListParams({
         subtype: 'SUBSCRIPTION',
@@ -90,12 +90,29 @@ describe('정책 목록 API 요청·응답 변환', () => {
     ).toEqual({
       category: 'PURCHASE',
       sort: 'VIEW_COUNT',
-      onlyEligible: true,
       page: 1,
       size: 8,
     });
 
     expect(toPolicyListParams({ subtype: 'ALL', page: 1 })).not.toHaveProperty('category');
+    expect(toPolicyListParams({ onlyMatched: true })).not.toHaveProperty('onlyEligible');
+  });
+
+  it('회원용 목록에만 필수 조건 필터를 포함한다', () => {
+    expect(
+      toPolicyListParams(
+        {
+          onlyMatched: true,
+          page: 1,
+        },
+        { includeEligibility: true },
+      ),
+    ).toEqual({
+      sort: 'DEADLINE',
+      onlyEligible: true,
+      page: 0,
+      size: 8,
+    });
   });
 
   it('회원용 목록 응답과 페이지 정보를 화면 모델로 변환한다', () => {
