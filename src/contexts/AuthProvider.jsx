@@ -16,8 +16,8 @@ function AuthProvider({ children }) {
 
     const restoreSession = async () => {
       try {
-        const profile = await userApi.getMyProfile();
-        setUser(profile);
+        const account = await userApi.getMyAccount();
+        setUser(account);
       } catch (error) {
         // 서버에 닿지 못한 것뿐이라면 토큰을 지우지 않는다. 인증이 거절된 경우에만 정리한다.
         if (error?.response?.status === 401) {
@@ -41,7 +41,7 @@ function AuthProvider({ children }) {
 
   const applySession = useCallback(async ({ accessToken, refreshToken, user: sessionUser }) => {
     tokenStorage.setTokens({ accessToken, refreshToken });
-    const authenticatedUser = sessionUser ?? (await userApi.getMyProfile());
+    const authenticatedUser = sessionUser ?? (await userApi.getMyAccount());
     setUser(authenticatedUser);
     return authenticatedUser;
   }, []);
@@ -79,8 +79,8 @@ function AuthProvider({ children }) {
   }, []);
 
   const refreshUser = useCallback(async () => {
-    const profile = await userApi.getMyProfile();
-    setUser(profile);
+    const account = await userApi.getMyAccount();
+    setUser(account);
   }, []);
 
   const value = useMemo(

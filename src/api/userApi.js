@@ -1,5 +1,6 @@
 import { ENDPOINTS } from './endpoints';
 import httpClient from './httpClient';
+import { tokenStorage } from '@/utils/tokenStorage';
 
 const unwrapResult = (response) => response?.result ?? response;
 
@@ -39,17 +40,20 @@ export const toProfileRequest = (conditionForm) => ({
   housingType: emptyToNull(conditionForm.housingType),
 });
 
-export const getMyProfile = async () => {
-  const response = await httpClient.get(ENDPOINTS.USER.ME);
+export const toAccount = (response) => {
   const account = unwrapResult(response);
 
   return {
-    ...account,
-    id: account.id ?? account.memberId,
-    joinedAt: account.joinedAt ?? account.createdAt?.slice(0, 10),
-    hasProfile: account.hasProfile ?? (account.memberId == null ? undefined : true),
+    id: account.memberId ?? account.id,
+    memberId: account.memberId ?? account.id,
+    email: account.email,
+    nickname: account.nickname,
+    joinedAt: (account.createdAt ?? account.joinedAt)?.slice(0, 10),
+    role: account.role ?? tokenStorage.getRole() ?? 'USER',
   };
 };
+
+export const getMyAccount = async () => toAccount(await httpClient.get(ENDPOINTS.USER.ME));
 
 export const getMyConditions = async () =>
   toConditionForm(unwrapResult(await httpClient.get(ENDPOINTS.USER.PROFILE)));
