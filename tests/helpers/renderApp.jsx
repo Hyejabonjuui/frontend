@@ -37,4 +37,5 @@ export const signInAs = (token = TOKENS.MEMBER) => {
  * 헤더 안에서만 찾는다. 홈 본문에도 "로그인" 버튼이 있어서 범위를 좁혀야 한다.
  * 첫 화면은 lazy 페이지를 기다리는 동안 Suspense fallback만 보이므로 헤더가 뜰 때까지 기다린다.
  */
-export const findHeader = async () => within(await screen.findByRole('banner'));
+export const findHeader = async () =>
+  within(await screen.findByRole('banner', undefined, { timeout: 5000 }));

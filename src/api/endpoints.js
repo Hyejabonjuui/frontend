@@ -13,7 +13,8 @@ export const ENDPOINTS = {
   },
   USER: {
     ME: '/api/members/me',
-    PROFILE: '/api/me/profile', // F-03
+    DELETE: '/api/members/me/delete',
+    PROFILE: '/api/members/me/profile', // F-03
   },
   CODE: {
     REGIONS: '/api/regions',
@@ -30,10 +31,9 @@ export const ENDPOINTS = {
     DETAIL: (policyId) => `/api/favorite/${policyId}`, // F-16 POST/DELETE
   },
   NOTIFICATION: {
-    LIST: '/api/me/notifications',
-    DETAIL: (notificationId) => `/api/me/notifications/${notificationId}`,
-    READ: (notificationId) => `/api/me/notifications/${notificationId}/read`,
-    READ_ALL: '/api/me/notifications/read-all',
+    LIST: '/api/notification',
+    DETAIL: (notificationId) => `/api/notification/${notificationId}`,
+    READ: (notificationId) => `/api/notification/${notificationId}/read`,
   },
   ADMIN: {
     COLLECT: '/api/admin/collect', // F-09

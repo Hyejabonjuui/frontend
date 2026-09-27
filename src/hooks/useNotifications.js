@@ -90,7 +90,11 @@ export const useNotifications = () => {
 
   const markAllAsRead = useCallback(async () => {
     try {
-      await notificationApi.markAllNotificationsAsRead();
+      await Promise.all(
+        unreadNotifications.map((notification) =>
+          notificationApi.markNotificationAsRead(notification.id),
+        ),
+      );
       setState((previous) => ({
         ...previous,
         notifications: previous.notifications.map((notification) => ({
@@ -102,7 +106,7 @@ export const useNotifications = () => {
     } catch (error) {
       setState((previous) => ({ ...previous, errorMessage: getErrorMessage(error) }));
     }
-  }, []);
+  }, [unreadNotifications]);
 
   const removeNotification = useCallback(
     async (notificationId) => {

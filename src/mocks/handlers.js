@@ -302,8 +302,8 @@ export const HANDLERS = [
     handle: ({ user }) => requireUser(user) ?? ok(toPublicUser(user)),
   },
   {
-    method: 'delete',
-    match: (url) => url === '/api/members/me',
+    method: 'patch',
+    match: (url) => url === '/api/members/me/delete',
     handle: ({ user }) => {
       const denied = requireUser(user);
       if (denied) {
@@ -323,12 +323,12 @@ export const HANDLERS = [
   },
   {
     method: 'get',
-    match: (url) => url === '/api/me/profile',
+    match: (url) => url === '/api/members/me/profile',
     handle: ({ user }) => requireUser(user) ?? ok(user.profile ?? {}),
   },
   {
-    method: 'put',
-    match: (url) => url === '/api/me/profile',
+    method: 'patch',
+    match: (url) => url === '/api/members/me/profile',
     handle: ({ user, body }) => {
       const denied = requireUser(user);
       if (denied) {
@@ -469,7 +469,7 @@ export const HANDLERS = [
   },
   {
     method: 'get',
-    match: (url) => url === '/api/me/notifications',
+    match: (url) => url === '/api/notification',
     handle: ({ user }) => {
       const denied = requireUser(user);
       if (denied) {
@@ -491,28 +491,7 @@ export const HANDLERS = [
   },
   {
     method: 'patch',
-    match: (url) => url === '/api/me/notifications/read-all',
-    handle: ({ user }) => {
-      const denied = requireUser(user);
-      if (denied) {
-        return denied;
-      }
-
-      mockStore.update((state) => {
-        state.notifications[user.id] = getNotifications(user.id).map((item) => ({
-          ...item,
-          isRead: true,
-        }));
-
-        return state;
-      });
-
-      return ok({});
-    },
-  },
-  {
-    method: 'patch',
-    match: (url) => /^\/api\/me\/notifications\/\d+\/read$/.test(url),
+    match: (url) => /^\/api\/notification\/\d+\/read$/.test(url),
     handle: ({ url, user }) => {
       const denied = requireUser(user);
       if (denied) {
@@ -537,7 +516,7 @@ export const HANDLERS = [
   },
   {
     method: 'delete',
-    match: (url) => /^\/api\/me\/notifications\/\d+$/.test(url),
+    match: (url) => /^\/api\/notification\/\d+$/.test(url),
     handle: ({ url, user }) => {
       const denied = requireUser(user);
       if (denied) {

@@ -29,7 +29,7 @@ export const useFavorites = () => {
 
     const loadFavorites = async () => {
       try {
-        const data = await favoriteApi.getFavorites({ memberId });
+        const data = await favoriteApi.getFavorites();
 
         if (isActive) {
           setState({
@@ -71,16 +71,16 @@ export const useFavorites = () => {
   const reload = useCallback(() => setReloadToken((previous) => previous + 1), []);
 
   const saveFavorite = useCallback(
-    async (policyId, authenticatedMemberId = memberId) => {
+    async (policyId) => {
       try {
-        await favoriteApi.addFavorite(policyId, authenticatedMemberId);
+        await favoriteApi.addFavorite(policyId);
         reload();
         showSuccess(TOAST_MESSAGES.FAVORITE_ADDED);
       } catch (error) {
         showError(getErrorMessage(error));
       }
     },
-    [memberId, reload, showError, showSuccess],
+    [reload, showError, showSuccess],
   );
 
   const toggleFavorite = useCallback(
@@ -88,7 +88,7 @@ export const useFavorites = () => {
       if (!isAuthenticated) {
         // 설계서 S-01: 비로그인 ♡는 안내 toast와 로그인 모달을 함께 띄우고,
         // 로그인에 성공하면 누르려던 저장을 이어서 실행한다.
-        requireLogin((authenticatedUser) => saveFavorite(policyId, authenticatedUser.id));
+        requireLogin(() => saveFavorite(policyId));
         return;
       }
 
@@ -98,23 +98,14 @@ export const useFavorites = () => {
       }
 
       try {
-        await favoriteApi.removeFavorite(policyId, memberId);
+        await favoriteApi.removeFavorite(policyId);
         reload();
         showSuccess(TOAST_MESSAGES.FAVORITE_REMOVED);
       } catch (error) {
         showError(getErrorMessage(error));
       }
     },
-    [
-      isAuthenticated,
-      isFavorite,
-      requireLogin,
-      reload,
-      saveFavorite,
-      showError,
-      showSuccess,
-      memberId,
-    ],
+    [isAuthenticated, isFavorite, requireLogin, reload, saveFavorite, showError, showSuccess],
   );
 
   const refetch = useCallback(() => {

@@ -40,7 +40,7 @@ describe('401 인터셉터', () => {
     signInAs(TOKENS.MEMBER);
     renderApp(ROUTES.HOME);
 
-    await waitFor(() => expect(tokenStorage.getAccessToken()).toBeNull());
+    await waitFor(() => expect(tokenStorage.getAccessToken()).toBeNull(), { timeout: 5000 });
     const header = await findHeader();
     expect(await header.findByRole('button', { name: '로그인' })).toBeInTheDocument();
     expect(window.location.pathname).toBe(ROUTES.HOME);

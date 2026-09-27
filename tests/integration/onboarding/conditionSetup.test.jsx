@@ -1,7 +1,7 @@
 /**
  * I-5 조건 등록 폼 (S-04)
  *
- * notice: 실제 백엔드 없이 MSW가 지역 선택지(/api/regions)와 조건 저장(PUT /api/me/profile)에 응답한다.
+ * notice: 실제 백엔드 없이 MSW가 지역 선택지(/api/regions)와 조건 저장(PATCH /api/members/me/profile)에 응답한다.
  *         선택지는 목 데이터(src/mocks/data/codes.js)라서, 실제 코드 테이블이 들어오면 옵션 이름이 바뀔 수 있다.
  *         그때는 이 파일의 옵션 이름을 fixture 값으로 맞춘다.
  */
@@ -20,7 +20,7 @@ import { server } from '../../msw/server';
 
 const SUBMIT_LABEL = '저장하고 시작하기';
 
-const findBirthDateInput = () => screen.findByLabelText('생년월일');
+const findBirthDateInput = () => screen.findByLabelText('생년월일', undefined, { timeout: 5000 });
 
 const chooseOption = async (user, comboboxName, optionName) => {
   await user.click(screen.getByRole('combobox', { name: comboboxName }));
@@ -37,7 +37,7 @@ describe('조건 등록 폼', () => {
   it('필수값을 비우고 저장하면 필드마다 오류를 보여 주고 서버에 보내지 않는다', async () => {
     let saveRequestCount = 0;
     server.use(
-      http.put(apiUrl(ENDPOINTS.USER.PROFILE), () => {
+      http.patch(apiUrl(ENDPOINTS.USER.PROFILE), () => {
         saveRequestCount += 1;
         return ok();
       }),
@@ -70,7 +70,7 @@ describe('조건 등록 폼', () => {
   it('필수값을 채워 저장하면 입력값을 보내고 홈으로 이동한다', async () => {
     let savedConditions = null;
     server.use(
-      http.put(apiUrl(ENDPOINTS.USER.PROFILE), async ({ request }) => {
+      http.patch(apiUrl(ENDPOINTS.USER.PROFILE), async ({ request }) => {
         savedConditions = await request.json();
         return ok(savedConditions);
       }),

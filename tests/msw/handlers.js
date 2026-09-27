@@ -78,9 +78,13 @@ export const handlers = [
     apiUrl(ENDPOINTS.USER.PROFILE),
     withUser(() => ok(MEMBER_PROFILE)),
   ),
-  http.put(
+  http.patch(
     apiUrl(ENDPOINTS.USER.PROFILE),
     withUser(async ({ request }) => ok(await request.json())),
+  ),
+  http.patch(
+    apiUrl(ENDPOINTS.USER.DELETE),
+    withUser(() => ok()),
   ),
 
   http.get(apiUrl(ENDPOINTS.CODE.REGIONS), () => ok(CODES.regions)),
@@ -114,6 +118,14 @@ export const handlers = [
   http.get(
     apiUrl(ENDPOINTS.NOTIFICATION.LIST),
     withUser(() => ok(NOTIFICATION_LIST)),
+  ),
+  http.patch(
+    apiUrl(ENDPOINTS.NOTIFICATION.READ(':notificationId')),
+    withUser(() => ok()),
+  ),
+  http.delete(
+    apiUrl(ENDPOINTS.NOTIFICATION.DETAIL(':notificationId')),
+    withUser(() => ok()),
   ),
 
   http.post(
