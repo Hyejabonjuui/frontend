@@ -22,7 +22,9 @@ describe('회원가입', () => {
     server.use(http.get(apiUrl(ENDPOINTS.CODE.REGIONS), () => fail(500), { once: true }));
     const { user } = renderApp(ROUTES.SIGNUP);
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(ERROR_MESSAGES.SERVER);
+    expect(await screen.findByRole('alert', {}, { timeout: 5000 })).toHaveTextContent(
+      ERROR_MESSAGES.SERVER,
+    );
 
     await user.click(screen.getByRole('button', { name: '다시 시도' }));
 
@@ -32,8 +34,18 @@ describe('회원가입', () => {
 
   it('계정과 profile을 한 요청으로 저장한 뒤 로그인한다', async () => {
     let signupBody;
+    let verificationEmail;
+    let verificationConfirmation;
 
     server.use(
+      http.post(apiUrl(ENDPOINTS.AUTH.EMAIL_VERIFICATION), async ({ request }) => {
+        verificationEmail = await request.json();
+        return ok({ expiresInSeconds: 300 });
+      }),
+      http.post(apiUrl(ENDPOINTS.AUTH.EMAIL_VERIFICATION_CONFIRMATION), async ({ request }) => {
+        verificationConfirmation = await request.json();
+        return ok({ verified: true });
+      }),
       http.post(apiUrl(ENDPOINTS.AUTH.SIGNUP), async ({ request }) => {
         signupBody = await request.json();
 
@@ -66,9 +78,22 @@ describe('회원가입', () => {
     await chooseOption(user, '시군구 선택', '마포구');
     await user.click(screen.getByRole('radio', { name: '재직자' }));
     await user.click(screen.getByRole('radio', { name: '예, 무주택이에요' }));
+
+    await user.click(screen.getByRole('button', { name: '회원가입' }));
+    expect(await screen.findByText('이메일 인증을 완료해 주세요')).toBeInTheDocument();
+    expect(signupBody).toBeUndefined();
+
+    await user.click(screen.getByRole('button', { name: '인증 코드 발송' }));
+    expect(await screen.findByText(/남은 시간 0[45]:\d{2}/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /재발송 \(\d+초\)/ })).toBeDisabled();
+    await user.type(screen.getByLabelText('인증 코드'), '384021');
+    await user.click(screen.getByRole('button', { name: '인증 코드 확인' }));
+    expect(await screen.findByText(/이메일 인증 완료/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: '회원가입' }));
 
     await waitFor(() => expect(window.location.pathname).toBe(ROUTES.HOME));
+    expect(verificationEmail).toEqual({ email: 'new@hyeja.kr' });
+    expect(verificationConfirmation).toEqual({ email: 'new@hyeja.kr', code: '384021' });
     expect(signupBody).toEqual({
       email: 'new@hyeja.kr',
       password: 'hyeja1234!',
@@ -86,5 +111,5 @@ describe('회원가입', () => {
     });
     expect(tokenStorage.getAccessToken()).toBe(TOKENS.NEW_USER);
     expect(screen.getByText('가입이 완료됐어요')).toBeInTheDocument();
-  }, 15000);
+  }, 30000);
 });

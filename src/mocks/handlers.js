@@ -233,6 +233,17 @@ export const HANDLERS = [
   },
   {
     method: 'post',
+    match: (url) => url === '/api/members/email-verifications',
+    handle: () => ok({ expiresInSeconds: 300 }),
+  },
+  {
+    method: 'post',
+    match: (url) => url === '/api/members/email-verifications/confirmation',
+    handle: ({ body }) =>
+      body.code === '384021' ? ok({ verified: true }) : fail(400, '인증 코드가 올바르지 않아요'),
+  },
+  {
+    method: 'post',
     match: (url) => url === '/api/members',
     handle: ({ body }) => {
       const isDuplicated = mockStore.getState().users.some((item) => item.email === body.email);
