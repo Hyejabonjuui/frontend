@@ -79,6 +79,14 @@ export const signup = async ({ profile, ...accountForm }) => {
 
 export const logout = () => httpClient.post(ENDPOINTS.AUTH.LOGOUT);
 
-export const findEmail = (form) => httpClient.post(ENDPOINTS.AUTH.FIND_EMAIL, form);
+export const toFindEmailParams = ({ nickname, birth }) => ({ nickname, birth });
+
+export const findEmail = async (form) => {
+  const response = await httpClient.get(ENDPOINTS.AUTH.FIND_EMAIL, {
+    params: toFindEmailParams(form),
+  });
+
+  return unwrapResult(response);
+};
 
 export const resetPassword = (form) => httpClient.post(ENDPOINTS.AUTH.RESET_PASSWORD, form);

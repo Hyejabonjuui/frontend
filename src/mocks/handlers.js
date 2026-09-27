@@ -21,6 +21,12 @@ import { buildAccessToken, findUserByToken, mockStore } from '@/mocks/store';
 const ok = (data) => ({ status: 200, data });
 const fail = (status, message) => ({ status, data: { message } });
 
+const maskEmail = (email) => {
+  const [localPart, domain] = email.split('@');
+
+  return `${localPart.slice(0, 3)}***@${domain}`;
+};
+
 const buildRegionListResponse = () => ({
   isSuccess: true,
   code: 'SUCCESS_001',
@@ -397,12 +403,31 @@ export const HANDLERS = [
   },
   { method: 'post', match: (url) => url === '/api/members/logout', handle: () => ok({}) },
   {
-    method: 'post',
-    match: (url) => url === '/api/auth/find-email',
-    handle: ({ body }) => {
-      const user = mockStore.getState().users.find((item) => item.nickname === body.nickname);
+    method: 'get',
+    match: (url) => url === '/api/members/find-email',
+    handle: ({ params }) => {
+      const user = mockStore
+        .getState()
+        .users.find(
+          (item) => item.nickname === params.nickname && item.profile?.birthDate === params.birth,
+        );
 
-      return user ? ok({ email: user.email }) : fail(404, '일치하는 회원을 찾지 못했어요');
+      return user
+        ? ok({
+            isSuccess: true,
+            code: 'SUCCESS_001',
+            message: '이메일 찾기에 성공했습니다.',
+            result: { email: maskEmail(user.email), joinedAt: user.joinedAt },
+          })
+        : {
+            status: 404,
+            data: {
+              isSuccess: false,
+              code: 'MEMBER_004',
+              message: '가입된 정보를 찾을 수 없습니다.',
+              result: null,
+            },
+          };
     },
   },
   {
