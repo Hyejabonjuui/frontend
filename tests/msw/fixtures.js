@@ -52,6 +52,11 @@ export const MEMBER_CREDENTIALS = { email: MEMBER.email, password: MEMBER.passwo
 
 export const MEMBER_PROFILE = { ...MEMBER.profile };
 
+export const FIND_EMAIL_RESULT = {
+  email: 'min***@hyeja.kr',
+  joinedAt: MEMBER.joinedAt,
+};
+
 export const TOKENS = {
   MEMBER: 'test-access-token-member',
   ADMIN: 'test-access-token-admin',

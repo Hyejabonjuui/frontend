@@ -18,6 +18,7 @@ import {
   CARD_NEWS,
   COLLECT_LOG,
   FAVORITES,
+  FIND_EMAIL_RESULT,
   MEMBER_PROFILE,
   MEMBER_USER,
   NOTIFICATION_LIST,
@@ -71,6 +72,9 @@ export const handlers = [
   http.post(apiUrl(ENDPOINTS.AUTH.EMAIL_VERIFICATION), () => ok({ expiresInSeconds: 300 })),
   http.post(apiUrl(ENDPOINTS.AUTH.EMAIL_VERIFICATION_CONFIRMATION), () => ok({ verified: true })),
   http.post(apiUrl(ENDPOINTS.AUTH.LOGOUT), () => ok()),
+  http.get(apiUrl(ENDPOINTS.AUTH.FIND_EMAIL), () =>
+    ok({ isSuccess: true, code: 'SUCCESS_001', result: FIND_EMAIL_RESULT }),
+  ),
 
   http.get(
     apiUrl(ENDPOINTS.USER.ME),
