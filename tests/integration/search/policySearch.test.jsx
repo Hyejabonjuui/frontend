@@ -5,7 +5,7 @@
  *         응답 형태(approved · underReview · declined)는 백엔드 PolicySearchResponseDTO를 따른다.
  *         DTO가 바뀌면 fixtures.POLICY_SEARCH_RESULT와 policyApi.toPolicySearchResult부터 맞춘다.
  */
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { http } from 'msw';
 import { describe, expect, it } from 'vitest';
 
@@ -59,7 +59,35 @@ describe('추천 결과', () => {
     renderApp(RESULT_PATH);
 
     expect(await screen.findByText(EMPTY_MESSAGES.SEARCH)).toBeInTheDocument();
-    expect(screen.getByText(TOAST_MESSAGES.NO_CANDIDATE)).toBeInTheDocument();
+    expect(await screen.findByText(TOAST_MESSAGES.NO_CANDIDATE)).toBeInTheDocument();
+  });
+
+  it('0건 뒤 다시 검색해도 0건이면 안내 토스트를 다시 보여 준다', async () => {
+    const requestedQueries = [];
+    server.use(
+      http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), ({ request }) => {
+        requestedQueries.push(new URL(request.url).searchParams.get('query'));
+
+        return ok(EMPTY_POLICY_SEARCH_RESULT);
+      }),
+    );
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp(RESULT_PATH);
+
+    expect(await screen.findByText(TOAST_MESSAGES.NO_CANDIDATE)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    await waitFor(() =>
+      expect(screen.queryByText(TOAST_MESSAGES.NO_CANDIDATE)).not.toBeInTheDocument(),
+    );
+
+    const searchInput = screen.getByRole('textbox', { name: '정책 검색' });
+    await user.clear(searchInput);
+    await user.type(searchInput, '전세');
+    await user.click(screen.getByRole('button', { name: '검색', exact: true }));
+
+    await waitFor(() => expect(requestedQueries).toEqual(['월세', '전세']));
+    expect(await screen.findByText(TOAST_MESSAGES.NO_CANDIDATE)).toBeInTheDocument();
   });
 
   it('서버 오류면 오류 상태를 보여 주고 다시 시도하면 결과를 불러온다', async () => {

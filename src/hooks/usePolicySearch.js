@@ -27,6 +27,8 @@ export const usePolicySearch = (params = {}) => {
     let isActive = true;
 
     const loadSearchResult = async () => {
+      setState((previous) => ({ ...previous, isLoading: true, errorMessage: '' }));
+
       try {
         const data = await policyApi.searchPolicies(JSON.parse(paramsKey));
 
