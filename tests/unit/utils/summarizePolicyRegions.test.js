@@ -162,19 +162,6 @@ describe('summarizePolicyRegions', () => {
     expect(summarize([])).toBe('전국');
   });
 
-  it('코드표의 모든 시군구를 포함하면 "전국"으로 보여 준다', () => {
-    const allRegions = [
-      ...ALL_SEOUL,
-      { region_code: '36110', region_name: '세종특별자치시' },
-      { region_code: '41131', region_name: '경기도 성남시 수정구' },
-      { region_code: '41133', region_name: '경기도 성남시 중원구' },
-      BUNDANG,
-    ];
-
-    expect(summarize(allRegions)).toBe('전국');
-    expect(summarize(allRegions, { sidoRegions: [] })).toBe('서울특별시 강남구 외 28개');
-  });
-
   it('지역 목록이 아예 없어도 "전국"으로 보여 준다', () => {
     expect(summarizePolicyRegions({ nationwide: false })).toEqual({
       label: '전국',

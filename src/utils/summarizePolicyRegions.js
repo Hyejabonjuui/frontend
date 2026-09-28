@@ -5,29 +5,20 @@ const toSidoCode = (regionCode) => String(regionCode).slice(0, 2);
 /** 예전 수집이 남긴 시·도 행(예: 11000)은 시군구가 아니므로 "전체" 판별에서 뺀다. */
 const isSidoRegionCode = (regionCode) => String(regionCode).endsWith('000');
 
-const collectSigunguCodes = (sido) =>
-  (sido.sigungu ?? []).map((sigungu) => sigungu.code).filter((code) => !isSidoRegionCode(code));
-
 const findWholeSidoCodes = (regionCodes, sidoRegions) => {
   const includedCodes = new Set(regionCodes);
 
   return new Set(
     sidoRegions
       .filter((sido) => {
-        const sigunguCodes = collectSigunguCodes(sido);
+        const sigunguCodes = (sido.sigungu ?? [])
+          .map((sigungu) => sigungu.code)
+          .filter((code) => !isSidoRegionCode(code));
 
         return sigunguCodes.length > 1 && sigunguCodes.every((code) => includedCodes.has(code));
       })
       .map((sido) => sido.sidoCode),
   );
-};
-
-/** 백엔드는 전 지역을 나열한 정책을 전국으로 표시하지 않아서 코드표와 비교한다. 코드표가 없으면 판별하지 않는다. */
-const coversAllRegions = (regions, sidoRegions) => {
-  const allSigunguCodes = sidoRegions.flatMap(collectSigunguCodes);
-  const includedCodes = new Set(regions.map((region) => region.region_code));
-
-  return allSigunguCodes.length > 0 && allSigunguCodes.every((code) => includedCodes.has(code));
 };
 
 const buildRegionUnits = (regions, sidoRegions) => {
@@ -73,7 +64,7 @@ export const summarizePolicyRegions = ({
   memberRegionCode = null,
   sidoRegions = [],
 }) => {
-  if (nationwide || regions.length === 0 || coversAllRegions(regions, sidoRegions)) {
+  if (nationwide || regions.length === 0) {
     return { label: NATIONWIDE_LABEL, regionLabels: [] };
   }
 
