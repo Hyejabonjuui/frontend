@@ -77,9 +77,6 @@ export const toPolicyList = (response) => {
       subtype: policy.category_codes?.[0] ?? '',
       subtypeName: policy.category_names?.[0] ?? '기타 주거',
       categoryNames: policy.category_names ?? [],
-      regionName: policy.nationwide
-        ? '전국'
-        : (policy.regions ?? []).map((region) => region.region_name).join(', '),
       regions: policy.regions ?? [],
       nationwide: Boolean(policy.nationwide),
       applyPeriodType:

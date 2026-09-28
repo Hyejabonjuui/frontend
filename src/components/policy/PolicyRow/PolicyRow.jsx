@@ -4,12 +4,40 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
 import DdayBadge from '@/components/common/DdayBadge';
 import { buildPolicyDetailPath } from '@/constants/routes';
+import { summarizePolicyRegions } from '@/utils/summarizePolicyRegions';
 
-function PolicyRow({ policy, isFavorite = false, onToggleFavorite }) {
+const VISUALLY_HIDDEN_SX = {
+  position: 'absolute',
+  width: '1px',
+  height: '1px',
+  margin: '-1px',
+  padding: 0,
+  border: 0,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap',
+};
+
+function PolicyRow({
+  policy,
+  isFavorite = false,
+  onToggleFavorite,
+  memberRegionCode = null,
+  sidoRegions = [],
+}) {
+  const regionSummary = summarizePolicyRegions({
+    regions: policy.regions,
+    nationwide: policy.nationwide,
+    memberRegionCode,
+    sidoRegions,
+  });
+  const isRegionSummarized = regionSummary.regionLabels.length > 1;
+
   const handleFavoriteClick = (event) => {
     event.preventDefault();
     onToggleFavorite?.(policy.id);
@@ -50,13 +78,33 @@ function PolicyRow({ policy, isFavorite = false, onToggleFavorite }) {
       <Typography
         variant="body1"
         color="text.secondary"
+        noWrap
         sx={{
-          width: { xs: 'auto', sm: 100 },
+          flex: { xs: '1 1 0', sm: '0 0 200px' },
+          minWidth: 0,
           textAlign: { xs: 'left', sm: 'right' },
           ml: { xs: 0, sm: 'auto' },
         }}
       >
-        {policy.regionName}
+        {isRegionSummarized ? (
+          <>
+            <Tooltip
+              arrow
+              describeChild
+              title={regionSummary.regionLabels.join('\n')}
+              slotProps={{ tooltip: { sx: { whiteSpace: 'pre-line' } } }}
+            >
+              <Box component="span" tabIndex={0}>
+                {regionSummary.label}
+              </Box>
+            </Tooltip>
+            <Box component="span" sx={VISUALLY_HIDDEN_SX}>
+              대상 지역 전체: {regionSummary.regionLabels.join(', ')}
+            </Box>
+          </>
+        ) : (
+          regionSummary.label
+        )}
       </Typography>
 
       <Stack
