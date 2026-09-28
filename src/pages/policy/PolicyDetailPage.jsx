@@ -80,7 +80,10 @@ function JudgementCard({ judgements, summary, group }) {
               <Typography variant="body2" sx={{ width: 52, flexShrink: 0 }}>
                 {judgement.conditionName}
               </Typography>
-              <Stack spacing={0.25} sx={{ flexGrow: 1, minWidth: 0 }}>
+              <Stack
+                spacing={0.25}
+                sx={{ flexGrow: 1, minWidth: 0, wordBreak: 'keep-all', overflowWrap: 'anywhere' }}
+              >
                 <Typography variant="caption" color="text.secondary">
                   조건: {judgement.requirement}
                 </Typography>

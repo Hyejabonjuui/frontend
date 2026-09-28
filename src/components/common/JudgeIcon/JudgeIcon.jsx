@@ -36,6 +36,8 @@ function JudgeIcon({ result, size = 24 }) {
         justifyContent: 'center',
         width: size,
         height: size,
+        // 옆 글이 길어져도 가로 배치에서 줄어들어 타원이 되지 않게 한다.
+        flexShrink: 0,
         borderRadius: '50%',
         ...iconStyle.sx,
       }}
