@@ -14,12 +14,14 @@ import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 
 import ErrorState from '@/components/common/ErrorState';
+import ListPagination from '@/components/common/ListPagination';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import NotificationList from '@/components/notification/NotificationList';
 import { TOAST_MESSAGES } from '@/constants/messages';
 import { MY_PAGE_TABS, ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyConditions } from '@/hooks/useMyConditions';
+import { useNotificationPage } from '@/hooks/useNotificationPage';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useToast } from '@/hooks/useToast';
 import ConditionEditor from '@/pages/onboarding/ConditionEditor';
@@ -126,31 +128,30 @@ function AccountTab() {
 }
 
 function NotificationTab() {
-  const {
-    notifications,
-    unreadCount,
-    isLoading,
-    errorMessage,
-    markAsRead,
-    removeNotification,
-    refetch,
-  } = useNotifications();
+  const [page, setPage] = useState(1);
+  const recent = useNotifications();
+  // 삭제로 마지막 페이지가 사라지면 남아 있는 마지막 페이지를 보여 준다.
+  const currentPage = Math.min(page, Math.max(recent.totalPages, 1));
+  const pageState = useNotificationPage(currentPage);
+  const visible = currentPage === 1 ? recent : pageState;
 
   return (
     <Stack spacing={1.5}>
       {/* "모두 읽음"은 백엔드 일괄 읽음 API가 생기면 다시 둔다. */}
       <Typography variant="body1" color="text.secondary">
-        [마감 7일 이하] 알림 / 안 읽음 ({unreadCount})
+        [마감 7일 이하] 알림 / 안 읽음 ({recent.unreadCount})
       </Typography>
 
       <NotificationList
-        notifications={notifications}
-        isLoading={isLoading}
-        errorMessage={errorMessage}
-        onRead={markAsRead}
-        onDelete={removeNotification}
-        onRetry={refetch}
+        notifications={visible.notifications}
+        isLoading={visible.isLoading}
+        errorMessage={visible.errorMessage}
+        onRead={recent.markAsRead}
+        onDelete={recent.removeNotification}
+        onRetry={visible.refetch}
       />
+
+      <ListPagination page={currentPage} totalPages={recent.totalPages} onPageChange={setPage} />
     </Stack>
   );
 }

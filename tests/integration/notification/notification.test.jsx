@@ -120,4 +120,42 @@ describe('알림 목록', () => {
     ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '모두 읽음' })).not.toBeInTheDocument();
   });
+
+  it('2페이지를 누르면 그 페이지 알림만 따로 받아 보여 준다', async () => {
+    const pageRequests = [];
+    const SECOND_PAGE_POLICY_NAME = '경기도 청년 전세 지원';
+
+    server.use(
+      http.get(apiUrl(ENDPOINTS.NOTIFICATION.LIST), ({ request }) => {
+        const page = Number(new URL(request.url).searchParams.get('page'));
+        pageRequests.push(page);
+
+        return ok(
+          success({
+            notifications: [
+              page === 0
+                ? notification()
+                : { ...notification(), notification_id: 11, policy_name: SECOND_PAGE_POLICY_NAME },
+            ],
+            unread_count: 2,
+            page,
+            size: 8,
+            totalElements: 9,
+            totalPages: 2,
+            hasNext: page === 0,
+          }),
+        );
+      }),
+    );
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp(`${ROUTES.MY_PAGE}?tab=${MY_PAGE_TABS.NOTIFICATION}`);
+
+    expect(await screen.findByText(POLICY_NAME)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Go to page 2' }));
+
+    expect(await screen.findByText(SECOND_PAGE_POLICY_NAME)).toBeInTheDocument();
+    expect(screen.queryByText(POLICY_NAME)).not.toBeInTheDocument();
+    expect(pageRequests).toEqual([0, 1]);
+  });
 });

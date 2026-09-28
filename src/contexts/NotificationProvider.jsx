@@ -21,6 +21,7 @@ function NotificationProvider({ children }) {
     memberId: null,
     notifications: [],
     unreadCount: 0,
+    totalPages: 0,
     isLoading: isAuthenticated,
     errorMessage: '',
   });
@@ -41,6 +42,7 @@ function NotificationProvider({ children }) {
             memberId,
             notifications: data.content ?? [],
             unreadCount: data.unreadCount ?? 0,
+            totalPages: data.totalPages ?? 0,
             isLoading: false,
             errorMessage: '',
           });
@@ -51,6 +53,7 @@ function NotificationProvider({ children }) {
             memberId,
             notifications: [],
             unreadCount: 0,
+            totalPages: 0,
             isLoading: false,
             errorMessage: getErrorMessage(error),
           });
@@ -130,6 +133,9 @@ function NotificationProvider({ children }) {
       isLoading: isAuthenticated && (!isCurrentMember || state.isLoading),
       errorMessage: isCurrentMember ? state.errorMessage : '',
       unreadCount: isCurrentMember ? state.unreadCount : 0,
+      totalPages: isCurrentMember ? state.totalPages : 0,
+      /** 알림을 다시 받을 때마다 올라간다. 다른 페이지를 보는 화면이 이 값을 보고 함께 다시 받는다. */
+      revision: reloadToken,
       markAsRead,
       removeNotification,
       refetch,
@@ -142,6 +148,8 @@ function NotificationProvider({ children }) {
       state.isLoading,
       state.errorMessage,
       state.unreadCount,
+      state.totalPages,
+      reloadToken,
       markAsRead,
       removeNotification,
       refetch,
