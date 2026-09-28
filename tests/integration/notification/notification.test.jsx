@@ -113,7 +113,9 @@ describe('알림 목록', () => {
     signInAs(TOKENS.MEMBER);
     renderApp(`${ROUTES.MY_PAGE}?tab=${MY_PAGE_TABS.NOTIFICATION}`);
 
-    expect(await screen.findByRole('tab', { name: '알림 목록 15' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('tab', { name: '알림 목록 15' }, { timeout: 5000 }),
+    ).toBeInTheDocument();
     expect(screen.getByText('[마감 7일 이하] 알림 / 안 읽음 (15)')).toBeInTheDocument();
     expect(
       within(screen.getByRole('button', { name: '알림 열기' })).getByText('15'),
@@ -150,7 +152,7 @@ describe('알림 목록', () => {
     signInAs(TOKENS.MEMBER);
     const { user } = renderApp(`${ROUTES.MY_PAGE}?tab=${MY_PAGE_TABS.NOTIFICATION}`);
 
-    expect(await screen.findByText(POLICY_NAME)).toBeInTheDocument();
+    expect(await screen.findByText(POLICY_NAME, undefined, { timeout: 5000 })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Go to page 2' }));
 

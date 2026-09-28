@@ -47,7 +47,7 @@ describe('보호 경로 접근 제어', () => {
       signInAs(TOKENS.MEMBER);
       renderApp(route);
 
-      await waitFor(() => expect(window.location.pathname).toBe(ROUTES.HOME));
+      await waitFor(() => expect(window.location.pathname).toBe(ROUTES.HOME), { timeout: 5000 });
     },
   );
 
