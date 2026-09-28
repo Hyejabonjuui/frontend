@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Link as RouterLink, useLocation, useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
@@ -16,13 +18,13 @@ import {
   RECOMMENDATION_GROUP,
   RECOMMENDATION_GROUP_LABEL,
 } from '@/constants/policy';
-import { buildMyPagePath, MY_PAGE_TABS, ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavoriteToggle } from '@/hooks/useFavoriteToggle';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { useMyConditions } from '@/hooks/useMyConditions';
 import { usePolicySearch } from '@/hooks/usePolicySearch';
 import { useToast } from '@/hooks/useToast';
+import ConditionEditDialog from '@/pages/search/ConditionEditDialog';
 import { LAYOUT } from '@/styles/theme';
 import { withDirectionParticle } from '@/utils/koreanParticle';
 
@@ -48,10 +50,16 @@ function PolicySearchPage() {
   const { showInfo, showSuccess } = useToast();
   const [searchKeyword, setSearchKeyword] = useState(searchQuery);
   const [syncedQuery, setSyncedQuery] = useState(searchQuery);
+  const [isConditionDialogOpen, setIsConditionDialogOpen] = useState(false);
   const { groups, groupCounts, totalCount, isIdle, isLoading, errorMessage, refetch } =
     usePolicySearch({ query: searchQuery }, { historyKey: location.key });
   const { isFavorite, toggleFavorite } = useFavoriteToggle();
-  const { appliedConditions } = useMyConditions({ redirectOnMissingProfile: false });
+  // 검색 API는 서버에 저장된 내 조건으로 판정한다. 요약·칩·조건 수정 기본값 모두 이 한 곳을 본다.
+  const {
+    conditions,
+    appliedConditions,
+    refetch: refetchConditions,
+  } = useMyConditions({ redirectOnMissingProfile: false });
 
   // 뒤로·앞으로 가기로 주소의 검색어가 바뀌면 검색창도 그 검색어로 맞춘다.
   if (syncedQuery !== searchQuery) {
@@ -94,7 +102,18 @@ function PolicySearchPage() {
     setSearchParams({ query: nextQuery });
   };
 
+  const openConditionDialog = () => setIsConditionDialogOpen(true);
+
+  /** 바뀐 내 조건으로 같은 검색어를 다시 묻는다. 이전 조건으로 저장해 둔 결과는 조건 저장 때 이미 지웠다. */
+  const handleConditionSaved = () => {
+    setIsConditionDialogOpen(false);
+    refetchConditions();
+    refetch();
+  };
+
   const searchedHashtag = findSearchedHashtag(searchQuery);
+  const hasResult = !isIdle && !isLoading && !errorMessage;
+  const canEditConditions = Boolean(conditions);
 
   return (
     <Stack spacing={3} sx={{ width: '100%', maxWidth: LAYOUT.searchColumnWidth, mx: 'auto' }}>
@@ -111,6 +130,20 @@ function PolicySearchPage() {
           <SearchCriteriaSummary
             typeLabel={searchedHashtag ? `${searchedHashtag} 유형으로 찾았어요` : ''}
             conditions={appliedConditions}
+            action={
+              hasResult &&
+              totalCount > 0 &&
+              canEditConditions && (
+                <Link
+                  component="button"
+                  type="button"
+                  variant="caption"
+                  onClick={openConditionDialog}
+                >
+                  조건 수정
+                </Link>
+              )
+            }
           />
         )}
       </Stack>
@@ -126,7 +159,43 @@ function PolicySearchPage() {
         </Typography>
       )}
 
-      {!isIdle && !isLoading && !errorMessage && (
+      {hasResult && totalCount === 0 && (
+        <EmptyState
+          isFramed
+          title={EMPTY_MESSAGES.SEARCH}
+          description={EMPTY_MESSAGES.SEARCH_DESCRIPTION}
+          action={
+            <Stack spacing={1.5} sx={{ alignItems: 'center' }}>
+              {appliedConditions.length > 0 && (
+                <Stack
+                  direction="row"
+                  spacing={0.5}
+                  useFlexGap
+                  aria-label="적용된 내 조건"
+                  sx={{ justifyContent: 'center', flexWrap: 'wrap' }}
+                >
+                  {appliedConditions.map((condition) => (
+                    <Chip key={condition} label={condition} variant="outlined" size="small" />
+                  ))}
+                </Stack>
+              )}
+
+              <Button
+                variant="outlined"
+                disabled={!canEditConditions}
+                onClick={openConditionDialog}
+              >
+                조건 수정
+              </Button>
+              <Typography variant="caption" color="text.secondary">
+                수정한 조건은 내 정보에도 반영돼요.
+              </Typography>
+            </Stack>
+          }
+        />
+      )}
+
+      {hasResult && totalCount > 0 && (
         <>
           <Stack direction="row" spacing={3} useFlexGap sx={{ flexWrap: 'wrap' }}>
             {GROUP_ORDER.map((group) => (
@@ -139,46 +208,26 @@ function PolicySearchPage() {
             ))}
           </Stack>
 
-          {totalCount === 0 ? (
-            <EmptyState
-              isFramed
-              title={EMPTY_MESSAGES.SEARCH}
-              description={EMPTY_MESSAGES.SEARCH_DESCRIPTION}
-              caption={EMPTY_MESSAGES.SEARCH_CAPTION}
-              action={
-                <Stack
-                  direction={{ xs: 'column', sm: 'row' }}
-                  spacing={1}
-                  sx={{ justifyContent: 'center', alignItems: 'center' }}
-                >
-                  <Button
-                    component={RouterLink}
-                    to={buildMyPagePath(MY_PAGE_TABS.CONDITION)}
-                    variant="outlined"
-                  >
-                    내 조건 수정
-                  </Button>
-                  <Button component={RouterLink} to={ROUTES.HOME} variant="text">
-                    전체 정책 보기
-                  </Button>
-                </Stack>
+          {GROUP_ORDER.map((group) => (
+            <SearchResultGroup
+              key={group}
+              group={group}
+              policies={groups[group]}
+              isFavorite={isSearchedPolicyFavorite}
+              onToggleFavorite={(policyId) =>
+                toggleFavorite(policyId, isSearchedPolicyFavorite(policyId))
               }
             />
-          ) : (
-            GROUP_ORDER.map((group) => (
-              <SearchResultGroup
-                key={group}
-                group={group}
-                policies={groups[group]}
-                isFavorite={isSearchedPolicyFavorite}
-                onToggleFavorite={(policyId) =>
-                  toggleFavorite(policyId, isSearchedPolicyFavorite(policyId))
-                }
-              />
-            ))
-          )}
+          ))}
         </>
       )}
+
+      <ConditionEditDialog
+        isOpen={isConditionDialogOpen}
+        conditions={conditions}
+        onClose={() => setIsConditionDialogOpen(false)}
+        onSaved={handleConditionSaved}
+      />
     </Stack>
   );
 }

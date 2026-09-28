@@ -16,7 +16,8 @@ import { conditionDraft } from '@/utils/conditionDraft';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 import { searchResultCache } from '@/utils/searchResultCache';
 
-function ConditionEditor({ initialConditions, draft, submitLabel, onSaved }) {
+/** onCancel을 주면 저장 버튼 옆에 취소 버튼을 둔다. 팝업처럼 저장하지 않고 닫을 수 있는 곳에서 쓴다. */
+function ConditionEditor({ initialConditions, draft, submitLabel, onSaved, onCancel }) {
   const { showSuccess, showError, showInfo } = useToast();
   const { refreshUser } = useAuth();
   const { codes, isLoading, errorMessage, refetch } = useCodes();
@@ -72,14 +73,16 @@ function ConditionEditor({ initialConditions, draft, submitLabel, onSaved }) {
 
       <ConditionForm form={form} fieldErrors={fieldErrors} codes={codes} onChange={changeField} />
 
-      <Button
-        type="submit"
-        variant="contained"
-        disabled={isSubmitting}
-        sx={{ alignSelf: 'flex-end' }}
-      >
-        {submitLabel}
-      </Button>
+      <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
+        {onCancel && (
+          <Button variant="outlined" disabled={isSubmitting} onClick={onCancel}>
+            취소
+          </Button>
+        )}
+        <Button type="submit" variant="contained" disabled={isSubmitting}>
+          {submitLabel}
+        </Button>
+      </Stack>
     </Stack>
   );
 }

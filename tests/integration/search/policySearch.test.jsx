@@ -25,6 +25,7 @@ import { findHeader, renderApp, signInAs } from '../../helpers/renderApp';
 import {
   EMPTY_POLICY_SEARCH_RESULT,
   MEMBER_CREDENTIALS,
+  MEMBER_PROFILE_RESPONSE,
   MEMBER_USER,
   NO_CANDIDATE_POLICY_SEARCH_RESPONSE,
   POLICY_SEARCH_RESULT,
@@ -387,5 +388,106 @@ describe('뒤로 가기로 돌아온 검색', () => {
 
     expect(await header.findByRole('button', { name: '로그인' })).toBeInTheDocument();
     expect(sessionStorage.getItem(STORAGE_KEYS.POLICY_SEARCH_CACHE)).toBeNull();
+  });
+});
+
+/**
+ * notice: 검색 API는 조건을 따로 받지 않고 서버에 저장된 내 조건으로 판정한다.
+ *         그래서 "조건 수정"은 내 조건 수정(PATCH /api/members/me/profile) 뒤 같은 검색어로 다시 요청하는 흐름이다.
+ */
+describe('0건일 때 조건 수정', () => {
+  const EMPLOYED_PROFILE_RESPONSE = {
+    ...MEMBER_PROFILE_RESPONSE,
+    result: {
+      ...MEMBER_PROFILE_RESPONSE.result,
+      employmentCode: 'EMPLOYED',
+      employmentName: '재직자',
+    },
+  };
+
+  /** 조건을 저장하기 전에는 0건, 저장한 뒤에는 결과가 있는 서버를 흉내 낸다. */
+  const mockConditionServer = () => {
+    const state = { requestedQueries: [], savedProfile: null };
+    server.use(
+      http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), ({ request }) => {
+        state.requestedQueries.push(new URL(request.url).searchParams.get('query'));
+
+        return ok(state.savedProfile ? POLICY_SEARCH_RESULT : EMPTY_POLICY_SEARCH_RESULT);
+      }),
+      http.get(apiUrl(ENDPOINTS.USER.PROFILE), () =>
+        ok(state.savedProfile ? EMPLOYED_PROFILE_RESPONSE : MEMBER_PROFILE_RESPONSE),
+      ),
+      http.patch(apiUrl(ENDPOINTS.USER.PROFILE), async ({ request }) => {
+        state.savedProfile = await request.json();
+
+        return ok(EMPLOYED_PROFILE_RESPONSE);
+      }),
+    );
+
+    return state;
+  };
+
+  const openConditionDialog = async (user) => {
+    const editButton = await screen.findByRole('button', { name: '조건 수정' });
+    await waitFor(() => expect(editButton).toBeEnabled());
+    await user.click(editButton);
+
+    return screen.findByRole('dialog');
+  };
+
+  it('0건이면 빈 상태 박스에 적용된 내 조건과 조건 수정을 보여 준다', async () => {
+    mockConditionServer();
+    signInAs(TOKENS.MEMBER);
+    renderApp(RESULT_PATH);
+
+    expect(await screen.findByText(EMPTY_MESSAGES.SEARCH)).toBeInTheDocument();
+    expect(screen.getByText(EMPTY_MESSAGES.SEARCH_DESCRIPTION)).toBeInTheDocument();
+
+    const conditionChips = await screen.findByLabelText('적용된 내 조건');
+    APPLIED_CONDITIONS.forEach((condition) => {
+      expect(within(conditionChips).getByText(condition)).toBeInTheDocument();
+    });
+    expect(screen.getByRole('button', { name: '조건 수정' })).toBeInTheDocument();
+    expect(screen.getByText('수정한 조건은 내 정보에도 반영돼요.')).toBeInTheDocument();
+    // 모두 0건인 그룹별 건수 줄과 다시 시도 버튼은 두지 않는다.
+    expect(
+      screen.queryByText(RECOMMENDATION_GROUP_LABEL[RECOMMENDATION_GROUP.POSSIBLE]),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '다시 시도' })).not.toBeInTheDocument();
+  });
+
+  it('조건 수정에서 취업 상태를 바꿔 적용하면 내 조건을 저장하고 같은 검색어로 다시 검색한다', async () => {
+    const state = mockConditionServer();
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp(RESULT_PATH);
+
+    const dialog = await openConditionDialog(user);
+    // 지금 저장된 조건이 기본으로 골라져 있다.
+    expect(await within(dialog).findByRole('radio', { name: '미취업자' })).toBeChecked();
+
+    await user.click(within(dialog).getByRole('radio', { name: '재직자' }));
+    await user.click(within(dialog).getByRole('button', { name: '적용' }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(state.savedProfile.employmentCode).toBe('EMPLOYED');
+    expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
+    expect(state.requestedQueries).toEqual(['월세', '월세']);
+    expect(screen.getByRole('textbox', { name: '정책 검색' })).toHaveValue('월세');
+    expect(await screen.findByText(/재직자/)).toBeInTheDocument();
+  });
+
+  it('조건 수정을 취소하면 저장하지 않고 다시 검색하지도 않는다', async () => {
+    const state = mockConditionServer();
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp(RESULT_PATH);
+
+    const dialog = await openConditionDialog(user);
+    await user.click(await within(dialog).findByRole('radio', { name: '재직자' }));
+    await user.click(within(dialog).getByRole('button', { name: '취소' }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(state.savedProfile).toBeNull();
+    expect(state.requestedQueries).toEqual(['월세']);
+    expect(screen.getByText(EMPTY_MESSAGES.SEARCH)).toBeInTheDocument();
   });
 });
