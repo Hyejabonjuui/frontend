@@ -90,7 +90,7 @@ describe('추천 결과', () => {
     expect(await screen.findByText(TOAST_MESSAGES.NO_CANDIDATE)).toBeInTheDocument();
   });
 
-  it('해시태그를 누르면 검색창도 그 해시태그로 바뀌고 해당 검색어로 검색한다', async () => {
+  it('해시태그를 누르면 검색창과 검색어 모두 #을 붙인 해시태그로 검색한다', async () => {
     const requestedQueries = [];
     server.use(
       http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), ({ request }) => {
@@ -104,10 +104,32 @@ describe('추천 결과', () => {
 
     expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: '#전세' }));
+    await user.click(screen.getByRole('button', { name: '#월세' }));
 
-    expect(screen.getByRole('textbox', { name: '정책 검색' })).toHaveValue('전세');
-    await waitFor(() => expect(requestedQueries).toEqual(['월세', '전세']));
+    expect(screen.getByRole('textbox', { name: '정책 검색' })).toHaveValue('#월세');
+    await waitFor(() => expect(requestedQueries).toEqual(['월세', '#월세']));
+  });
+
+  it('홈에서 해시태그를 누르면 #이 빠지지 않은 검색어로 검색 화면에서 검색한다', async () => {
+    const requestedQueries = [];
+    server.use(
+      http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), ({ request }) => {
+        requestedQueries.push(new URL(request.url).searchParams.get('query'));
+
+        return ok(POLICY_SEARCH_RESULT);
+      }),
+    );
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp('/home');
+
+    const homeSearchInput = await screen.findByRole('textbox', { name: '정책 검색' });
+    await waitFor(() => expect(homeSearchInput).not.toHaveAttribute('readonly'));
+    await user.click(screen.getByRole('button', { name: '#월세' }));
+
+    expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
+    expect(new URLSearchParams(window.location.search).get('query')).toBe('#월세');
+    expect(screen.getByRole('textbox', { name: '정책 검색' })).toHaveValue('#월세');
+    expect(requestedQueries).toEqual(['#월세']);
   });
 
   it('같은 검색어로 다시 검색하면 요청 없이 안내 토스트를 보여 준다', async () => {
