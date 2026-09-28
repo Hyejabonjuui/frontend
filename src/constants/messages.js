@@ -20,6 +20,7 @@ export const TOAST_MESSAGES = {
   ACCOUNT_DELETED: '회원 탈퇴가 끝났어요',
   ADMIN_COLLECT_STARTED: '정책 수집을 시작했어요',
   ADMIN_COLLECT_DONE: '정책 수집을 마쳤어요',
+  ADMIN_COLLECT_STOPPED: '정책 수집이 중간에 멈췄어요',
 };
 
 /** 설계서 S-06 "로그인 안내 창" 문구. 확인을 누르면 로그인 모달로 이어진다. */

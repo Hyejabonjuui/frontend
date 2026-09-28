@@ -2,8 +2,8 @@
  * E-5 역할별 접근: 관리자만 정책 수집 화면을 쓴다
  *
  * notice: 목 모드 빌드에서 돈다. 관리자 판별은 프론트 가정값(role === 'ADMIN')이고,
- *         수집 실행은 목 서버가 즉시 성공 결과를 돌려준다. 실서버에서는 수집에 시간이 걸리므로
- *         결과 대기 시간을 늘리거나 상태 조회(COLLECT_STATUS) 폴링을 기다리도록 바꾼다.
+ *         수집 실행(POST /api/policies/sync)은 목 서버가 즉시 성공 문구를 돌려준다.
+ *         실서버는 정책마다 OpenAI 분석을 호출해 몇 분씩 걸리고 비용이 들므로 E2E로 돌리지 않는다.
  */
 import { expect, test } from '@playwright/test';
 
@@ -24,7 +24,7 @@ test('관리자는 정책 수집 화면에서 수집을 실행하고 결과를 �
 
   await expect(page.getByText('정책 수집을 마쳤어요')).toBeVisible();
   await expect(page.getByText('마지막 수집 결과')).toBeVisible();
-  await expect(page.getByText('성공 (SUCCESS)')).toBeVisible();
+  await expect(page.getByText(/주거 정책 \d+건 동기화가 완료되었습니다/)).toBeVisible();
 });
 
 test('일반 회원은 관리자 화면 주소로 들어가도 홈으로 돌아간다', async ({ page }) => {

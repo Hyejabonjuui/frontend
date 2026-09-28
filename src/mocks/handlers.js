@@ -960,7 +960,7 @@ export const HANDLERS = [
   },
   {
     method: 'post',
-    match: (url) => url === '/api/admin/collect',
+    match: (url) => url === '/api/policies/sync',
     handle: ({ user }) => {
       const denied = requireUser(user);
       if (denied) {
@@ -970,31 +970,13 @@ export const HANDLERS = [
         return fail(403, '접근 권한이 없어요');
       }
 
-      const startedAt = new Date();
-      const finishedAt = new Date(startedAt.getTime() + 105000);
-      const collectLog = {
-        status: 'SUCCESS',
-        startedAt: startedAt.toISOString(),
-        finishedAt: finishedAt.toISOString(),
-        fetchedCount: 142,
-        newCount: 3,
-        updatedCount: 5,
-        closedCount: 2,
-      };
-
-      mockStore.update((state) => {
-        state.collectLog = collectLog;
-
-        return state;
+      return ok({
+        isSuccess: true,
+        code: 'SUCCESS_001',
+        message: '성공입니다.',
+        result: `온통청년 주거 정책 ${getActivePolicies().length}건 동기화가 완료되었습니다.`,
       });
-
-      return ok(collectLog);
     },
-  },
-  {
-    method: 'get',
-    match: (url) => url === '/api/admin/collect/status',
-    handle: () => ok(mockStore.getState().collectLog),
   },
 ];
 

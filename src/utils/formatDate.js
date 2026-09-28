@@ -112,25 +112,3 @@ export const formatRelativeTime = (value) => {
 
   return formatDate(value);
 };
-
-const dateTimeFormatter = new Intl.DateTimeFormat('ko-KR', {
-  dateStyle: 'short',
-  timeStyle: 'medium',
-});
-
-const timeFormatter = new Intl.DateTimeFormat('ko-KR', { timeStyle: 'medium' });
-
-/** 관리자 화면의 "2026-09-18 03:00:02 ~ 03:01:47" 형태를 만든다. */
-export const formatDateTimeRange = (startedAt, finishedAt) => {
-  const start = new Date(startedAt);
-  const finish = new Date(finishedAt);
-
-  if (Number.isNaN(start.getTime())) {
-    return '';
-  }
-  if (Number.isNaN(finish.getTime())) {
-    return dateTimeFormatter.format(start);
-  }
-
-  return `${dateTimeFormatter.format(start)} ~ ${timeFormatter.format(finish)}`;
-};

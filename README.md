@@ -125,7 +125,7 @@ src/
 | F-01 회원가입       | `POST /api/auth/signup` → 자동 로그인 후 조건 등록                                              |
 | F-03 조건 조회·수정 | `GET/PATCH /api/members/me/profile` · 선택지 `GET /api/regions`                                 |
 | F-05 회원 탈퇴      | `DELETE /api/me`                                                                                |
-| F-09 정책 수집      | `POST /api/admin/collect`                                                                       |
+| F-09 정책 수집      | `POST /api/policies/sync`                                                                       |
 | F-11 정책 상세      | `GET /api/policies/{id}` (로그인 시 조건 판정 포함)                                             |
 | F-13 용어 풀이      | `GET /api/terms`                                                                                |
 | F-14 추천           | `POST /api/recommendations` body `{ query }`                                                    |

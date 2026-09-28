@@ -347,12 +347,18 @@ export const NOTIFICATION_LIST = {
   },
 };
 
-export const COLLECT_LOG = {
-  status: 'SUCCESS',
-  startedAt: '2026-09-18T03:00:02+09:00',
-  finishedAt: '2026-09-18T03:01:47+09:00',
-  fetchedCount: 142,
-  newCount: 3,
-  updatedCount: 5,
-  closedCount: 2,
+/** 백엔드 POST /api/policies/sync 성공 응답. result는 저장 건수를 담은 문구 하나다. */
+export const POLICY_SYNC_RESPONSE = {
+  isSuccess: true,
+  code: 'SUCCESS_001',
+  message: '성공입니다.',
+  result: '온통청년 주거 정책 142건 동기화가 완료되었습니다.',
+};
+
+/** 온통청년 API가 중간에 실패하면 502(POLICY_002)와 함께 멈춘 페이지·저장 건수를 준다. */
+export const POLICY_SYNC_STOPPED_RESPONSE = {
+  isSuccess: false,
+  code: 'POLICY_002',
+  message: '온통청년 API 요청이 실패해 정책 수집이 중간에 멈췄어요. 잠시 후 다시 시도해 주세요.',
+  result: { stoppedPage: 3, savedCount: 200 },
 };

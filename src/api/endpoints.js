@@ -40,7 +40,6 @@ export const ENDPOINTS = {
     READ: (notificationId) => `/api/notification/${notificationId}/read`,
   },
   ADMIN: {
-    COLLECT: '/api/admin/collect', // F-09
-    COLLECT_STATUS: '/api/admin/collect/status',
+    POLICY_SYNC: '/api/policies/sync', // F-09
   },
 };

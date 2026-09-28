@@ -16,7 +16,6 @@ import { POLICIES } from '@/mocks/data/policies';
 
 import {
   CARD_NEWS_LIST_RESPONSE,
-  COLLECT_LOG,
   FAVORITES,
   FIND_EMAIL_RESULT,
   MEMBER_PROFILE,
@@ -24,6 +23,7 @@ import {
   NOTIFICATION_LIST,
   REGION_LIST_RESPONSE,
   POLICY_SEARCH_RESULT,
+  POLICY_SYNC_RESPONSE,
   TERM_LIST_RESPONSE,
   TOKENS,
   USER_BY_TOKEN,
@@ -187,7 +187,7 @@ export const handlers = [
   ),
 
   http.post(
-    apiUrl(ENDPOINTS.ADMIN.COLLECT),
-    withUser(() => ok(COLLECT_LOG)),
+    apiUrl(ENDPOINTS.ADMIN.POLICY_SYNC),
+    withUser(() => ok(POLICY_SYNC_RESPONSE)),
   ),
 ];

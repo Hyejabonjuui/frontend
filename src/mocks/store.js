@@ -19,15 +19,6 @@ const buildInitialState = () => ({
   notifications: { 1: NOTIFICATIONS.map((item) => ({ ...item })), 2: [] },
   emailVerifications: {},
   revokedTokens: [],
-  collectLog: {
-    status: 'SUCCESS',
-    startedAt: '2026-09-18T03:00:02+09:00',
-    finishedAt: '2026-09-18T03:01:47+09:00',
-    fetchedCount: 142,
-    newCount: 3,
-    updatedCount: 5,
-    closedCount: 2,
-  },
   lastUserId: 2,
   lastNotificationId: 3,
 });
