@@ -116,6 +116,7 @@ describe('카드뉴스 API 응답 변환', () => {
         result: {
           policyId: 'DEMO-HOUSING-001',
           categoryLabel: '월세',
+          dDay: 5,
           isAuthenticated: false,
           isFavorite: false,
           applyUrl: 'https://example.com/apply',
@@ -134,6 +135,7 @@ describe('카드뉴스 API 응답 변환', () => {
       policyId: 'DEMO-HOUSING-001',
       title: '월세 부담 완화',
       subtypeName: '월세',
+      remainingDays: 5,
       cardCount: 4,
       isAuthenticated: false,
       isFavorite: false,
@@ -152,6 +154,17 @@ describe('카드뉴스 API 응답 변환', () => {
         { id: 'empty-4', order: 4, label: '', heading: '', tags: [], body: '' },
       ],
     });
+  });
+
+  it.each([
+    [3, 3],
+    [0, 0],
+    [-2, -2],
+    [null, null],
+  ])('상세 응답의 dDay(%s)를 남은 일수 %s로 옮긴다', (dDay, remainingDays) => {
+    expect(
+      toCardNewsDetail({ result: { policyId: 'R202609280001', dDay, cards: [] } }),
+    ).toHaveProperty('remainingDays', remainingDays);
   });
 });
 
@@ -392,5 +405,20 @@ describe('정책 검색(추천) API 응답 변환', () => {
     expect(toPolicySearchResult({ result: null }).groups[RECOMMENDATION_GROUP.POSSIBLE]).toEqual(
       [],
     );
+  });
+
+  it('후보 0건(POLICY_SEARCH_001) 실패 봉투는 세 그룹 모두 빈 배열로 둔다', () => {
+    expect(
+      toPolicySearchResult({
+        isSuccess: false,
+        code: 'POLICY_SEARCH_001',
+        message: '조건에 맞는 정책을 찾지 못했어요.',
+        result: null,
+      }).groups,
+    ).toEqual({
+      [RECOMMENDATION_GROUP.POSSIBLE]: [],
+      [RECOMMENDATION_GROUP.NEED_CHECK]: [],
+      [RECOMMENDATION_GROUP.IMPOSSIBLE]: [],
+    });
   });
 });

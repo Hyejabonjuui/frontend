@@ -183,6 +183,7 @@ function CardNewsDialog({ cardNews, onClose, isFavorite = false, onToggleFavorit
         <DdayBadge
           applyPeriodType={cardNews.applyPeriodType}
           applyEndDate={cardNews.applyEndDate}
+          remainingDays={cardNews.remainingDays}
         />
 
         {onToggleFavorite && (

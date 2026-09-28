@@ -4,7 +4,7 @@ import { APPLY_PERIOD_TYPE, DDAY_IMMINENT_THRESHOLD } from '@/constants/policy';
 import { RADIUS } from '@/styles/theme';
 import { getRemainingDays } from '@/utils/formatDate';
 
-function DdayBadge({ applyPeriodType, applyEndDate }) {
+function DdayBadge({ applyPeriodType, applyEndDate, remainingDays: providedRemainingDays }) {
   if (applyPeriodType === APPLY_PERIOD_TYPE.ALWAYS) {
     return (
       <Chip
@@ -16,7 +16,8 @@ function DdayBadge({ applyPeriodType, applyEndDate }) {
     );
   }
 
-  const remainingDays = getRemainingDays(applyEndDate);
+  const remainingDays =
+    providedRemainingDays === undefined ? getRemainingDays(applyEndDate) : providedRemainingDays;
 
   if (remainingDays === null) {
     return null;

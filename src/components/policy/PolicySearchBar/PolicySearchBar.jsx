@@ -22,12 +22,15 @@ function PolicySearchBar({ keyword, onKeywordChange, onSubmit, errorMessage, onR
     onSubmit(searchKeyword);
   };
 
+  // 백엔드는 "#월세"처럼 #까지 같은 검색어만 AI 없이 유형으로 찾는다.
   const handleHashtagClick = (hashtag) => {
+    const hashtagKeyword = `#${hashtag}`;
+
     if (!isLocked) {
-      onKeywordChange(hashtag);
+      onKeywordChange(hashtagKeyword);
     }
 
-    requestSearch(hashtag);
+    requestSearch(hashtagKeyword);
   };
 
   const handleSubmit = (event) => {

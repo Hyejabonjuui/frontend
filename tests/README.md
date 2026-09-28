@@ -22,15 +22,17 @@
 통합과 E2E는 **백엔드가 이렇게 응답할 것이라는 가정** 위에서 통과한다. 각 파일 맨 위 `notice:` 주석에
 무엇이 가정인지 적어 두었다.
 
-| 가정                                                  | 위치                                                    | 백엔드 확정 후 할 일                                                   |
-| ----------------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------- |
-| 응답 본문을 봉투 없이 그대로 데이터로 쓴다            | `tests/msw/respond.js`                                  | 봉투(`{ isSuccess, code, message, result }`)에 맞춰 `ok`·`fail`만 수정 |
-| API 경로                                              | `src/api/endpoints.js`                                  | 경로를 고치면 MSW 핸들러는 자동으로 따라간다                           |
-| 응답 필드 모양 (정책 요약, 판정, 추천 그룹 등)        | `tests/msw/fixtures.js`                                 | 명세에 맞춰 필드명 수정. 테스트 본문은 그대로 둔다                     |
-| 판정 결과는 고정값이다 (판정 규칙은 테스트하지 않음)  | `tests/msw/fixtures.js` `JUDGEMENTS`                    | 판정 규칙 테스트는 백엔드 저장소에서 한다                              |
-| E2E 로그인 계정은 목 계정이다                         | `tests/e2e/support/accounts.js`                         | 실서버용 테스트 계정을 환경 변수로 읽도록 수정                         |
-| E2E의 "새로고침 후 유지"는 localStorage 기준이다      | `src/mocks/store.js`                                    | 실서버에서는 서버 DB 기준이 된다                                       |
-| 정책 지역은 시·도 코드를 시군구 전체로 풀어 내려 준다 | `tests/integration/policy/policyRegionSummary.test.jsx` | 백엔드 응답 모양이 바뀌면 `REGIONS` 값을 명세에 맞춰 수정              |
+| 가정                                                              | 위치                                                    | 백엔드 확정 후 할 일                                                                            |
+| ----------------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| 응답 본문을 봉투 없이 그대로 데이터로 쓴다                        | `tests/msw/respond.js`                                  | 봉투(`{ isSuccess, code, message, result }`)에 맞춰 `ok`·`fail`만 수정                          |
+| API 경로                                                          | `src/api/endpoints.js`                                  | 경로를 고치면 MSW 핸들러는 자동으로 따라간다                                                    |
+| 응답 필드 모양 (정책 요약, 판정, 추천 그룹 등)                    | `tests/msw/fixtures.js`                                 | 명세에 맞춰 필드명 수정. 테스트 본문은 그대로 둔다                                              |
+| 판정 결과는 고정값이다 (판정 규칙은 테스트하지 않음)              | `tests/msw/fixtures.js` `JUDGEMENTS`                    | 판정 규칙 테스트는 백엔드 저장소에서 한다                                                       |
+| E2E 로그인 계정은 목 계정이다                                     | `tests/e2e/support/accounts.js`                         | 실서버용 테스트 계정을 환경 변수로 읽도록 수정                                                  |
+| E2E의 "새로고침 후 유지"는 localStorage 기준이다                  | `src/mocks/store.js`                                    | 실서버에서는 서버 DB 기준이 된다                                                                |
+| 정책 지역은 시·도 코드를 시군구 전체로 풀어 내려 준다             | `tests/integration/policy/policyRegionSummary.test.jsx` | 백엔드 응답 모양이 바뀌면 `REGIONS` 값을 명세에 맞춰 수정                                       |
+| 카드뉴스 상세는 남은 일수를 `dDay`(마감일 없으면 `null`)로만 준다 | `tests/integration/policy/cardNews.test.jsx`            | 키가 바뀌면 `fixtures.buildCardNewsDetailResponse`와 `toCardNewsDetail` 수정                    |
+| 검색 후보 0건은 HTTP 200 + `POLICY_SEARCH_001` 실패 봉투로 온다   | `tests/integration/search/policySearch.test.jsx`        | 코드·상태가 바뀌면 `fixtures.NO_CANDIDATE_POLICY_SEARCH_RESPONSE`와 `toPolicySearchResult` 수정 |
 
 `src/mocks/judge.js`(목 서버의 판정 로직)는 일부러 테스트하지 않는다. 실제 판정은 백엔드가 하므로,
 목 서버 내부를 테스트해도 제품 품질과 관계가 없다.
