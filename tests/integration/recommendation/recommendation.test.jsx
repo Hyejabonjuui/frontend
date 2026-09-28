@@ -1,9 +1,9 @@
 /**
  * I-7 추천 결과 (S-05)
  *
- * notice: 실제 백엔드(AI 판정) 없이 MSW가 추천 응답을 준다. 그룹 구성과 isAiFailed는 fixtures의 고정값이다.
- *         AI 응답 형태(groups, isAiFailed, query)는 프론트 가정값이라, 명세가 확정되면
- *         fixtures.RECOMMENDATIONS부터 맞추고 이 테스트는 그대로 둔다.
+ * notice: 실제 백엔드(AI 판정) 없이 MSW가 GET /api/policies/search 응답을 준다. 그룹 구성은 fixtures의 고정값이다.
+ *         응답 형태(approved · underReview · declined)는 백엔드 PolicySearchResponseDTO를 따른다.
+ *         DTO가 바뀌면 fixtures.RECOMMENDATIONS와 policyApi.toRecommendations부터 맞춘다.
  */
 import { screen } from '@testing-library/react';
 import { http } from 'msw';
@@ -20,6 +20,12 @@ import { server } from '../../msw/server';
 
 const RESULT_PATH = `/recommendations?keyword=${encodeURIComponent('월세')}`;
 const LOADING_TEXT = 'AI가 내 조건으로 정책을 확인하고 있어요';
+
+const SEARCH_RESULT_KEYS = {
+  [RECOMMENDATION_GROUP.POSSIBLE]: 'approved',
+  [RECOMMENDATION_GROUP.NEED_CHECK]: 'underReview',
+  [RECOMMENDATION_GROUP.IMPOSSIBLE]: 'declined',
+};
 
 const groupHeading = (group, count) =>
   screen.findByRole('heading', { name: `${RECOMMENDATION_GROUP_LABEL[group]} · ${count}건` });
@@ -39,31 +45,16 @@ describe('추천 결과', () => {
     renderApp(RESULT_PATH);
 
     for (const group of Object.values(RECOMMENDATION_GROUP)) {
-      const [policy] = RECOMMENDATIONS.groups[group];
+      const [policy] = RECOMMENDATIONS.result[SEARCH_RESULT_KEYS[group]];
 
       expect(await groupHeading(group, 1)).toBeInTheDocument();
-      expect(screen.getByText(policy.title)).toBeInTheDocument();
-      expect(screen.getByText(policy.reason)).toBeInTheDocument();
+      expect(screen.getByText(policy.policyName)).toBeInTheDocument();
+      expect(screen.getByText(policy.aiReason)).toBeInTheDocument();
     }
   });
 
-  it('AI 설명을 못 받으면 판정 결과와 함께 안내를 보여 준다', async () => {
-    server.use(
-      http.post(apiUrl(ENDPOINTS.POLICY.RECOMMENDATIONS), () =>
-        ok({ ...RECOMMENDATIONS, isAiFailed: true }),
-      ),
-    );
-    signInAs(TOKENS.MEMBER);
-    renderApp(RESULT_PATH);
-
-    expect(await screen.findByText(TOAST_MESSAGES.AI_FAILED)).toBeInTheDocument();
-    expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
-  });
-
   it('후보가 0건이면 빈 상태와 안내 토스트를 보여 준다', async () => {
-    server.use(
-      http.post(apiUrl(ENDPOINTS.POLICY.RECOMMENDATIONS), () => ok(EMPTY_RECOMMENDATIONS)),
-    );
+    server.use(http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), () => ok(EMPTY_RECOMMENDATIONS)));
     signInAs(TOKENS.MEMBER);
     renderApp(RESULT_PATH);
 
@@ -72,9 +63,7 @@ describe('추천 결과', () => {
   });
 
   it('서버 오류면 오류 상태를 보여 주고 다시 시도하면 결과를 불러온다', async () => {
-    server.use(
-      http.post(apiUrl(ENDPOINTS.POLICY.RECOMMENDATIONS), () => fail(500), { once: true }),
-    );
+    server.use(http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), () => fail(500), { once: true }));
     signInAs(TOKENS.MEMBER);
     const { user } = renderApp(RESULT_PATH);
 

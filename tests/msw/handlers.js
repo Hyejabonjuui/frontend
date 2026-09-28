@@ -144,6 +144,7 @@ export const handlers = [
     apiUrl(ENDPOINTS.POLICY.MEMBER_LIST),
     withUser(() => ok({ isSuccess: true, result: buildPolicyList({ isAuthenticated: true }) })),
   ),
+  http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), () => ok(RECOMMENDATIONS)),
   http.get(apiUrl(ENDPOINTS.POLICY.DETAIL(':policyId')), ({ params, request }) => {
     const policy = POLICIES.find((item) => item.id === Number(params.policyId));
 
@@ -158,7 +159,6 @@ export const handlers = [
       result: buildPolicyDetail(policy, { isAuthenticated: Boolean(findUser(request)) }),
     });
   }),
-  http.post(apiUrl(ENDPOINTS.POLICY.RECOMMENDATIONS), () => ok(RECOMMENDATIONS)),
 
   http.get(
     apiUrl(ENDPOINTS.FAVORITE.LIST),
