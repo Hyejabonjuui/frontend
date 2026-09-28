@@ -62,8 +62,11 @@ export const RADIUS = {
 
 const fontFamily = "'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif";
 const mobileText = '@media (max-width:767.98px)';
-// Match the full tablet interval up to the desktop breakpoint, including fractional viewport widths.
-const tabletText = '@media (min-width:768px) and (max-width:1439.98px)';
+/**
+ * 콘텐츠 폭이 설계서(1120)보다 좁아지는 구간에서만 제목·버튼 글자를 줄인다.
+ * 1168px(1120 + 좌우 여백 24 × 2)부터는 배치가 1440 설계서와 같으므로 글자도 설계서 크기를 쓴다.
+ */
+const tabletText = '@media (min-width:768px) and (max-width:1167.98px)';
 
 const theme = createTheme({
   cssVariables: true,
@@ -115,9 +118,11 @@ const theme = createTheme({
       [mobileText]: { fontSize: 18, lineHeight: '26px' },
       [tabletText]: { fontSize: 19, lineHeight: '26px' },
     },
-    body1: { fontSize: 14, lineHeight: '21px', fontWeight: 400 },
-    body2: { fontSize: 14, lineHeight: '21px', fontWeight: 500 },
-    caption: { fontSize: 12, lineHeight: '17px', fontWeight: 400 },
+    // 설계서 텍스트 스타일: body/md 15/22 굵게(블록 제목·카드 제목), body/sm 14/20, body/sm-strong 14/20, caption 12/16
+    subtitle1: { fontSize: 15, lineHeight: '22px', fontWeight: 700 },
+    body1: { fontSize: 14, lineHeight: '20px', fontWeight: 400 },
+    body2: { fontSize: 14, lineHeight: '20px', fontWeight: 500 },
+    caption: { fontSize: 12, lineHeight: '16px', fontWeight: 400 },
     button: {
       fontSize: 14,
       lineHeight: '20px',
