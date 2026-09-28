@@ -28,7 +28,7 @@ export const ENDPOINTS = {
     CARD_NEWS: '/api/policies/card-news',
     GUEST_CARD_NEWS: '/api/policies/card-news/guest',
     CARD_NEWS_DETAIL: (policyId) => `/api/policies/card-detail/${policyId}`,
-    RECOMMENDATIONS: '/api/recommendations', // F-14 (POST { query })
+    SEARCH: '/api/policies/search', // F-14 회원 맞춤 검색 (GET ?query=)
     TERMS: '/api/terms', // F-13
   },
   FAVORITE: {

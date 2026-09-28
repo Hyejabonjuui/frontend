@@ -6,6 +6,7 @@ import {
   toPolicyDetail,
   toPolicyList,
   toPolicyListParams,
+  toRecommendations,
 } from '@/api/policyApi';
 import { APPLY_PERIOD_TYPE, JUDGE_RESULT, RECOMMENDATION_GROUP } from '@/constants/policy';
 
@@ -229,5 +230,110 @@ describe('정책 목록 API 요청·응답 변환', () => {
       remainingDays: 4,
       isFavorite: true,
     });
+  });
+});
+
+describe('정책 검색(추천) API 응답 변환', () => {
+  const toSearchItem = (overrides = {}) => ({
+    policyId: 'R202609280001',
+    policyName: '청년 월세 지원',
+    categories: ['MONTHLY_RENT'],
+    applyEndDate: '2026-09-30',
+    applyPeriod: 'SPECIFIC_PERIOD',
+    isFavorite: false,
+    aiReason: '조건을 모두 만족해요',
+    status: {
+      age: 'ABLE',
+      region: 'ABLE',
+      income: 'ABLE',
+      employment: 'ABLE',
+      houseless: 'ABLE',
+    },
+    ...overrides,
+  });
+
+  it('approved · underReview · declined를 가능 · 확인 필요 · 불가 그룹으로 나눈다', () => {
+    const { groups, query, isAiFailed } = toRecommendations({
+      isSuccess: true,
+      code: 'SUCCESS_001',
+      message: '요청에 성공했습니다.',
+      result: {
+        approved: [toSearchItem({ policyId: 'A1' })],
+        underReview: [toSearchItem({ policyId: 'U1' }), toSearchItem({ policyId: 'U2' })],
+        declined: [toSearchItem({ policyId: 'D1' })],
+      },
+    });
+
+    expect(groups[RECOMMENDATION_GROUP.POSSIBLE].map((policy) => policy.id)).toEqual(['A1']);
+    expect(groups[RECOMMENDATION_GROUP.NEED_CHECK].map((policy) => policy.id)).toEqual([
+      'U1',
+      'U2',
+    ]);
+    expect(groups[RECOMMENDATION_GROUP.IMPOSSIBLE].map((policy) => policy.id)).toEqual(['D1']);
+    expect(query).toBeNull();
+    expect(isAiFailed).toBe(false);
+  });
+
+  it('검색 항목을 추천 카드 모델로 변환한다', () => {
+    const { groups } = toRecommendations({
+      result: {
+        approved: [toSearchItem({ applyPeriod: 'ALWAYS', isFavorite: true })],
+      },
+    });
+
+    expect(groups[RECOMMENDATION_GROUP.POSSIBLE][0]).toMatchObject({
+      id: 'R202609280001',
+      title: '청년 월세 지원',
+      subtype: 'MONTHLY_RENT',
+      subtypeName: '월세',
+      applyPeriodType: APPLY_PERIOD_TYPE.ALWAYS,
+      applyEndDate: '2026-09-30',
+      isFavorite: true,
+      reason: '조건을 모두 만족해요',
+    });
+  });
+
+  it.each([
+    ['PURCHASE', 'SUBSCRIPTION', '청약·구입'],
+    ['PUBLIC_RENT', 'PUBLIC_HOUSING', '공공임대'],
+    ['OTHER', 'ETC_HOUSING', '기타 주거'],
+    ['JEONSE', 'JEONSE', '전세'],
+  ])('백엔드 카테고리 %s를 프론트 코드 %s로 바꾼다', (apiCategory, subtype, subtypeName) => {
+    const { groups } = toRecommendations({
+      result: { approved: [toSearchItem({ categories: [apiCategory] })] },
+    });
+
+    expect(groups[RECOMMENDATION_GROUP.POSSIBLE][0]).toMatchObject({ subtype, subtypeName });
+  });
+
+  it('조건별 status를 판정 목록으로 바꾸고, 없는 값은 확인 필요로 둔다', () => {
+    const { groups } = toRecommendations({
+      result: {
+        declined: [
+          toSearchItem({
+            status: { age: 'ABLE', region: 'DISABLE', income: 'UNKNOWN', employment: null },
+          }),
+        ],
+      },
+    });
+
+    expect(groups[RECOMMENDATION_GROUP.IMPOSSIBLE][0].judgements).toEqual([
+      { conditionKey: 'AGE', conditionName: '나이', result: JUDGE_RESULT.MET },
+      { conditionKey: 'REGION', conditionName: '지역', result: JUDGE_RESULT.NOT_MET },
+      { conditionKey: 'INCOME', conditionName: '소득', result: JUDGE_RESULT.NEED_CHECK },
+      { conditionKey: 'EMPLOYMENT', conditionName: '취업', result: JUDGE_RESULT.NEED_CHECK },
+      { conditionKey: 'HOUSELESS', conditionName: '무주택', result: JUDGE_RESULT.NEED_CHECK },
+    ]);
+  });
+
+  it('검색 결과가 비어 있으면 세 그룹 모두 빈 배열로 둔다', () => {
+    expect(
+      toRecommendations({ result: { approved: [], underReview: [], declined: [] } }).groups,
+    ).toEqual({
+      [RECOMMENDATION_GROUP.POSSIBLE]: [],
+      [RECOMMENDATION_GROUP.NEED_CHECK]: [],
+      [RECOMMENDATION_GROUP.IMPOSSIBLE]: [],
+    });
+    expect(toRecommendations({ result: null }).groups[RECOMMENDATION_GROUP.POSSIBLE]).toEqual([]);
   });
 });

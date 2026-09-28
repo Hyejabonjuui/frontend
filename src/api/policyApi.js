@@ -1,7 +1,12 @@
 import { ENDPOINTS } from './endpoints';
 import httpClient from './httpClient';
 
-import { APPLY_PERIOD_TYPE, JUDGE_RESULT, RECOMMENDATION_GROUP } from '@/constants/policy';
+import {
+  APPLY_PERIOD_TYPE,
+  JUDGE_RESULT,
+  POLICY_SUBTYPES,
+  RECOMMENDATION_GROUP,
+} from '@/constants/policy';
 
 const CONDITION_LABELS = {
   AGE: '나이',
@@ -35,6 +40,16 @@ const CATEGORY_TO_API = {
   SUBSCRIPTION: 'PURCHASE',
   PUBLIC_HOUSING: 'PUBLIC_RENT',
   ETC_HOUSING: 'OTHER',
+};
+
+const API_TO_CATEGORY = Object.fromEntries(
+  Object.entries(CATEGORY_TO_API).map(([category, apiCategory]) => [apiCategory, category]),
+);
+
+const SEARCH_GROUP_KEYS = {
+  [RECOMMENDATION_GROUP.POSSIBLE]: 'approved',
+  [RECOMMENDATION_GROUP.NEED_CHECK]: 'underReview',
+  [RECOMMENDATION_GROUP.IMPOSSIBLE]: 'declined',
 };
 
 const SORT_TO_API = {
@@ -165,6 +180,43 @@ export const toCardNewsDetail = (response) => {
   };
 };
 
+const toRecommendationItem = (item) => {
+  const subtype = API_TO_CATEGORY[item.categories?.[0]] ?? item.categories?.[0] ?? '';
+
+  return {
+    id: item.policyId,
+    title: item.policyName,
+    subtype,
+    subtypeName: POLICY_SUBTYPES.find((option) => option.value === subtype)?.label ?? '기타 주거',
+    applyPeriodType:
+      item.applyPeriod === 'ALWAYS' ? APPLY_PERIOD_TYPE.ALWAYS : APPLY_PERIOD_TYPE.PERIOD,
+    applyEndDate: item.applyEndDate,
+    isFavorite: Boolean(item.isFavorite),
+    reason: item.aiReason ?? '',
+    judgements: Object.keys(CONDITION_LABELS).map((conditionKey) => ({
+      conditionKey,
+      conditionName: CONDITION_LABELS[conditionKey],
+      result:
+        STATUS_TO_RESULT[item.status?.[conditionKey.toLowerCase()]] ?? JUDGE_RESULT.NEED_CHECK,
+    })),
+  };
+};
+
+export const toRecommendations = (response) => {
+  const result = unwrapResult(response) ?? {};
+
+  return {
+    groups: Object.fromEntries(
+      Object.entries(SEARCH_GROUP_KEYS).map(([group, resultKey]) => [
+        group,
+        (result[resultKey] ?? []).map(toRecommendationItem),
+      ]),
+    ),
+    query: null,
+    isAiFailed: false,
+  };
+};
+
 export const getPolicies = async (params, { isAuthenticated = false } = {}) => {
   const endpoint = isAuthenticated ? ENDPOINTS.POLICY.MEMBER_LIST : ENDPOINTS.POLICY.LIST;
 
@@ -187,8 +239,8 @@ export const getCardNews = async ({ isAuthenticated = false, signal } = {}) => {
 export const getCardNewsDetail = async (policyId, { signal } = {}) =>
   toCardNewsDetail(await httpClient.get(ENDPOINTS.POLICY.CARD_NEWS_DETAIL(policyId), { signal }));
 
-/** F-14: 설계서대로 검색어를 body의 query로 보낸다. */
-export const getRecommendations = ({ keyword }) =>
-  httpClient.post(ENDPOINTS.POLICY.RECOMMENDATIONS, { query: keyword });
+/** F-14: 백엔드 검색 API는 GET 쿼리스트링으로 검색어를 받고, 로그인이 필요하다. */
+export const getRecommendations = async ({ keyword }) =>
+  toRecommendations(await httpClient.get(ENDPOINTS.POLICY.SEARCH, { params: { query: keyword } }));
 
 export const getTerms = () => httpClient.get(ENDPOINTS.POLICY.TERMS);
