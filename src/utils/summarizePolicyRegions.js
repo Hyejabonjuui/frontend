@@ -64,15 +64,15 @@ export const summarizePolicyRegions = ({
   memberRegionCode = null,
   sidoRegions = [],
 }) => {
-  if (nationwide) {
+  if (nationwide || regions.length === 0) {
     return { label: NATIONWIDE_LABEL, regionLabels: [] };
   }
 
   const units = buildRegionUnits(regions, sidoRegions);
   const regionLabels = units.map((unit) => unit.label);
 
-  if (units.length <= 1) {
-    return { label: regionLabels[0] ?? '', regionLabels };
+  if (units.length === 1) {
+    return { label: regionLabels[0], regionLabels };
   }
 
   const memberUnit = memberRegionCode

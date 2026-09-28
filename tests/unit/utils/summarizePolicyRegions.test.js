@@ -157,7 +157,14 @@ describe('summarizePolicyRegions', () => {
     ).toEqual(['서울특별시', '경기도 성남시 분당구']);
   });
 
-  it('지역이 없으면 빈 문자열을 돌려준다', () => {
-    expect(summarize([])).toBe('');
+  it('전국 정책이 아닌데 지역이 비어 있으면 빈칸 대신 "전국"으로 보여 준다', () => {
+    expect(summarize([])).toBe('전국');
+  });
+
+  it('지역 목록이 아예 없어도 "전국"으로 보여 준다', () => {
+    expect(summarizePolicyRegions({ nationwide: false })).toEqual({
+      label: '전국',
+      regionLabels: [],
+    });
   });
 });
