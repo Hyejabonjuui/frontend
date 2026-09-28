@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link as RouterLink, useParams } from 'react-router-dom';
 import AppIcon from '@/components/common/AppIcon';
 import Box from '@mui/material/Box';
@@ -15,13 +15,14 @@ import DdayBadge from '@/components/common/DdayBadge';
 import ErrorState from '@/components/common/ErrorState';
 import JudgeIcon from '@/components/common/JudgeIcon';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import CardNewsDialog from '@/components/policy/CardNewsDialog';
 import TermText from '@/components/policy/TermText';
 import { TOAST_MESSAGES } from '@/constants/messages';
 import { buildMyPagePath, MY_PAGE_TABS, ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavoriteToggle } from '@/hooks/useFavoriteToggle';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
-import { usePolicyDetail } from '@/hooks/usePolicies';
+import { useCardNewsDetail, usePolicyDetail } from '@/hooks/usePolicies';
 import { useTerms } from '@/hooks/useTerms';
 import { useToast } from '@/hooks/useToast';
 import { formatDateRange } from '@/utils/formatDate';
@@ -177,6 +178,10 @@ function PolicyDetailPage() {
   const { isFavorite, toggleFavorite } = useFavoriteToggle();
   const terms = useTerms();
   const wasAuthenticatedRef = useRef(isAuthenticated);
+  const [cardNewsPolicyId, setCardNewsPolicyId] = useState(null);
+  // 다른 정책 상세로 옮겨 가면 열어 둔 카드뉴스는 닫힌 것으로 본다.
+  const requestedCardNewsId = cardNewsPolicyId === policyId ? policyId : null;
+  const cardNewsState = useCardNewsDetail(requestedCardNewsId);
 
   useEffect(() => {
     if (!wasAuthenticatedRef.current && isAuthenticated) {
@@ -185,6 +190,13 @@ function PolicyDetailPage() {
 
     wasAuthenticatedRef.current = isAuthenticated;
   }, [isAuthenticated, refetch]);
+
+  // 카드뉴스를 못 불러오면 팝업 대신 오류 토스트로 알린다.
+  useEffect(() => {
+    if (cardNewsState.errorMessage) {
+      showError(cardNewsState.errorMessage);
+    }
+  }, [cardNewsState.errorMessage, showError]);
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -205,6 +217,15 @@ function PolicyDetailPage() {
     }
 
     window.open(policy.applyUrl, '_blank', 'noopener');
+  };
+
+  const handleCardNewsClick = () => {
+    if (requestedCardNewsId && cardNewsState.errorMessage) {
+      cardNewsState.refetch();
+      return;
+    }
+
+    setCardNewsPolicyId(policyId);
   };
 
   const saved = isFavorite(policy.id, policy.isFavorite);
@@ -253,6 +274,14 @@ function PolicyDetailPage() {
                 {saved ? '관심 해제' : '관심 저장'}
               </Button>
 
+              <Button
+                variant="outlined"
+                loading={Boolean(requestedCardNewsId) && cardNewsState.isLoading}
+                onClick={handleCardNewsClick}
+              >
+                카드뉴스로 보기
+              </Button>
+
               <Button variant="contained" onClick={handleApplyClick}>
                 신청하러 가기 <AppIcon name="arrow-up-right" size={16} />
               </Button>
@@ -297,6 +326,14 @@ function PolicyDetailPage() {
           </Box>
         )}
       </Stack>
+
+      <CardNewsDialog
+        cardNews={cardNewsState.cardNews}
+        onClose={() => setCardNewsPolicyId(null)}
+        isFavorite={saved}
+        onToggleFavorite={() => toggleFavorite(policy.id, saved)}
+        isOpenedFromDetail
+      />
     </Stack>
   );
 }

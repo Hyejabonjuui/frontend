@@ -127,7 +127,14 @@ function CardNewsPanel({ card, cardCount, children }) {
   );
 }
 
-function CardNewsDialog({ cardNews, onClose, isFavorite = false, onToggleFavorite }) {
+/** isOpenedFromDetail은 정책 상세에서 열었다는 뜻이다. 이미 상세 화면이라 상세로 보내는 길을 두지 않는다. */
+function CardNewsDialog({
+  cardNews,
+  onClose,
+  isFavorite = false,
+  onToggleFavorite,
+  isOpenedFromDetail = false,
+}) {
   const navigate = useNavigate();
   const { showError } = useToast();
 
@@ -147,7 +154,10 @@ function CardNewsDialog({ cardNews, onClose, isFavorite = false, onToggleFavorit
     // 신청 링크가 없어도 막다른 길이 되지 않게, 신청 방법이 적힌 정책 상세로 보낸다.
     showError(TOAST_MESSAGES.APPLY_LINK_MISSING);
     onClose();
-    navigate(buildPolicyDetailPath(cardNews.policyId));
+
+    if (!isOpenedFromDetail) {
+      navigate(buildPolicyDetailPath(cardNews.policyId));
+    }
   };
 
   // 설계서 S-01: 마지막 장에서 바로 신청하거나 상세로 넘어갈 수 있어야 한다.
@@ -161,14 +171,16 @@ function CardNewsDialog({ cardNews, onClose, isFavorite = false, onToggleFavorit
         <Button variant="contained" fullWidth onClick={handleApplyClick}>
           이 정책 신청하기 <AppIcon name="arrow-up-right" size={16} />
         </Button>
-        <Link
-          component={RouterLink}
-          to={buildPolicyDetailPath(cardNews.policyId)}
-          onClick={onClose}
-          variant="body1"
-        >
-          정책 상세 보기 <AppIcon name="arrow-right" size={16} />
-        </Link>
+        {!isOpenedFromDetail && (
+          <Link
+            component={RouterLink}
+            to={buildPolicyDetailPath(cardNews.policyId)}
+            onClick={onClose}
+            variant="body1"
+          >
+            정책 상세 보기 <AppIcon name="arrow-right" size={16} />
+          </Link>
+        )}
       </Stack>
     );
   };

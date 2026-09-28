@@ -6,12 +6,22 @@
  *         화면 분기만 본다. 판정 규칙 자체의 테스트는 백엔드 저장소에서 한다.
  */
 import { screen, waitFor, within } from '@testing-library/react';
+import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
+import { ENDPOINTS } from '@/api/endpoints';
 import { JUDGE_RESULT, JUDGE_RESULT_LABEL } from '@/constants/policy';
 
 import { renderApp, signInAs } from '../../helpers/renderApp';
-import { MEMBER_CREDENTIALS, POLICY, RAW_CONDITIONS, TOKENS } from '../../msw/fixtures';
+import {
+  buildCardNewsDetailResponse,
+  MEMBER_CREDENTIALS,
+  POLICY,
+  RAW_CONDITIONS,
+  TOKENS,
+} from '../../msw/fixtures';
+import { apiUrl, ok } from '../../msw/respond';
+import { server } from '../../msw/server';
 
 const DETAIL_PATH = `/policies/${POLICY.id}`;
 const RAW_CARD_TITLE = '신청 조건 (공고 원문)';
@@ -65,5 +75,70 @@ describe('정책 상세 분기', () => {
     renderApp('/policies/99999');
 
     expect(await screen.findByRole('alert')).toHaveTextContent('요청한 정보를 찾을 수 없어요');
+  });
+});
+
+/**
+ * notice: 카드뉴스는 정책 상세 응답에 없어서 GET /api/policies/card-detail/{policyId}로 따로 받는다.
+ *         카드뉴스가 없으면 백엔드는 404 CARD_NEWS_001을 준다(ErrorStatus.CARD_NEWS_NOT_FOUND).
+ */
+describe('정책 상세 카드뉴스', () => {
+  const recordCardNewsRequests = (respond) => {
+    const requestedPolicyIds = [];
+    server.use(
+      http.get(apiUrl(ENDPOINTS.POLICY.CARD_NEWS_DETAIL(':policyId')), ({ params }) => {
+        requestedPolicyIds.push(params.policyId);
+
+        return respond();
+      }),
+    );
+
+    return requestedPolicyIds;
+  };
+
+  it('카드뉴스로 보기를 누르면 이 정책의 카드뉴스를 불러와 팝업으로 보여 준다', async () => {
+    const cardNewsResponse = buildCardNewsDetailResponse(POLICY);
+    const requestedPolicyIds = recordCardNewsRequests(() => ok(cardNewsResponse));
+    const { user } = renderApp(DETAIL_PATH);
+    await findPolicyTitle();
+
+    // 누르기 전에는 카드뉴스를 요청하지 않는다.
+    expect(requestedPolicyIds).toEqual([]);
+
+    await user.click(screen.getByRole('button', { name: '카드뉴스로 보기' }));
+
+    const dialog = await screen.findByRole('dialog');
+    cardNewsResponse.result.cards
+      .filter((card) => card.body)
+      .forEach((card) => {
+        expect(within(dialog).getByText(card.body)).toBeInTheDocument();
+      });
+    // 이미 상세 화면이라 팝업에 상세로 가는 링크를 두지 않는다.
+    expect(within(dialog).queryByRole('link', { name: /정책 상세 보기/ })).not.toBeInTheDocument();
+    expect(requestedPolicyIds).toEqual([String(POLICY.id)]);
+
+    await user.click(within(dialog).getByRole('button', { name: '닫기' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('카드뉴스가 없는 정책이면 팝업 대신 안내 토스트를 보여 준다', async () => {
+    recordCardNewsRequests(() =>
+      HttpResponse.json(
+        {
+          isSuccess: false,
+          code: 'CARD_NEWS_001',
+          message: '존재하지 않는 카드뉴스입니다.',
+          result: null,
+        },
+        { status: 404 },
+      ),
+    );
+    const { user } = renderApp(DETAIL_PATH);
+    await findPolicyTitle();
+
+    await user.click(screen.getByRole('button', { name: '카드뉴스로 보기' }));
+
+    expect(await screen.findByText('이 정책은 아직 카드뉴스가 없어요')).toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });
