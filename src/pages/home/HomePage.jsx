@@ -21,6 +21,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCardNews, useCardNewsDetail, usePolicies } from '@/hooks/usePolicies';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
+import { useMyConditions } from '@/hooks/useMyConditions';
 import { useToast } from '@/hooks/useToast';
 
 function HomePage() {
@@ -46,6 +47,7 @@ function HomePage() {
     size: POLICY_PAGE_SIZE,
   });
   const { isFavorite, isLoading: isFavoritesLoading, toggleFavorite } = useFavorites();
+  const { conditions } = useMyConditions({ redirectOnMissingProfile: false });
 
   const isPolicyFavorite = (policyId) => {
     const policy = policies.find((item) => String(item.id) === String(policyId));
@@ -209,6 +211,7 @@ function HomePage() {
           isFavorite={isPolicyFavorite}
           onToggleFavorite={handlePolicyFavoriteToggle}
           onRetry={refetch}
+          memberRegionCode={conditions?.regionCode || null}
         />
       </Box>
 

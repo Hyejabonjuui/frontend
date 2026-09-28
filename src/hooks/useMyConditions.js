@@ -6,7 +6,8 @@ import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 
-export const useMyConditions = () => {
+/** 홈처럼 조건이 없어도 머물러야 하는 화면은 redirectOnMissingProfile을 끈다. */
+export const useMyConditions = ({ redirectOnMissingProfile = true } = {}) => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
   const memberId = user?.id ?? user?.memberId;
@@ -33,7 +34,7 @@ export const useMyConditions = () => {
           setState({ memberId, conditions: data, isLoading: false, errorMessage: '' });
         }
       } catch (error) {
-        if (error?.response?.data?.code === 'PROFILE_001') {
+        if (redirectOnMissingProfile && error?.response?.data?.code === 'PROFILE_001') {
           navigate(ROUTES.CONDITION_SETUP, { replace: true });
           return;
         }
@@ -54,7 +55,7 @@ export const useMyConditions = () => {
     return () => {
       isActive = false;
     };
-  }, [isAuthenticated, memberId, navigate, reloadToken]);
+  }, [isAuthenticated, memberId, navigate, redirectOnMissingProfile, reloadToken]);
 
   const refetch = useCallback(() => {
     setState((previous) => ({ ...previous, isLoading: true, errorMessage: '' }));
