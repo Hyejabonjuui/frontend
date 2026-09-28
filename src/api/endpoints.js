@@ -26,6 +26,8 @@ export const ENDPOINTS = {
     MEMBER_LIST: '/api/policies/housing/me',
     DETAIL: (policyId) => `/api/policies/${policyId}`, // F-11
     CARD_NEWS: '/api/policies/card-news',
+    GUEST_CARD_NEWS: '/api/policies/card-news/guest',
+    CARD_NEWS_DETAIL: (policyId) => `/api/policies/card-detail/${policyId}`,
     RECOMMENDATIONS: '/api/recommendations', // F-14 (POST { query })
     TERMS: '/api/terms', // F-13
   },

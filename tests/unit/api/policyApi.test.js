@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { toPolicyDetail, toPolicyList, toPolicyListParams } from '@/api/policyApi';
+import {
+  toCardNewsDetail,
+  toCardNewsList,
+  toPolicyDetail,
+  toPolicyList,
+  toPolicyListParams,
+} from '@/api/policyApi';
 import { APPLY_PERIOD_TYPE, JUDGE_RESULT, RECOMMENDATION_GROUP } from '@/constants/policy';
 
 describe('정책 상세 API 응답 변환', () => {
@@ -73,6 +79,72 @@ describe('정책 상세 API 응답 변환', () => {
       conditionKey: 'CUSTOM',
       conditionName: 'CUSTOM',
       result: JUDGE_RESULT.NEED_CHECK,
+    });
+  });
+});
+
+describe('카드뉴스 API 응답 변환', () => {
+  it('목록 응답의 result와 DTO 필드를 화면 목록 모델로 변환한다', () => {
+    expect(
+      toCardNewsList({
+        isSuccess: true,
+        result: [
+          {
+            policyId: 'DEMO-HOUSING-001',
+            policyName: '월세 부담 완화',
+            description: '월 임대료 일부를 지원합니다.',
+            applyEndDate: '2027-12-31',
+          },
+        ],
+      }),
+    ).toEqual([
+      {
+        policyId: 'DEMO-HOUSING-001',
+        title: '월세 부담 완화',
+        summary: '월 임대료 일부를 지원합니다.',
+        applyEndDate: '2027-12-31',
+        cardCount: 4,
+      },
+    ]);
+  });
+
+  it('상세 응답의 카드 배열을 팝업 모델로 변환하고 카드 수를 배열 길이로 계산한다', () => {
+    expect(
+      toCardNewsDetail({
+        result: {
+          policyId: 'DEMO-HOUSING-001',
+          categoryLabel: '월세',
+          isAuthenticated: false,
+          isFavorite: false,
+          applyUrl: 'https://example.com/apply',
+          cards: [
+            {
+              cardNewsId: 11,
+              cardNo: 1,
+              title: '월세 부담 완화',
+              badges: ['청년'],
+              body: '월 임대료 일부를 지원합니다.',
+            },
+          ],
+        },
+      }),
+    ).toEqual({
+      policyId: 'DEMO-HOUSING-001',
+      title: '월세 부담 완화',
+      subtypeName: '월세',
+      cardCount: 1,
+      isAuthenticated: false,
+      isFavorite: false,
+      applyUrl: 'https://example.com/apply',
+      cards: [
+        {
+          id: 11,
+          order: 1,
+          heading: '월세 부담 완화',
+          tags: ['청년'],
+          body: '월 임대료 일부를 지원합니다.',
+        },
+      ],
     });
   });
 });
