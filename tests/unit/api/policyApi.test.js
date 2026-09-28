@@ -7,6 +7,7 @@ import {
   toPolicyList,
   toPolicyListParams,
   toPolicySearchResult,
+  toTermsList,
 } from '@/api/policyApi';
 import { APPLY_PERIOD_TYPE, JUDGE_RESULT, RECOMMENDATION_GROUP } from '@/constants/policy';
 
@@ -151,6 +152,37 @@ describe('카드뉴스 API 응답 변환', () => {
         { id: 'empty-4', order: 4, label: '', heading: '', tags: [], body: '' },
       ],
     });
+  });
+});
+
+describe('정책 용어 풀이 API 응답 변환', () => {
+  it('응답 봉투의 result 배열을 화면 용어 모델로 변환한다', () => {
+    expect(
+      toTermsList({
+        isSuccess: true,
+        code: 'SUCCESS_001',
+        message: '용어 풀이 목록 조회에 성공했습니다.',
+        result: [
+          {
+            termId: 1,
+            term: '중위소득',
+            easyDescription: '전체 가구를 소득 순서로 세웠을 때 가운데 가구의 소득입니다.',
+            example: '중위소득 60% 이하인 가구',
+          },
+        ],
+      }),
+    ).toEqual([
+      {
+        termId: 1,
+        term: '중위소득',
+        easyDescription: '전체 가구를 소득 순서로 세웠을 때 가운데 가구의 소득입니다.',
+        example: '중위소득 60% 이하인 가구',
+      },
+    ]);
+  });
+
+  it('result가 배열이 아니면 빈 목록을 반환한다', () => {
+    expect(toTermsList({ isSuccess: true, result: null })).toEqual([]);
   });
 });
 

@@ -160,6 +160,17 @@ export const toCardNewsList = (response) => {
   }));
 };
 
+export const toTermsList = (response) => {
+  const result = unwrapResult(response);
+
+  return (Array.isArray(result) ? result : []).map((term) => ({
+    termId: term.termId,
+    term: term.term,
+    easyDescription: term.easyDescription ?? '',
+    example: term.example ?? '',
+  }));
+};
+
 export const toCardNewsDetail = (response) => {
   const result = unwrapResult(response);
 
@@ -272,4 +283,5 @@ export const getCardNewsDetail = async (policyId, { signal } = {}) =>
 export const searchPolicies = async ({ query }) =>
   toPolicySearchResult(await httpClient.get(ENDPOINTS.POLICY.SEARCH, { params: { query } }));
 
-export const getTerms = () => httpClient.get(ENDPOINTS.POLICY.TERMS);
+export const getTerms = async ({ signal } = {}) =>
+  toTermsList(await httpClient.get(ENDPOINTS.POLICY.TERMS, { signal }));

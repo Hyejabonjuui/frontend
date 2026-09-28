@@ -24,7 +24,7 @@ import {
   NOTIFICATION_LIST,
   REGION_LIST_RESPONSE,
   POLICY_SEARCH_RESULT,
-  TERM_LIST,
+  TERM_LIST_RESPONSE,
   TOKENS,
   USER_BY_TOKEN,
   buildPolicyList,
@@ -122,7 +122,7 @@ export const handlers = [
   ),
 
   http.get(apiUrl(ENDPOINTS.CODE.REGIONS), () => ok(REGION_LIST_RESPONSE)),
-  http.get(apiUrl(ENDPOINTS.POLICY.TERMS), () => ok(TERM_LIST)),
+  http.get(apiUrl(ENDPOINTS.POLICY.TERMS), () => ok(TERM_LIST_RESPONSE)),
   http.get(
     apiUrl(ENDPOINTS.POLICY.CARD_NEWS),
     withUser(() => ok(CARD_NEWS_LIST_RESPONSE)),

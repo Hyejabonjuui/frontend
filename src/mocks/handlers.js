@@ -770,7 +770,17 @@ export const HANDLERS = [
       });
     },
   },
-  { method: 'get', match: (url) => url === '/api/terms', handle: () => ok({ content: TERMS }) },
+  {
+    method: 'get',
+    match: (url) => url === '/api/terms',
+    handle: () =>
+      ok({
+        isSuccess: true,
+        code: 'SUCCESS_001',
+        message: '용어 풀이 목록 조회에 성공했습니다.',
+        result: TERMS,
+      }),
+  },
   {
     method: 'get',
     match: (url) => url === '/api/favorite',

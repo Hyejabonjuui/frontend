@@ -7,14 +7,18 @@ import Typography from '@mui/material/Typography';
  * 설계서 S-06: 밑줄 친 단어에 마우스를 올리면 쉬운 설명이 나온다.
  * 문장에서 사전에 있는 용어를 찾아 툴팁을 붙인다.
  */
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const splitByTerms = (text, terms) => {
-  const names = terms.map((term) => term.term).filter(Boolean);
+  const names = [...new Set(terms.map((term) => term.term).filter(Boolean))].sort(
+    (first, second) => second.length - first.length,
+  );
 
   if (names.length === 0) {
     return [{ text }];
   }
 
-  const pattern = new RegExp(`(${names.join('|')})`, 'g');
+  const pattern = new RegExp(`(${names.map(escapeRegExp).join('|')})`, 'g');
 
   return text.split(pattern).map((chunk) => ({
     text: chunk,

@@ -101,7 +101,12 @@ export const REGION_LIST_RESPONSE = {
   })),
 };
 
-export const TERM_LIST = { content: TERMS };
+export const TERM_LIST_RESPONSE = {
+  isSuccess: true,
+  code: 'SUCCESS_001',
+  message: '용어 풀이 목록 조회에 성공했습니다.',
+  result: TERMS,
+};
 
 export const POLICY = POLICIES[0];
 
