@@ -297,6 +297,14 @@ export const EMPTY_POLICY_SEARCH_RESULT = toSearchResponse({
   declined: [],
 });
 
+/** 백엔드는 후보가 0건이면 HTTP 200에 실패 봉투를 준다(ErrorStatus.POLICY_SEARCH_EMPTY). */
+export const NO_CANDIDATE_POLICY_SEARCH_RESPONSE = {
+  isSuccess: false,
+  code: 'POLICY_SEARCH_001',
+  message: '조건에 맞는 정책을 찾지 못했어요.',
+  result: null,
+};
+
 export const FAVORITE_POLICY = POLICIES[1];
 
 export const FAVORITES = {

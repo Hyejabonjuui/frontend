@@ -406,4 +406,19 @@ describe('정책 검색(추천) API 응답 변환', () => {
       [],
     );
   });
+
+  it('후보 0건(POLICY_SEARCH_001) 실패 봉투는 세 그룹 모두 빈 배열로 둔다', () => {
+    expect(
+      toPolicySearchResult({
+        isSuccess: false,
+        code: 'POLICY_SEARCH_001',
+        message: '조건에 맞는 정책을 찾지 못했어요.',
+        result: null,
+      }).groups,
+    ).toEqual({
+      [RECOMMENDATION_GROUP.POSSIBLE]: [],
+      [RECOMMENDATION_GROUP.NEED_CHECK]: [],
+      [RECOMMENDATION_GROUP.IMPOSSIBLE]: [],
+    });
+  });
 });

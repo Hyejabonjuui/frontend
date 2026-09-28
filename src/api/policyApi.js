@@ -56,6 +56,12 @@ const SORT_TO_API = {
   VIEWS: 'VIEW_COUNT',
 };
 
+/** 백엔드는 검색 후보가 0건이면 HTTP 200에 isSuccess: false, result: null로 알린다. */
+const POLICY_SEARCH_EMPTY_CODE = 'POLICY_SEARCH_001';
+
+const isEmptySearchResponse = (response) =>
+  response?.isSuccess === false && response?.code === POLICY_SEARCH_EMPTY_CODE;
+
 export const toPolicyListParams = (
   { subtype, sort, onlyMatched, page, size } = {},
   { includeEligibility = false } = {},
@@ -244,7 +250,7 @@ const toPolicySearchItem = (item) => {
 };
 
 export const toPolicySearchResult = (response) => {
-  const result = unwrapResult(response) ?? {};
+  const result = isEmptySearchResponse(response) ? {} : (unwrapResult(response) ?? {});
 
   return {
     groups: Object.fromEntries(

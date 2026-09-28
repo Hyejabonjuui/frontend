@@ -4,6 +4,10 @@
  * notice: 실제 백엔드(AI 판정) 없이 MSW가 GET /api/policies/search 응답을 준다. 그룹 구성은 fixtures의 고정값이다.
  *         응답 형태(approved · underReview · declined)는 백엔드 PolicySearchResponseDTO를 따른다.
  *         DTO가 바뀌면 fixtures.POLICY_SEARCH_RESULT와 policyApi.toPolicySearchResult부터 맞춘다.
+ * notice: 후보 0건은 백엔드 ErrorStatus.POLICY_SEARCH_EMPTY처럼 HTTP 200에
+ *         { isSuccess: false, code: 'POLICY_SEARCH_001', result: null }로 온다고 둔다.
+ *         코드나 상태가 바뀌면 fixtures.NO_CANDIDATE_POLICY_SEARCH_RESPONSE와 toPolicySearchResult를 맞춘다.
+ * notice: 검색 API는 로그인이 필요하다(백엔드 SecurityConfig). 그래서 비로그인은 요청 자체를 하지 않는다.
  */
 import { screen, waitFor, within } from '@testing-library/react';
 import { http } from 'msw';
@@ -17,6 +21,7 @@ import { findHeader, renderApp, signInAs } from '../../helpers/renderApp';
 import {
   EMPTY_POLICY_SEARCH_RESULT,
   MEMBER_CREDENTIALS,
+  NO_CANDIDATE_POLICY_SEARCH_RESPONSE,
   POLICY_SEARCH_RESULT,
   TOKENS,
 } from '../../msw/fixtures';
@@ -66,6 +71,18 @@ describe('추천 결과', () => {
 
     expect(await screen.findByText(EMPTY_MESSAGES.SEARCH)).toBeInTheDocument();
     expect(await screen.findByText(TOAST_MESSAGES.NO_CANDIDATE)).toBeInTheDocument();
+  });
+
+  it('서버가 후보 0건(POLICY_SEARCH_001) 봉투를 주면 빈 상태와 안내 토스트를 보여 준다', async () => {
+    server.use(
+      http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), () => ok(NO_CANDIDATE_POLICY_SEARCH_RESPONSE)),
+    );
+    signInAs(TOKENS.MEMBER);
+    renderApp(RESULT_PATH);
+
+    expect(await screen.findByText(EMPTY_MESSAGES.SEARCH)).toBeInTheDocument();
+    expect(await screen.findByText(TOAST_MESSAGES.NO_CANDIDATE)).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /건$/ })).not.toBeInTheDocument();
   });
 
   it('0건 뒤 다시 검색해도 0건이면 안내 토스트를 다시 보여 준다', async () => {
