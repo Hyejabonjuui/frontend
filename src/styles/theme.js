@@ -157,11 +157,12 @@ const theme = createTheme({
       defaultProps: { disableElevation: true },
       styleOverrides: {
         root: { minHeight: 36, paddingInline: 14, borderRadius: RADIUS.control },
-        sizeSmall: { minHeight: 32, paddingInline: 10, fontSize: 12, fontWeight: 700 },
-        // 설계서에서 파란색은 채움 버튼만 쓴다. 보조 버튼은 회색 테두리에 검은 글자다.
+        // 설계서 공통 규칙: 버튼 기본 높이 36, 작게 30
+        sizeSmall: { minHeight: 30, paddingInline: 10, fontSize: 12, fontWeight: 700 },
+        // 설계서에서 파란색은 채움 버튼만 쓴다. 보조 버튼은 회색(line-2) 테두리에 검은 글자다.
         outlined: {
           color: designTokens.text,
-          borderColor: designTokens.line,
+          borderColor: designTokens.line2,
           '&:hover': { borderColor: designTokens.line2, backgroundColor: designTokens.fill2 },
         },
         text: {
@@ -173,7 +174,17 @@ const theme = createTheme({
     MuiChip: {
       styleOverrides: {
         root: { borderRadius: RADIUS.chip },
+        outlined: { borderColor: designTokens.line2 },
+        // 설계서 Chip/SubtypeSmall: 높이 22 · 글자 12/16 · 좌우 8
+        sizeSmall: { height: 22, fontSize: 12, lineHeight: '16px' },
+        labelSmall: { paddingInline: 8 },
       },
+      variants: [
+        {
+          props: { variant: 'outlined', size: 'small' },
+          style: { color: designTokens.text2 },
+        },
+      ],
     },
     MuiLink: {
       styleOverrides: {

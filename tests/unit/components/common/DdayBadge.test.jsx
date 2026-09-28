@@ -37,10 +37,10 @@ describe('DdayBadge 남은 일수(remainingDays)', () => {
     expect(findChip(`D-${remainingDays}`)).toHaveClass('MuiChip-filled', 'MuiChip-colorPrimary');
   });
 
-  it('8일이면 일반 표시로 둔다', () => {
+  it('8일이면 강조하지 않은 회색 채움으로 둔다', () => {
     render(<DdayBadge remainingDays={8} />);
 
-    expect(findChip('D-8')).toHaveClass('MuiChip-outlined');
+    expect(findChip('D-8')).toHaveClass('MuiChip-filled');
     expect(findChip('D-8')).not.toHaveClass('MuiChip-colorPrimary');
   });
 
