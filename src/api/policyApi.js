@@ -212,6 +212,7 @@ export const toCardNewsDetail = (response) => {
     policyId: result.policyId,
     title: cards[0]?.heading ?? '',
     subtypeName: result.categoryLabel ?? '',
+    remainingDays: result.dDay ?? null,
     cardCount: CARD_NEWS_COUNT,
     isAuthenticated: Boolean(result.isAuthenticated),
     isFavorite: Boolean(result.isFavorite),
