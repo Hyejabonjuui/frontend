@@ -222,6 +222,30 @@ const listPolicies = (params, user) => {
   });
 };
 
+const JUDGE_RESULT_TO_STATUS = {
+  [JUDGE_RESULT.MET]: 'ABLE',
+  [JUDGE_RESULT.NOT_MET]: 'DISABLE',
+  [JUDGE_RESULT.NEED_CHECK]: 'UNKNOWN',
+};
+
+const toApiSearchItem = (policy, judgements, group, user) => ({
+  policyId: String(policy.id),
+  policyName: policy.title,
+  categories: [UI_TO_API_CATEGORY[policy.subtype] ?? policy.subtype],
+  applyEndDate: policy.applyEndDate,
+  applyPeriod: policy.applyPeriodType === APPLY_PERIOD_TYPE.ALWAYS ? 'ALWAYS' : 'SPECIFIC_PERIOD',
+  isFavorite: Boolean(
+    user && getFavorites(user.id).some((favorite) => favorite.policyId === policy.id),
+  ),
+  aiReason: buildJudgementReason(judgements, group),
+  status: Object.fromEntries(
+    judgements.map((judgement) => [
+      judgement.conditionKey.toLowerCase(),
+      JUDGE_RESULT_TO_STATUS[judgement.result],
+    ]),
+  ),
+});
+
 const buildRecommendations = (query, user) => {
   const keyword = (query ?? '').trim();
   const matchedSubtype = Object.entries(SUBTYPE_NAMES).find(([, name]) =>
@@ -255,21 +279,18 @@ const buildRecommendations = (query, user) => {
     const judgements = buildJudgements(policy, profile);
     const group = getRecommendationGroup(judgements);
 
-    groups[group].push({
-      ...toPolicySummary(policy),
-      judgements,
-      reason: buildJudgementReason(judgements, group),
-    });
+    groups[group].push(toApiSearchItem(policy, judgements, group, user));
   });
 
   return ok({
-    query: {
-      keyword,
-      matchedSubtypeName: matchedSubtype ? SUBTYPE_NAMES[matchedSubtype[0]] : '',
-      conditionSummary: user ? buildConditionSummary(user.profile) : '',
+    isSuccess: true,
+    code: 'SUCCESS_001',
+    message: '요청에 성공했습니다.',
+    result: {
+      approved: groups[RECOMMENDATION_GROUP.POSSIBLE],
+      underReview: groups[RECOMMENDATION_GROUP.NEED_CHECK],
+      declined: groups[RECOMMENDATION_GROUP.IMPOSSIBLE],
     },
-    groups,
-    isAiFailed: keyword.includes('AI실패'), // notice: 목 전용으로 AI 실패 화면을 확인하는 검색어다.
   });
 };
 
@@ -647,6 +668,11 @@ export const HANDLERS = [
   },
   {
     method: 'get',
+    match: (url) => url === '/api/policies/search',
+    handle: ({ params, user }) => requireUser(user) ?? buildRecommendations(params.query, user),
+  },
+  {
+    method: 'get',
     match: (url) => /^\/api\/policies\/[^/]+$/.test(url),
     handle: ({ url, user }) => {
       const policy = findActivePolicyById(url.split('/').at(-1));
@@ -714,11 +740,6 @@ export const HANDLERS = [
         },
       });
     },
-  },
-  {
-    method: 'post',
-    match: (url) => url === '/api/recommendations',
-    handle: ({ body, user }) => buildRecommendations(body?.query, user),
   },
   { method: 'get', match: (url) => url === '/api/terms', handle: () => ok({ content: TERMS }) },
   {
