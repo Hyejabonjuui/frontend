@@ -109,15 +109,44 @@ const API_TO_UI_CATEGORY = Object.fromEntries(
   Object.entries(UI_TO_API_CATEGORY).map(([uiCategory, apiCategory]) => [apiCategory, uiCategory]),
 );
 
+const isSidoRegionCode = (regionCode) => regionCode.endsWith('000');
+
+// notice: 백엔드(PolicySyncItemService)는 시·도 코드(예: 11000 서울 전체)를 그 시·도의 시군구 전체로 풀어 저장하고,
+//         region_name은 "서울특별시 마포구"처럼 시·도명과 시군구명을 이어서 내려준다. 목 서버도 같은 모양으로 응답한다.
+// notice: 목 코드표(src/mocks/data/codes.js)의 시군구만으로 풀기 때문에 서울은 4개 구, 경기는 3개 시군구가 된다.
+//         백엔드 목록 응답의 지역 모양이 바뀌면 이 함수만 명세에 맞춘다.
+const toApiPolicyRegions = (policy) => {
+  if (policy.regionCode === NATIONWIDE_REGION_CODE) {
+    return [];
+  }
+
+  const sido = CODE_GROUPS.regions.find(
+    (region) => region.sidoCode === policy.regionCode.slice(0, 2),
+  );
+  const sigungus = (sido?.sigungu ?? []).filter((sigungu) =>
+    isSidoRegionCode(policy.regionCode)
+      ? !isSidoRegionCode(sigungu.code)
+      : sigungu.code === policy.regionCode,
+  );
+
+  if (sigungus.length === 0) {
+    return [{ region_code: policy.regionCode, region_name: policy.regionName }];
+  }
+
+  return sigungus
+    .map((sigungu) => ({
+      region_code: sigungu.code,
+      region_name: `${sido.sidoName} ${sigungu.name}`,
+    }))
+    .sort((first, second) => first.region_code.localeCompare(second.region_code));
+};
+
 const toApiPolicyListItem = (policy, user) => ({
   policy_id: String(policy.id),
   policy_name: policy.title,
   category_codes: [UI_TO_API_CATEGORY[policy.subtype] ?? policy.subtype],
   category_names: [findSubtypeName(policy.subtype)],
-  regions:
-    policy.regionCode === NATIONWIDE_REGION_CODE
-      ? []
-      : [{ region_code: policy.regionCode, region_name: policy.regionName }],
+  regions: toApiPolicyRegions(policy),
   nationwide: policy.regionCode === NATIONWIDE_REGION_CODE,
   apply_end_date: policy.applyEndDate,
   apply_period_code:
