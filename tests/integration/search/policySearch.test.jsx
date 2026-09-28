@@ -345,6 +345,24 @@ describe('뒤로 가기로 돌아온 검색', () => {
     ).toBeInTheDocument();
   });
 
+  it('검색 화면 안에서 다시 검색했다가 뒤로 가면 검색창도 이전 검색어로 돌아온다', async () => {
+    const requestedQueries = recordSearchRequests();
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp(RESULT_PATH);
+
+    expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '#전세' }));
+    await waitFor(() => expect(requestedQueries).toEqual(['월세', '#전세']));
+    expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
+
+    window.history.back();
+
+    await waitFor(() =>
+      expect(screen.getByRole('textbox', { name: '정책 검색' })).toHaveValue('월세'),
+    );
+    expect(requestedQueries).toEqual(['월세', '#전세']);
+  });
+
   it('로그아웃하면 브라우저에 남겨 둔 검색 결과를 지운다', async () => {
     recordSearchRequests();
     signInAs(TOKENS.MEMBER);

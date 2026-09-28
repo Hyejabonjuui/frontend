@@ -33,9 +33,16 @@ function PolicySearchPage() {
   const { openLoginNotice } = useLoginDialog();
   const { showInfo, showSuccess } = useToast();
   const [searchKeyword, setSearchKeyword] = useState(searchQuery);
+  const [syncedQuery, setSyncedQuery] = useState(searchQuery);
   const { groups, groupCounts, totalCount, isIdle, isLoading, errorMessage, refetch } =
     usePolicySearch({ query: searchQuery }, { historyKey: location.key });
   const { isFavorite, toggleFavorite } = useFavoriteToggle();
+
+  // 뒤로·앞으로 가기로 주소의 검색어가 바뀌면 검색창도 그 검색어로 맞춘다.
+  if (syncedQuery !== searchQuery) {
+    setSyncedQuery(searchQuery);
+    setSearchKeyword(searchQuery);
+  }
 
   const isSearchedPolicyFavorite = (policyId) =>
     isFavorite(
