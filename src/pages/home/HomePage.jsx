@@ -18,7 +18,7 @@ import { ERROR_MESSAGES, LOGIN_NOTICE, VALIDATION_MESSAGES } from '@/constants/m
 import { POLICY_PAGE_SIZE, POLICY_SORT_OPTIONS, POLICY_SUBTYPES } from '@/constants/policy';
 import { buildMyPagePath, MY_PAGE_TABS, ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
-import { useCardNews, usePolicies } from '@/hooks/usePolicies';
+import { useCardNews, useCardNewsDetail, usePolicies } from '@/hooks/usePolicies';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { useToast } from '@/hooks/useToast';
@@ -33,10 +33,11 @@ function HomePage() {
   const [sort, setSort] = useState(POLICY_SORT_OPTIONS[0].value);
   const [onlyMatched, setOnlyMatched] = useState(false);
   const [page, setPage] = useState(1);
-  const [selectedCardNews, setSelectedCardNews] = useState(null);
+  const [selectedCardNewsId, setSelectedCardNewsId] = useState(null);
   const [searchError, setSearchError] = useState('');
 
   const cardNewsState = useCardNews();
+  const cardNewsDetailState = useCardNewsDetail(selectedCardNewsId);
   const { policies, totalCount, totalPages, isLoading, errorMessage, refetch } = usePolicies({
     subtype,
     sort,
@@ -44,7 +45,7 @@ function HomePage() {
     page,
     size: POLICY_PAGE_SIZE,
   });
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { isFavorite, isLoading: isFavoritesLoading, toggleFavorite } = useFavorites();
 
   const isPolicyFavorite = (policyId) => {
     const policy = policies.find((item) => String(item.id) === String(policyId));
@@ -140,7 +141,7 @@ function HomePage() {
           cardNewsList={cardNewsState.cardNewsList}
           isLoading={cardNewsState.isLoading}
           errorMessage={cardNewsState.errorMessage}
-          onSelect={setSelectedCardNews}
+          onSelect={(cardNews) => setSelectedCardNewsId(cardNews.policyId)}
         />
       </Box>
 
@@ -212,9 +213,15 @@ function HomePage() {
       </Box>
 
       <CardNewsDialog
-        cardNews={selectedCardNews}
-        onClose={() => setSelectedCardNews(null)}
-        isFavorite={selectedCardNews ? isFavorite(selectedCardNews.policyId) : false}
+        cardNews={cardNewsDetailState.cardNews}
+        onClose={() => setSelectedCardNewsId(null)}
+        isFavorite={
+          cardNewsDetailState.cardNews
+            ? isFavoritesLoading
+              ? cardNewsDetailState.cardNews.isFavorite
+              : isFavorite(cardNewsDetailState.cardNews.policyId)
+            : false
+        }
         onToggleFavorite={toggleFavorite}
       />
     </Stack>
