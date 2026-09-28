@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { useCallback, useEffect } from 'react';
+import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
@@ -19,21 +19,47 @@ import { useFavoriteToggle } from '@/hooks/useFavoriteToggle';
 import { useFavorites } from '@/hooks/useFavorites';
 
 function FavoritePage() {
-  const [keyword, setKeyword] = useState('');
-  const [page, setPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const keyword = searchParams.get('keyword')?.trim() ?? '';
+  const requestedPage = Number(searchParams.get('page'));
+  const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const { favorites, totalCount, totalPages, isLoading, errorMessage, reload, refetch } =
     useFavorites({ keyword, page, size: POLICY_PAGE_SIZE });
   const { toggleFavorite } = useFavoriteToggle();
-  // 해제로 마지막 페이지가 비면 남아 있는 마지막 페이지를 보여 준다.
-  const currentPage = Math.min(page, Math.max(totalPages, 1));
 
-  if (currentPage !== page) {
-    setPage(currentPage);
-  }
+  const updateSearchParams = useCallback(
+    ({ keyword: nextKeyword = keyword, page: nextPage = page }, options) => {
+      const nextParams = new URLSearchParams();
+
+      if (nextKeyword) {
+        nextParams.set('keyword', nextKeyword);
+      }
+
+      if (nextPage > 1) {
+        nextParams.set('page', String(nextPage));
+      }
+
+      setSearchParams(nextParams, options);
+    },
+    [keyword, page, setSearchParams],
+  );
+
+  useEffect(() => {
+    if (isLoading || errorMessage) {
+      return;
+    }
+
+    const lastPage = Math.max(totalPages, 1);
+    const normalizedPage = Math.min(page, lastPage);
+    const hasInvalidPage = searchParams.has('page') && requestedPage !== page;
+
+    if (hasInvalidPage || normalizedPage !== page) {
+      updateSearchParams({ page: normalizedPage }, { replace: true });
+    }
+  }, [errorMessage, isLoading, page, requestedPage, searchParams, totalPages, updateSearchParams]);
 
   const handleSearch = (nextKeyword) => {
-    setKeyword(nextKeyword);
-    setPage(1);
+    updateSearchParams({ keyword: nextKeyword, page: 1 });
   };
 
   const handleRemove = async (policyId) => {
@@ -51,7 +77,12 @@ function FavoritePage() {
       </Stack>
 
       <Stack sx={{ alignItems: 'flex-end' }}>
-        <PolicySearchField placeholder="관심 정책 검색" onSearch={handleSearch} />
+        <PolicySearchField
+          key={keyword}
+          placeholder="관심 정책 검색"
+          initialKeyword={keyword}
+          onSearch={handleSearch}
+        />
       </Stack>
 
       {isLoading && <LoadingSpinner />}
@@ -108,7 +139,11 @@ function FavoritePage() {
             ))}
           </Box>
 
-          <ListPagination page={currentPage} totalPages={totalPages} onPageChange={setPage} />
+          <ListPagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={(nextPage) => updateSearchParams({ page: nextPage })}
+          />
         </Box>
       )}
     </Stack>

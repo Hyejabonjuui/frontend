@@ -14,8 +14,8 @@ const FIELD_WIDTH = 240;
  * 홈·추천 결과의 큰 검색창과 달리 화면 안에 작게 놓는다.
  * 검색어를 확정하면(엔터·검색 버튼) 앞뒤 공백을 뺀 값으로 onSearch를 부른다. 빈 값이면 전체 보기다.
  */
-function PolicySearchField({ onSearch, placeholder = '주거 정책 검색' }) {
-  const [keyword, setKeyword] = useState('');
+function PolicySearchField({ onSearch, placeholder = '주거 정책 검색', initialKeyword = '' }) {
+  const [keyword, setKeyword] = useState(initialKeyword);
 
   const handleSubmit = (event) => {
     event.preventDefault();
