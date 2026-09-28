@@ -28,7 +28,7 @@ function FavoriteRow({ favorite, onRemove }) {
         display: 'grid',
         gridTemplateColumns: {
           xs: '80px minmax(0, 1fr) auto',
-          sm: '96px minmax(0, 1fr) 200px 110px',
+          sm: '96px minmax(0, 1fr) 110px',
         },
         alignItems: 'center',
         columnGap: { xs: 1, sm: 2 },
@@ -66,19 +66,6 @@ function FavoriteRow({ favorite, onRemove }) {
             신청 기간이 끝났어요
           </Typography>
         )}
-      </Typography>
-
-      <Typography
-        variant="body1"
-        color="text.secondary"
-        sx={{
-          gridColumn: { xs: '1 / 3', sm: 'auto' },
-          width: '100%',
-          textAlign: { xs: 'left', sm: 'right' },
-          overflowWrap: 'anywhere',
-        }}
-      >
-        {policy.regionName}
       </Typography>
 
       <Stack

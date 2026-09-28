@@ -13,8 +13,6 @@ const EMPTY_GROUPS = {
 
 const INITIAL_STATE = {
   groups: EMPTY_GROUPS,
-  query: null,
-  isAiFailed: false,
   isLoading: true,
   errorMessage: '',
 };
@@ -47,8 +45,6 @@ export const usePolicySearch = (params = {}) => {
         if (isActive) {
           setState({
             groups: { ...EMPTY_GROUPS, ...(data.groups ?? {}) },
-            query: data.query ?? null,
-            isAiFailed: data.isAiFailed ?? false,
             isLoading: false,
             errorMessage: '',
           });

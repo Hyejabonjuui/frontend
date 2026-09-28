@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link as RouterLink, useParams } from 'react-router-dom';
 import AppIcon from '@/components/common/AppIcon';
 import Box from '@mui/material/Box';
@@ -15,7 +15,6 @@ import DdayBadge from '@/components/common/DdayBadge';
 import ErrorState from '@/components/common/ErrorState';
 import JudgeIcon from '@/components/common/JudgeIcon';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import CardNewsDialog from '@/components/policy/CardNewsDialog';
 import TermText from '@/components/policy/TermText';
 import { TOAST_MESSAGES } from '@/constants/messages';
 import { buildMyPagePath, MY_PAGE_TABS, ROUTES } from '@/constants/routes';
@@ -177,7 +176,6 @@ function PolicyDetailPage() {
   const { policy, isLoading, errorMessage, refetch } = usePolicyDetail(policyId);
   const { isFavorite, toggleFavorite } = useFavoriteToggle();
   const terms = useTerms();
-  const [isCardNewsOpen, setIsCardNewsOpen] = useState(false);
   const wasAuthenticatedRef = useRef(isAuthenticated);
 
   useEffect(() => {
@@ -210,7 +208,6 @@ function PolicyDetailPage() {
   };
 
   const saved = isFavorite(policy.id, policy.isFavorite);
-  const policySource = [policy.organization, policy.regionName].filter(Boolean).join(' · ');
 
   return (
     <Stack spacing={3}>
@@ -246,12 +243,6 @@ function PolicyDetailPage() {
               />
             </Stack>
 
-            {policySource && (
-              <Typography variant="body1" color="text.secondary">
-                {policySource}
-              </Typography>
-            )}
-
             <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
               <Button
                 variant="outlined"
@@ -261,12 +252,6 @@ function PolicyDetailPage() {
               >
                 {saved ? '관심 해제' : '관심 저장'}
               </Button>
-
-              {policy.cardNews && (
-                <Button variant="outlined" onClick={() => setIsCardNewsOpen(true)}>
-                  카드뉴스로 보기
-                </Button>
-              )}
 
               <Button variant="contained" onClick={handleApplyClick}>
                 신청하러 가기 <AppIcon name="arrow-up-right" size={16} />
@@ -312,13 +297,6 @@ function PolicyDetailPage() {
           </Box>
         )}
       </Stack>
-
-      <CardNewsDialog
-        cardNews={isCardNewsOpen ? policy.cardNews : null}
-        onClose={() => setIsCardNewsOpen(false)}
-        isFavorite={saved}
-        onToggleFavorite={(policyId) => toggleFavorite(policyId, saved)}
-      />
     </Stack>
   );
 }

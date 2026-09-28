@@ -259,8 +259,6 @@ export const toPolicySearchResult = (response) => {
         (result[resultKey] ?? []).map(toPolicySearchItem),
       ]),
     ),
-    query: null,
-    isAiFailed: false,
   };
 };
 

@@ -11,8 +11,6 @@ export const TOAST_MESSAGES = {
   CONDITION_SAVED: '내 조건을 저장했어요',
   CONDITION_REQUIRED: '필수 항목을 모두 채워 주세요',
   CONDITION_DRAFT_LOADED: '이어서 작성 중이에요 · 저장하지 않고 나갔던 내용을 불러왔어요',
-  AI_FAILED:
-    '지금은 AI 설명을 불러오지 못해 조건 판정 결과만 보여드려요. 자세한 자격은 상세에서 확인하세요.',
   NO_CANDIDATE: '조건에 맞는 정책을 찾지 못했어요',
   SEARCHED: '검색했어요', // 앞에 '검색어(으)로'를 붙여 쓴다.
   APPLY_LINK_MISSING: '신청 링크가 없는 정책이에요',

@@ -19,8 +19,6 @@ const toFavorite = (favorite) => ({
     title: favorite.policy_name,
     subtype: favorite.category_codes?.[0],
     subtypeName: favorite.category_names?.[0],
-    regionName: '',
-    organization: '',
     summary: favorite.support_content ?? '',
     applyPeriodType:
       APPLY_PERIOD_CODE_TO_TYPE[favorite.apply_period_code] ?? APPLY_PERIOD_TYPE.PERIOD,
