@@ -32,7 +32,6 @@ const toSession = (credentials, response, account) => {
       nickname: result.nickname ?? account?.nickname,
       joinedAt: account?.createdAt?.slice(0, 10),
       role,
-      hasProfile: true,
     },
   };
 };
@@ -88,5 +87,3 @@ export const findEmail = async (form) => {
 
   return unwrapResult(response);
 };
-
-export const resetPassword = (form) => httpClient.post(ENDPOINTS.AUTH.RESET_PASSWORD, form);

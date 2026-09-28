@@ -9,11 +9,6 @@ export const toConditionForm = (profile) => {
     return {};
   }
 
-  // 로컬 목 API는 이미 화면 폼 모델을 반환한다.
-  if ('birthDate' in profile || 'houseless' in profile || 'incomeRange' in profile) {
-    return profile;
-  }
-
   return {
     birthDate: profile.birth ?? '',
     sidoCode: profile.regionCode?.slice(0, 2) ?? '',
@@ -26,6 +21,16 @@ export const toConditionForm = (profile) => {
     housingType: profile.housingType ?? '',
   };
 };
+
+/** 홈의 "만 26세 · 서울특별시 마포구 · 무주택 기준으로 찾아요" 문구에 들어갈 요약을 만든다. */
+export const toConditionSummary = (profile) =>
+  [
+    profile?.age == null ? '' : `만 ${profile.age}세`,
+    profile?.regionName ?? '',
+    profile?.houselessYn === true ? '무주택' : '',
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
 const emptyToNull = (value) => (value === '' || value === undefined ? null : value);
 
@@ -55,8 +60,11 @@ export const toAccount = (response) => {
 
 export const getMyAccount = async () => toAccount(await httpClient.get(ENDPOINTS.USER.ME));
 
-export const getMyConditions = async () =>
-  toConditionForm(unwrapResult(await httpClient.get(ENDPOINTS.USER.PROFILE)));
+export const getMyConditions = async () => {
+  const profile = unwrapResult(await httpClient.get(ENDPOINTS.USER.PROFILE));
+
+  return { conditions: toConditionForm(profile), summary: toConditionSummary(profile) };
+};
 
 export const updateMyConditions = async (conditionForm) =>
   toConditionForm(

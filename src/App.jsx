@@ -2,6 +2,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import AuthProvider from '@/contexts/AuthProvider';
 import LoginDialogProvider from '@/contexts/LoginDialogProvider';
+import NotificationProvider from '@/contexts/NotificationProvider';
 import ToastProvider from '@/contexts/ToastProvider';
 import Router from '@/routes/Router';
 
@@ -10,9 +11,11 @@ function App() {
     <BrowserRouter>
       <ToastProvider>
         <AuthProvider>
-          <LoginDialogProvider>
-            <Router />
-          </LoginDialogProvider>
+          <NotificationProvider>
+            <LoginDialogProvider>
+              <Router />
+            </LoginDialogProvider>
+          </NotificationProvider>
         </AuthProvider>
       </ToastProvider>
     </BrowserRouter>

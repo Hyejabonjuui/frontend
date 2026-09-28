@@ -19,11 +19,11 @@ function DdayBadge({ applyPeriodType, applyEndDate, remainingDays: providedRemai
   const remainingDays =
     providedRemainingDays === undefined ? getRemainingDays(applyEndDate) : providedRemainingDays;
 
-  if (remainingDays === null) {
+  if (applyPeriodType !== APPLY_PERIOD_TYPE.CLOSED && remainingDays === null) {
     return null;
   }
 
-  if (remainingDays < 0) {
+  if (applyPeriodType === APPLY_PERIOD_TYPE.CLOSED || remainingDays < 0) {
     return (
       <Chip
         label="마감"

@@ -11,7 +11,6 @@ export const ENDPOINTS = {
     EMAIL_VERIFICATION_CONFIRMATION: '/api/members/email-verifications/confirmation',
     LOGOUT: '/api/members/logout',
     FIND_EMAIL: '/api/members/find-email',
-    RESET_PASSWORD: '/api/auth/reset-password',
   },
   USER: {
     ME: '/api/members/me',
@@ -41,7 +40,6 @@ export const ENDPOINTS = {
     READ: (notificationId) => `/api/notification/${notificationId}/read`,
   },
   ADMIN: {
-    COLLECT: '/api/admin/collect', // F-09
-    COLLECT_STATUS: '/api/admin/collect/status',
+    POLICY_SYNC: '/api/policies/sync', // F-09
   },
 };

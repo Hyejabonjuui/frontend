@@ -14,7 +14,10 @@ function NotificationItem({ notification, onRead, onDelete }) {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    onRead?.(notification.id);
+    // 이미 읽은 알림은 다시 읽음 요청을 보내지 않는다.
+    if (!notification.isRead) {
+      onRead?.(notification.id);
+    }
 
     if (notification.policyId) {
       navigate(buildPolicyDetailPath(notification.policyId));

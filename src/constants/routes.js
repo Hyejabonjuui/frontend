@@ -4,7 +4,6 @@ export const ROUTES = {
   HOME: '/home',
   SIGNUP: '/signup',
   FIND_EMAIL: '/find-email',
-  RESET_PASSWORD: '/reset-password',
   CONDITION_SETUP: '/conditions',
   SEARCH: '/search',
   POLICY_DETAIL: '/policies/:policyId',

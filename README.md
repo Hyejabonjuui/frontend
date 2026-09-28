@@ -53,20 +53,19 @@ npm run test:e2e          # E2E (목 모드로 빌드 후 실행)
 
 ## 화면 구성
 
-| 설계서               | 경로                                           | 접근     |
-| -------------------- | ---------------------------------------------- | -------- |
-| S-01 홈              | `/`                                            | 공개     |
-| S-02 로그인          | 모달 (전역)                                    | 비로그인 |
-| S-03 회원가입        | `/signup`                                      | 비로그인 |
-| S-04 내 조건 등록    | `/conditions`                                  | 로그인   |
-| S-05 추천 결과       | `/recommendations`                             | 공개     |
-| S-06 정책 상세       | `/policies/:policyId`                          | 공개     |
-| S-08 마이페이지      | `/mypage?tab=condition\|account\|notification` | 로그인   |
-| S-09 알림함          | `/notifications`                               | 로그인   |
-| S-10 정책 관리       | `/admin`                                       | 관리자   |
-| S-14 관심 정책       | `/favorites`                                   | 로그인   |
-| S-15 이메일 찾기     | `/find-email`                                  | 비로그인 |
-| S-16 비밀번호 재발급 | `/reset-password`                              | 비로그인 |
+| 설계서            | 경로                                           | 접근     |
+| ----------------- | ---------------------------------------------- | -------- |
+| S-01 홈           | `/`                                            | 공개     |
+| S-02 로그인       | 모달 (전역)                                    | 비로그인 |
+| S-03 회원가입     | `/signup`                                      | 비로그인 |
+| S-04 내 조건 등록 | `/conditions`                                  | 로그인   |
+| S-05 추천 결과    | `/recommendations`                             | 공개     |
+| S-06 정책 상세    | `/policies/:policyId`                          | 공개     |
+| S-08 마이페이지   | `/mypage?tab=condition\|account\|notification` | 로그인   |
+| S-09 알림함       | `/notifications`                               | 로그인   |
+| S-10 정책 관리    | `/admin`                                       | 관리자   |
+| S-14 관심 정책    | `/favorites`                                   | 로그인   |
+| S-15 이메일 찾기  | `/find-email`                                  | 비로그인 |
 
 ## 디렉터리 구조
 
@@ -126,7 +125,7 @@ src/
 | F-01 회원가입       | `POST /api/auth/signup` → 자동 로그인 후 조건 등록                                              |
 | F-03 조건 조회·수정 | `GET/PATCH /api/members/me/profile` · 선택지 `GET /api/regions`                                 |
 | F-05 회원 탈퇴      | `DELETE /api/me`                                                                                |
-| F-09 정책 수집      | `POST /api/admin/collect`                                                                       |
+| F-09 정책 수집      | `POST /api/policies/sync`                                                                       |
 | F-11 정책 상세      | `GET /api/policies/{id}` (로그인 시 조건 판정 포함)                                             |
 | F-13 용어 풀이      | `GET /api/terms`                                                                                |
 | F-14 추천           | `POST /api/recommendations` body `{ query }`                                                    |
@@ -137,7 +136,7 @@ src/
 
 ## 아직 확정되지 않은 것
 
-- 설계서에 경로가 없는 기능(로그인·로그아웃·이메일 찾기·비밀번호 재발급·정책 목록·카드뉴스)은
+- 설계서에 경로가 없는 기능(로그인·로그아웃·이메일 찾기·정책 목록·카드뉴스)은
   같은 규칙(`/api` 접두사 + 리소스 중심)으로 맞춘 가정값입니다.
 - 응답 봉투(`content` / `totalCount` / `totalPages`)와 정렬 옵션 "최신순"은 가정값입니다.
 - 토큰 재발급 흐름은 설계서에 없어 만들지 않았습니다. 지금은 401이면 로그아웃됩니다.

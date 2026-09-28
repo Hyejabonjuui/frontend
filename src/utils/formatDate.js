@@ -56,8 +56,11 @@ export const isDeadlineImminent = (policy) => {
   return remainingDays !== null && remainingDays >= 0 && remainingDays <= DDAY_IMMINENT_THRESHOLD;
 };
 
-/** 상시 모집이 아니면서 마감일이 지났는지 본다. */
+/** 백엔드가 마감으로 분류했거나, 상시 모집이 아니면서 마감일이 지났는지 본다. */
 export const isApplyClosed = (policy) => {
+  if (policy?.applyPeriodType === APPLY_PERIOD_TYPE.CLOSED) {
+    return true;
+  }
   if (policy?.applyPeriodType === APPLY_PERIOD_TYPE.ALWAYS) {
     return false;
   }
@@ -65,28 +68,6 @@ export const isApplyClosed = (policy) => {
   const remainingDays = getRemainingDays(policy?.applyEndDate);
 
   return remainingDays !== null && remainingDays < 0;
-};
-
-/**
- * 마감 임박순으로 줄 세운다.
- * 마감일이 가까운 정책이 먼저 오고, 상시 모집과 이미 끝난 정책은 뒤로 보낸다.
- */
-export const compareByDeadline = (a, b) => {
-  const toOrder = (policy) => {
-    if (isApplyClosed(policy)) {
-      return { group: 2, days: getRemainingDays(policy?.applyEndDate) ?? 0 };
-    }
-    if (policy?.applyPeriodType === APPLY_PERIOD_TYPE.ALWAYS) {
-      return { group: 1, days: 0 };
-    }
-
-    return { group: 0, days: getRemainingDays(policy?.applyEndDate) ?? Number.MAX_SAFE_INTEGER };
-  };
-
-  const left = toOrder(a);
-  const right = toOrder(b);
-
-  return left.group - right.group || left.days - right.days;
 };
 
 export const formatRelativeTime = (value) => {
@@ -111,26 +92,4 @@ export const formatRelativeTime = (value) => {
   }
 
   return formatDate(value);
-};
-
-const dateTimeFormatter = new Intl.DateTimeFormat('ko-KR', {
-  dateStyle: 'short',
-  timeStyle: 'medium',
-});
-
-const timeFormatter = new Intl.DateTimeFormat('ko-KR', { timeStyle: 'medium' });
-
-/** 관리자 화면의 "2026-09-18 03:00:02 ~ 03:01:47" 형태를 만든다. */
-export const formatDateTimeRange = (startedAt, finishedAt) => {
-  const start = new Date(startedAt);
-  const finish = new Date(finishedAt);
-
-  if (Number.isNaN(start.getTime())) {
-    return '';
-  }
-  if (Number.isNaN(finish.getTime())) {
-    return dateTimeFormatter.format(start);
-  }
-
-  return `${dateTimeFormatter.format(start)} ~ ${timeFormatter.format(finish)}`;
 };

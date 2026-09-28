@@ -12,7 +12,6 @@ const HomePage = lazy(() => import('@/pages/home/HomePage'));
 const LandingPage = lazy(() => import('@/pages/landing/LandingPage'));
 const SignupPage = lazy(() => import('@/pages/auth/SignupPage'));
 const FindEmailPage = lazy(() => import('@/pages/auth/FindEmailPage'));
-const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
 const ConditionSetupPage = lazy(() => import('@/pages/onboarding/ConditionSetupPage'));
 const PolicySearchPage = lazy(() => import('@/pages/search/PolicySearchPage'));
 const PolicyDetailPage = lazy(() => import('@/pages/policy/PolicyDetailPage'));
@@ -36,7 +35,6 @@ function Router() {
           <Route element={<PublicOnlyRoute />}>
             <Route path={ROUTES.SIGNUP} element={<SignupPage />} />
             <Route path={ROUTES.FIND_EMAIL} element={<FindEmailPage />} />
-            <Route path={ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
           </Route>
 
           <Route element={<ProtectedRoute />}>

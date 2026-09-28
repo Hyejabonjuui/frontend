@@ -41,6 +41,16 @@ describe('보호 경로 접근 제어', () => {
     expect(screen.queryByRole('heading', { name: ADMIN_HEADING })).not.toBeInTheDocument();
   });
 
+  it.each([ROUTES.SIGNUP, ROUTES.FIND_EMAIL])(
+    '로그인한 회원이 새로고침 후 %s로 들어가면 홈으로 보낸다',
+    async (route) => {
+      signInAs(TOKENS.MEMBER);
+      renderApp(route);
+
+      await waitFor(() => expect(window.location.pathname).toBe(ROUTES.HOME), { timeout: 5000 });
+    },
+  );
+
   it('관리자는 관리자 화면에 들어간다', async () => {
     signInAs(TOKENS.ADMIN);
     renderApp(ROUTES.ADMIN);

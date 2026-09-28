@@ -11,8 +11,6 @@ export const TOAST_MESSAGES = {
   CONDITION_SAVED: '내 조건을 저장했어요',
   CONDITION_REQUIRED: '필수 항목을 모두 채워 주세요',
   CONDITION_DRAFT_LOADED: '이어서 작성 중이에요 · 저장하지 않고 나갔던 내용을 불러왔어요',
-  AI_FAILED:
-    '지금은 AI 설명을 불러오지 못해 조건 판정 결과만 보여드려요. 자세한 자격은 상세에서 확인하세요.',
   NO_CANDIDATE: '조건에 맞는 정책을 찾지 못했어요',
   SEARCHED: '검색했어요', // 앞에 '검색어(으)로'를 붙여 쓴다.
   APPLY_LINK_MISSING: '신청 링크가 없는 정책이에요',
@@ -20,6 +18,7 @@ export const TOAST_MESSAGES = {
   ACCOUNT_DELETED: '회원 탈퇴가 끝났어요',
   ADMIN_COLLECT_STARTED: '정책 수집을 시작했어요',
   ADMIN_COLLECT_DONE: '정책 수집을 마쳤어요',
+  ADMIN_COLLECT_STOPPED: '정책 수집이 중간에 멈췄어요',
 };
 
 /** 설계서 S-06 "로그인 안내 창" 문구. 확인을 누르면 로그인 모달로 이어진다. */
@@ -54,6 +53,8 @@ export const EMPTY_MESSAGES = {
   SEARCH_CAPTION: '후보 0건 · 정책을 지어내지 않음',
   FAVORITE: '아직 관심 정책이 없어요',
   FAVORITE_DESCRIPTION: '정책 옆 관심 표시를 누르면 여기 모이고, 마감 7일 전에 알려드려요',
+  FAVORITE_SEARCH: '검색어에 맞는 관심 정책이 없어요',
+  FAVORITE_SEARCH_DESCRIPTION: '정책 이름이나 지원 내용에 들어간 말로 찾아보세요',
   NOTIFICATION: '받은 알림이 없어요',
   NOTIFICATION_UNREAD: '새로 온 알림이 없어요',
 };

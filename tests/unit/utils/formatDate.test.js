@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { APPLY_PERIOD_TYPE } from '@/constants/policy';
 import {
-  compareByDeadline,
   formatDate,
   formatDateRange,
   formatRelativeTime,
@@ -96,19 +95,11 @@ describe('isApplyClosed', () => {
   it('상시 모집은 마감되지 않는다', () => {
     expect(isApplyClosed(alwaysPolicy)).toBe(false);
   });
-});
 
-describe('compareByDeadline', () => {
-  it('마감 가까운 순 → 마감일 없음 → 상시 모집 → 이미 마감 순으로 세운다', () => {
-    const closed = { id: 'closed', ...periodPolicy('2026-09-20') };
-    const always = { id: 'always', ...alwaysPolicy };
-    const tenDaysLeft = { id: 'd10', ...periodPolicy('2026-10-06') };
-    const threeDaysLeft = { id: 'd3', ...periodPolicy('2026-09-29') };
-    const noEndDate = { id: 'no-end', ...periodPolicy(null) };
-
-    const sorted = [closed, always, tenDaysLeft, noEndDate, threeDaysLeft].sort(compareByDeadline);
-
-    expect(sorted.map((policy) => policy.id)).toEqual(['d3', 'd10', 'no-end', 'always', 'closed']);
+  it('백엔드가 마감(CLOSED)으로 준 정책은 날짜와 관계없이 마감이다', () => {
+    expect(isApplyClosed({ applyPeriodType: APPLY_PERIOD_TYPE.CLOSED, applyEndDate: null })).toBe(
+      true,
+    );
   });
 });
 

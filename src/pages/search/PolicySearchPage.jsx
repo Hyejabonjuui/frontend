@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link as RouterLink, useSearchParams } from 'react-router-dom';
-import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
@@ -16,7 +13,7 @@ import { EMPTY_MESSAGES, LOGIN_NOTICE, TOAST_MESSAGES } from '@/constants/messag
 import { RECOMMENDATION_GROUP, RECOMMENDATION_GROUP_LABEL } from '@/constants/policy';
 import { buildMyPagePath, MY_PAGE_TABS, ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
-import { useFavorites } from '@/hooks/useFavorites';
+import { useFavoriteToggle } from '@/hooks/useFavoriteToggle';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { usePolicySearch } from '@/hooks/usePolicySearch';
 import { useToast } from '@/hooks/useToast';
@@ -35,18 +32,17 @@ function PolicySearchPage() {
   const { openLoginNotice } = useLoginDialog();
   const { showInfo, showSuccess } = useToast();
   const [searchKeyword, setSearchKeyword] = useState(searchQuery);
-  const {
-    groups,
-    groupCounts,
-    totalCount,
-    query,
-    isAiFailed,
-    isIdle,
-    isLoading,
-    errorMessage,
-    refetch,
-  } = usePolicySearch({ query: searchQuery });
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { groups, groupCounts, totalCount, isIdle, isLoading, errorMessage, refetch } =
+    usePolicySearch({ query: searchQuery });
+  const { isFavorite, toggleFavorite } = useFavoriteToggle();
+
+  const isSearchedPolicyFavorite = (policyId) =>
+    isFavorite(
+      policyId,
+      GROUP_ORDER.flatMap((group) => groups[group]).find(
+        (policy) => String(policy.id) === String(policyId),
+      )?.isFavorite,
+    );
 
   // 설계서 S-05: 후보가 없으면 안내 toast를 함께 띄운다.
   useEffect(() => {
@@ -100,24 +96,6 @@ function PolicySearchPage() {
       {!isIdle && !isLoading && !errorMessage && (
         <>
           <Stack component="section" spacing={1.5}>
-            <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
-              {query?.matchedSubtypeName && (
-                <Chip
-                  label={`'${query.matchedSubtypeName}' 유형으로 찾았어요`}
-                  size="small"
-                  variant="outlined"
-                />
-              )}
-              {query?.conditionSummary && (
-                <Typography variant="body1" color="text.secondary">
-                  적용된 내 조건: {query.conditionSummary}{' '}
-                  <Link component={RouterLink} to={buildMyPagePath(MY_PAGE_TABS.CONDITION)}>
-                    조건 수정
-                  </Link>
-                </Typography>
-              )}
-            </Stack>
-
             <Stack direction="row" spacing={3} useFlexGap sx={{ flexWrap: 'wrap' }}>
               {GROUP_ORDER.map((group) => (
                 <Typography key={group} variant="body2">
@@ -129,8 +107,6 @@ function PolicySearchPage() {
               ))}
             </Stack>
           </Stack>
-
-          {isAiFailed && <Alert severity="warning">{TOAST_MESSAGES.AI_FAILED}</Alert>}
 
           {totalCount === 0 ? (
             <EmptyState
@@ -163,8 +139,10 @@ function PolicySearchPage() {
                 key={group}
                 group={group}
                 policies={groups[group]}
-                isFavorite={isFavorite}
-                onToggleFavorite={toggleFavorite}
+                isFavorite={isSearchedPolicyFavorite}
+                onToggleFavorite={(policyId) =>
+                  toggleFavorite(policyId, isSearchedPolicyFavorite(policyId))
+                }
               />
             ))
           )}

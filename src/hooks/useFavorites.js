@@ -1,21 +1,23 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import * as favoriteApi from '@/api/favoriteApi';
-import { TOAST_MESSAGES } from '@/constants/messages';
 import { useAuth } from '@/hooks/useAuth';
-import { useLoginDialog } from '@/hooks/useLoginDialog';
-import { useToast } from '@/hooks/useToast';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 
-export const useFavorites = () => {
+/**
+ * 관심 정책 화면(S-14)의 목록 한 페이지. params는 { keyword, page }이고 page는 1부터다.
+ * 하트 상태 판단에는 쓰지 않는다(useFavoriteToggle).
+ */
+export const useFavorites = (params = {}) => {
   const { isAuthenticated, user } = useAuth();
   const memberId = user?.id;
-  const { requireLogin } = useLoginDialog();
-  const { showSuccess, showError } = useToast();
+  const paramsKey = JSON.stringify(params);
   const [reloadToken, setReloadToken] = useState(0);
   const [state, setState] = useState({
     memberId: null,
     favorites: [],
+    totalCount: 0,
+    totalPages: 0,
     isLoading: isAuthenticated,
     errorMessage: '',
   });
@@ -29,12 +31,14 @@ export const useFavorites = () => {
 
     const loadFavorites = async () => {
       try {
-        const data = await favoriteApi.getFavorites();
+        const data = await favoriteApi.getFavorites(JSON.parse(paramsKey));
 
         if (isActive) {
           setState({
             memberId,
             favorites: data.content ?? [],
+            totalCount: data.totalCount ?? 0,
+            totalPages: data.totalPages ?? 0,
             isLoading: false,
             errorMessage: '',
           });
@@ -44,6 +48,8 @@ export const useFavorites = () => {
           setState({
             memberId,
             favorites: [],
+            totalCount: 0,
+            totalPages: 0,
             isLoading: false,
             errorMessage: getErrorMessage(error),
           });
@@ -56,57 +62,17 @@ export const useFavorites = () => {
     return () => {
       isActive = false;
     };
-  }, [isAuthenticated, memberId, reloadToken]);
+  }, [isAuthenticated, memberId, paramsKey, reloadToken]);
+
+  const isCurrentMember = isAuthenticated && state.memberId === memberId;
 
   const favorites = useMemo(
-    () => (isAuthenticated && state.memberId === memberId ? state.favorites : []),
-    [isAuthenticated, memberId, state.favorites, state.memberId],
+    () => (isCurrentMember ? state.favorites : []),
+    [isCurrentMember, state.favorites],
   );
 
-  const isFavorite = useCallback(
-    (policyId) => favorites.some((favorite) => String(favorite.policyId) === String(policyId)),
-    [favorites],
-  );
-
+  /** 해제한 뒤처럼 화면을 비우지 않고 목록만 다시 받는다. */
   const reload = useCallback(() => setReloadToken((previous) => previous + 1), []);
-
-  const saveFavorite = useCallback(
-    async (policyId) => {
-      try {
-        await favoriteApi.addFavorite(policyId);
-        reload();
-        showSuccess(TOAST_MESSAGES.FAVORITE_ADDED);
-      } catch (error) {
-        showError(getErrorMessage(error));
-      }
-    },
-    [reload, showError, showSuccess],
-  );
-
-  const toggleFavorite = useCallback(
-    async (policyId) => {
-      if (!isAuthenticated) {
-        // 설계서 S-01: 비로그인 ♡는 안내 toast와 로그인 모달을 함께 띄우고,
-        // 로그인에 성공하면 누르려던 저장을 이어서 실행한다.
-        requireLogin(() => saveFavorite(policyId));
-        return;
-      }
-
-      if (!isFavorite(policyId)) {
-        await saveFavorite(policyId);
-        return;
-      }
-
-      try {
-        await favoriteApi.removeFavorite(policyId);
-        reload();
-        showSuccess(TOAST_MESSAGES.FAVORITE_REMOVED);
-      } catch (error) {
-        showError(getErrorMessage(error));
-      }
-    },
-    [isAuthenticated, isFavorite, requireLogin, reload, saveFavorite, showError, showSuccess],
-  );
 
   const refetch = useCallback(() => {
     setState((previous) => ({ ...previous, isLoading: true, errorMessage: '' }));
@@ -115,10 +81,11 @@ export const useFavorites = () => {
 
   return {
     favorites,
-    isLoading: isAuthenticated && (state.memberId !== memberId || state.isLoading),
-    errorMessage: isAuthenticated && state.memberId === memberId ? state.errorMessage : '',
-    isFavorite,
-    toggleFavorite,
+    totalCount: isCurrentMember ? state.totalCount : 0,
+    totalPages: isCurrentMember ? state.totalPages : 0,
+    isLoading: isAuthenticated && (!isCurrentMember || state.isLoading),
+    errorMessage: isCurrentMember ? state.errorMessage : '',
+    reload,
     refetch,
   };
 };

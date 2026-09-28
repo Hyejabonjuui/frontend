@@ -9,14 +9,26 @@ import * as adminApi from '@/api/adminApi';
 import AppIcon from '@/components/common/AppIcon';
 import { TOAST_MESSAGES } from '@/constants/messages';
 import { useToast } from '@/hooks/useToast';
-import { formatDateTimeRange } from '@/utils/formatDate';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 
-const STATUS_LABEL = { SUCCESS: '성공 (SUCCESS)', FAILED: '실패 (FAILED)' };
+const toCompletedRows = (message) => [
+  { label: '상태', value: '완료' },
+  { label: '결과', value: message },
+];
+
+const toStoppedRows = ({ message, stoppedPage, savedCount }) => [
+  { label: '상태', value: '중단' },
+  { label: '멈춘 곳', value: stoppedPage == null ? '-' : `${stoppedPage}페이지` },
+  {
+    label: '저장',
+    value: savedCount == null ? '-' : `${savedCount}건 (멈추기 전까지 저장한 정책은 남아 있어요)`,
+  },
+  { label: '사유', value: message },
+];
 
 function AdminPage() {
   const { showSuccess, showError, showInfo } = useToast();
-  const [collectionStatus, setCollectionStatus] = useState(null);
+  const [resultRows, setResultRows] = useState([]);
   const [isCollecting, setIsCollecting] = useState(false);
 
   const handleCollect = async () => {
@@ -24,36 +36,29 @@ function AdminPage() {
     showInfo(TOAST_MESSAGES.ADMIN_COLLECT_STARTED);
 
     try {
-      const data = await adminApi.startPolicyCollection();
-      setCollectionStatus(data);
+      const message = await adminApi.syncPolicies();
+      setResultRows(toCompletedRows(message));
       showSuccess(TOAST_MESSAGES.ADMIN_COLLECT_DONE);
     } catch (error) {
-      showError(getErrorMessage(error));
+      const stop = adminApi.toPolicySyncStop(error);
+
+      if (stop) {
+        setResultRows(toStoppedRows(stop));
+        showError(TOAST_MESSAGES.ADMIN_COLLECT_STOPPED);
+      } else {
+        showError(getErrorMessage(error));
+      }
     } finally {
       setIsCollecting(false);
     }
   };
-
-  const rows = collectionStatus
-    ? [
-        { label: '상태', value: STATUS_LABEL[collectionStatus.status] ?? collectionStatus.status },
-        {
-          label: '시각',
-          value: formatDateTimeRange(collectionStatus.startedAt, collectionStatus.finishedAt),
-        },
-        {
-          label: '건수',
-          value: `가져옴 ${collectionStatus.fetchedCount} · 신규 ${collectionStatus.newCount} · 변경 ${collectionStatus.updatedCount} · 숨김 ${collectionStatus.closedCount}`,
-        },
-      ]
-    : [];
 
   return (
     <Stack spacing={3}>
       <Stack spacing={0.5}>
         <Typography variant="h1">관리 · 정책 수집</Typography>
         <Typography variant="body1" color="text.secondary">
-          매일 새벽 3시에 자동으로 모아요. 시연·테스트 때는 아래 버튼으로 바로 실행할 수 있어요.
+          온통청년에서 주거 정책을 바로 가져와요. 정책마다 AI 분석을 거쳐 몇 분 걸릴 수 있어요.
           (role = ADMIN만 접근)
         </Typography>
       </Stack>
@@ -70,24 +75,23 @@ function AdminPage() {
             disabled={isCollecting}
             sx={{ flexShrink: 0 }}
           >
-            지금 수집 실행
+            {isCollecting ? '수집하는 중…' : '지금 수집 실행'}
           </Button>
           <Typography variant="body1" color="text.secondary">
             온통청년 API <AppIcon name="arrow-right" size={14} /> 주거 정책 저장{' '}
             <AppIcon name="arrow-right" size={14} /> 하위 유형 분류{' '}
-            <AppIcon name="arrow-right" size={14} /> 카드뉴스 생성{' '}
-            <AppIcon name="arrow-right" size={14} /> D-7 알림
+            <AppIcon name="arrow-right" size={14} /> 카드뉴스 생성
           </Typography>
         </Stack>
       </Card>
 
-      {collectionStatus && (
+      {resultRows.length > 0 && (
         <Card variant="outlined" sx={{ backgroundColor: 'grey.100' }}>
           <Typography variant="body2" sx={{ px: 2, py: 1.5 }}>
             마지막 수집 결과
           </Typography>
           <Stack divider={<Divider />}>
-            {rows.map((row) => (
+            {resultRows.map((row) => (
               <Stack
                 key={row.label}
                 direction={{ xs: 'column', sm: 'row' }}

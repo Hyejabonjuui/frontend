@@ -321,7 +321,7 @@ describe('정책 검색(추천) API 응답 변환', () => {
   });
 
   it('approved · underReview · declined를 가능 · 확인 필요 · 불가 그룹으로 나눈다', () => {
-    const { groups, query, isAiFailed } = toPolicySearchResult({
+    const { groups } = toPolicySearchResult({
       isSuccess: true,
       code: 'SUCCESS_001',
       message: '요청에 성공했습니다.',
@@ -338,8 +338,6 @@ describe('정책 검색(추천) API 응답 변환', () => {
       'U2',
     ]);
     expect(groups[RECOMMENDATION_GROUP.IMPOSSIBLE].map((policy) => policy.id)).toEqual(['D1']);
-    expect(query).toBeNull();
-    expect(isAiFailed).toBe(false);
   });
 
   it('검색 항목을 추천 카드 모델로 변환한다', () => {

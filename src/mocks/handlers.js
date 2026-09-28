@@ -47,32 +47,69 @@ const toPublicUser = (user) => ({
   nickname: user.nickname,
   role: user.role,
   joinedAt: user.joinedAt,
-  conditionSummary: buildConditionSummary(user.profile),
 });
 
+/** 백엔드처럼 "서울특별시 마포구" 형태로 만든다. 시·도 전체 코드(끝 000)는 시·도 이름만 쓴다. */
 const findRegionName = (regionCode) => {
   const sido = CODE_GROUPS.regions.find((region) =>
     region.sigungu.some((sigungu) => sigungu.code === regionCode),
   );
 
-  return sido?.sigungu.find((sigungu) => sigungu.code === regionCode)?.name ?? '';
+  if (!sido) {
+    return null;
+  }
+  if (regionCode.endsWith('000')) {
+    return sido.sidoName;
+  }
+
+  return `${sido.sidoName} ${sido.sigungu.find((sigungu) => sigungu.code === regionCode).name}`;
 };
 
-function buildConditionSummary(profile) {
-  if (!profile?.birthDate) {
-    return '';
-  }
+const toInternationalAge = (birthDate) => {
+  const birth = new Date(birthDate);
+  const today = new Date();
+  const hasHadBirthday =
+    today.getMonth() > birth.getMonth() ||
+    (today.getMonth() === birth.getMonth() && today.getDate() >= birth.getDate());
 
-  const birthYear = Number(profile.birthDate.slice(0, 4));
-  const age = new Date().getFullYear() - birthYear;
-  const parts = [`만 ${age}세`, findRegionName(profile.regionCode)];
+  return today.getFullYear() - birth.getFullYear() - (hasHadBirthday ? 0 : 1);
+};
 
-  if (profile.houseless) {
-    parts.push('무주택');
-  }
+const emptyToNull = (value) => (value === '' || value === undefined ? null : value);
 
-  return parts.filter(Boolean).join(' · ');
-}
+/** 목 저장소의 조건(화면 폼 모양)을 백엔드 ProfileResponseDTO 모양으로 바꾼다. */
+const toApiProfile = (profile) => ({
+  birth: profile.birthDate,
+  age: toInternationalAge(profile.birthDate),
+  regionCode: profile.regionCode,
+  regionName: findRegionName(profile.regionCode),
+  employmentCode: profile.employmentCode,
+  houselessYn: profile.houseless,
+  marriageCode: emptyToNull(profile.marriageCode),
+  incomeRangeCode: emptyToNull(profile.incomeRange),
+  educationCode: emptyToNull(profile.educationCode),
+  housingType: emptyToNull(profile.housingType),
+});
+
+/** 백엔드 조건 요청 본문(가입의 profile, 조건 수정)을 목 저장소의 조건 모양으로 바꾼다. */
+const fromProfileRequest = (request) => ({
+  birthDate: request.birth,
+  sidoCode: request.regionCode.slice(0, 2),
+  regionCode: request.regionCode,
+  employmentCode: request.employmentCode,
+  houseless: request.houselessYn,
+  marriageCode: request.marriageCode ?? '',
+  incomeRange: request.incomeRangeCode ?? '',
+  educationCode: request.educationCode ?? '',
+  housingType: request.housingType ?? '',
+});
+
+const toProfileResponse = (profile) => ({
+  isSuccess: true,
+  code: 'SUCCESS_001',
+  message: '성공입니다.',
+  result: toApiProfile(profile),
+});
 
 const remainingDays = (policy) => {
   if (policy.applyPeriodType === APPLY_PERIOD_TYPE.ALWAYS) {
@@ -84,20 +121,6 @@ const remainingDays = (policy) => {
 
   return Math.round((end - today) / (1000 * 60 * 60 * 24));
 };
-
-const toPolicySummary = (policy) => ({
-  id: policy.id,
-  title: policy.title,
-  subtype: policy.subtype,
-  subtypeName: findSubtypeName(policy.subtype),
-  regionName: policy.regionName,
-  organization: policy.organization,
-  summary: policy.summary,
-  applyPeriodType: policy.applyPeriodType,
-  applyStartDate: policy.applyStartDate,
-  applyEndDate: policy.applyEndDate,
-  viewCount: policy.viewCount,
-});
 
 const UI_TO_API_CATEGORY = {
   SUBSCRIPTION: 'PURCHASE',
@@ -155,6 +178,21 @@ const toApiPolicyListItem = (policy, user) => ({
   ...(user
     ? { favorite_yn: getFavorites(user.id).some((favorite) => favorite.policyId === policy.id) }
     : {}),
+});
+
+/** 백엔드 FavoriteItemDTO 모양. 관심 목록 응답에는 지역 정보가 없다. */
+const toApiFavoriteItem = (favorite, policy) => ({
+  favorite_id: policy.id + 1000,
+  policy_id: String(policy.id),
+  policy_name: policy.title,
+  category_codes: [UI_TO_API_CATEGORY[policy.subtype] ?? policy.subtype],
+  category_names: [findSubtypeName(policy.subtype)],
+  support_content: policy.summary,
+  apply_end_date: policy.applyEndDate,
+  apply_period_code:
+    policy.applyPeriodType === APPLY_PERIOD_TYPE.ALWAYS ? 'ALWAYS' : 'SPECIFIC_PERIOD',
+  apply_url: policy.applyUrl,
+  created_at: `${favorite.savedAt}T00:00:00`,
 });
 
 const SUBTYPE_NAMES = {
@@ -451,17 +489,7 @@ export const HANDLERS = [
           nickname: body.nickname,
           role: 'USER',
           joinedAt: new Date().toISOString().slice(0, 10),
-          profile: {
-            birthDate: body.profile.birth,
-            sidoCode: body.profile.regionCode.slice(0, 2),
-            regionCode: body.profile.regionCode,
-            employmentCode: body.profile.employmentCode,
-            houseless: body.profile.houselessYn,
-            marriageCode: body.profile.marriageCode ?? '',
-            incomeRange: body.profile.incomeRangeCode ?? '',
-            educationCode: body.profile.educationCode ?? '',
-            housingType: body.profile.housingType ?? '',
-          },
+          profile: fromProfileRequest(body.profile),
         };
 
         state.users.push(user);
@@ -549,11 +577,6 @@ export const HANDLERS = [
     },
   },
   {
-    method: 'post',
-    match: (url) => url === '/api/auth/reset-password',
-    handle: () => ok({ message: '임시 비밀번호를 이메일로 보냈어요' }),
-  },
-  {
     method: 'get',
     match: (url) => url === '/api/members/me',
     handle: ({ user }) =>
@@ -613,7 +636,7 @@ export const HANDLERS = [
   {
     method: 'get',
     match: (url) => url === '/api/members/me/profile',
-    handle: ({ user }) => requireUser(user) ?? ok(user.profile ?? {}),
+    handle: ({ user }) => requireUser(user) ?? ok(toProfileResponse(user.profile)),
   },
   {
     method: 'patch',
@@ -624,14 +647,14 @@ export const HANDLERS = [
         return denied;
       }
 
-      mockStore.update((state) => {
+      const updated = mockStore.update((state) => {
         const target = state.users.find((item) => item.id === user.id);
-        target.profile = { ...target.profile, ...body };
+        target.profile = fromProfileRequest(body);
 
         return state;
       });
 
-      return ok(body);
+      return ok(toProfileResponse(updated.users.find((item) => item.id === user.id).profile));
     },
   },
   {
@@ -784,21 +807,44 @@ export const HANDLERS = [
   {
     method: 'get',
     match: (url) => url === '/api/favorite',
-    handle: ({ user }) => {
+    handle: ({ params, user }) => {
       const denied = requireUser(user);
       if (denied) {
         return denied;
       }
 
-      const content = getFavorites(user.id)
+      // 백엔드처럼 최근 저장순(저장소 앞쪽이 최근)이고, keyword는 정책명·지원 내용에서 찾는다.
+      const keyword = (params.keyword ?? '').trim();
+      const page = Math.max(Number(params.page ?? 0), 0);
+      const size = Math.max(Number(params.size ?? 8), 1);
+      const favorites = getFavorites(user.id)
         .map((favorite) => {
           const policy = findActivePolicyById(favorite.policyId);
 
-          return policy ? { ...favorite, policy: toPolicySummary(policy) } : null;
+          return policy ? toApiFavoriteItem(favorite, policy) : null;
         })
-        .filter(Boolean);
+        .filter(Boolean)
+        .filter(
+          (favorite) =>
+            !keyword ||
+            favorite.policy_name.includes(keyword) ||
+            (favorite.support_content ?? '').includes(keyword),
+        );
+      const totalPages = Math.ceil(favorites.length / size);
 
-      return ok({ content });
+      return ok({
+        isSuccess: true,
+        code: 'SUCCESS_001',
+        message: '성공입니다.',
+        result: {
+          favorites: favorites.slice(page * size, (page + 1) * size),
+          page,
+          size,
+          totalElements: favorites.length,
+          totalPages,
+          hasNext: page + 1 < totalPages,
+        },
+      });
     },
   },
   {
@@ -887,6 +933,7 @@ export const HANDLERS = [
         message: '성공입니다.',
         result: {
           notifications: items,
+          unread_count: notifications.filter((notification) => !notification.isRead).length,
           page,
           size,
           totalElements: notifications.length,
@@ -965,7 +1012,7 @@ export const HANDLERS = [
   },
   {
     method: 'post',
-    match: (url) => url === '/api/admin/collect',
+    match: (url) => url === '/api/policies/sync',
     handle: ({ user }) => {
       const denied = requireUser(user);
       if (denied) {
@@ -975,31 +1022,13 @@ export const HANDLERS = [
         return fail(403, '접근 권한이 없어요');
       }
 
-      const startedAt = new Date();
-      const finishedAt = new Date(startedAt.getTime() + 105000);
-      const collectLog = {
-        status: 'SUCCESS',
-        startedAt: startedAt.toISOString(),
-        finishedAt: finishedAt.toISOString(),
-        fetchedCount: 142,
-        newCount: 3,
-        updatedCount: 5,
-        closedCount: 2,
-      };
-
-      mockStore.update((state) => {
-        state.collectLog = collectLog;
-
-        return state;
+      return ok({
+        isSuccess: true,
+        code: 'SUCCESS_001',
+        message: '성공입니다.',
+        result: `온통청년 주거 정책 ${getActivePolicies().length}건 동기화가 완료되었습니다.`,
       });
-
-      return ok(collectLog);
     },
-  },
-  {
-    method: 'get',
-    match: (url) => url === '/api/admin/collect/status',
-    handle: () => ok(mockStore.getState().collectLog),
   },
 ];
 

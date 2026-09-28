@@ -25,7 +25,7 @@ function Header() {
   const { openLoginDialog } = useLoginDialog();
   const { showSuccess } = useToast();
   const navigate = useNavigate();
-  const { unreadNotifications, unreadCount, isLoading, errorMessage, markAsRead, markAllAsRead } =
+  const { unreadNotifications, unreadCount, isLoading, errorMessage, markAsRead } =
     useNotifications();
   const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
   const [accountAnchorEl, setAccountAnchorEl] = useState(null);
@@ -178,7 +178,6 @@ function Header() {
         errorMessage={errorMessage}
         unreadCount={unreadCount}
         onRead={markAsRead}
-        onMarkAllAsRead={markAllAsRead}
       />
 
       <Menu

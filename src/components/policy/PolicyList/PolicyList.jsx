@@ -1,8 +1,8 @@
 import Box from '@mui/material/Box';
-import Pagination from '@mui/material/Pagination';
 
 import EmptyState from '@/components/common/EmptyState';
 import ErrorState from '@/components/common/ErrorState';
+import ListPagination from '@/components/common/ListPagination';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import PolicyRow from '@/components/policy/PolicyRow';
 import { EMPTY_MESSAGES } from '@/constants/messages';
@@ -44,15 +44,8 @@ function PolicyList({
         />
       ))}
 
-      {totalPages > 1 && onPageChange && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 3 }}>
-          <Pagination
-            page={page}
-            count={totalPages}
-            onChange={(event, value) => onPageChange(value)}
-            shape="rounded"
-          />
-        </Box>
+      {onPageChange && (
+        <ListPagination page={page} totalPages={totalPages} onPageChange={onPageChange} />
       )}
     </Box>
   );

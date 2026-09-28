@@ -32,25 +32,43 @@ export const toPolicySummary = (policy) => ({
   viewCount: policy.viewCount,
 });
 
-const toPublicUser = (user, conditionSummary) => ({
+const toPublicUser = (user) => ({
   id: user.id,
   email: user.email,
   nickname: user.nickname,
   role: user.role,
   joinedAt: user.joinedAt,
-  conditionSummary,
 });
 
 const [MEMBER, ADMIN] = USERS;
 
-export const MEMBER_USER = toPublicUser(MEMBER, '만 27세 · 마포구 · 무주택');
-export const ADMIN_USER = toPublicUser(ADMIN, '만 31세 · 서울 전체');
+export const MEMBER_USER = toPublicUser(MEMBER);
+export const ADMIN_USER = toPublicUser(ADMIN);
 /** 가입 직후처럼 조건을 아직 등록하지 않은 회원 */
-export const NEW_USER = { ...toPublicUser(MEMBER, ''), id: 3, email: 'new@hyeja.kr' };
+export const NEW_USER = { ...toPublicUser(MEMBER), id: 3, email: 'new@hyeja.kr' };
 
 export const MEMBER_CREDENTIALS = { email: MEMBER.email, password: MEMBER.password };
 
-export const MEMBER_PROFILE = { ...MEMBER.profile };
+/** 백엔드 GET /api/members/me/profile 응답. 나이·지역 이름은 서버가 계산해서 준다. */
+export const MEMBER_PROFILE_RESPONSE = {
+  isSuccess: true,
+  code: 'SUCCESS_001',
+  message: '성공입니다.',
+  result: {
+    birth: MEMBER.profile.birthDate,
+    age: 27,
+    regionCode: MEMBER.profile.regionCode,
+    regionName: '서울특별시 마포구',
+    employmentCode: MEMBER.profile.employmentCode,
+    houselessYn: MEMBER.profile.houseless,
+    marriageCode: MEMBER.profile.marriageCode,
+    incomeRangeCode: null,
+    educationCode: MEMBER.profile.educationCode,
+    housingType: MEMBER.profile.housingType,
+  },
+};
+
+export const MEMBER_CONDITION_SUMMARY = '만 27세 · 서울특별시 마포구 · 무주택';
 
 export const buildMemberAccountResponse = (member) => ({
   isSuccess: true,
@@ -230,7 +248,7 @@ const toApiCondition = (judgement) => ({
 });
 
 /** 실제 정책 상세 API 계약을 재현한다. */
-export const buildPolicyDetail = (policy, { isAuthenticated }) => ({
+export const buildPolicyDetail = (policy, { isAuthenticated, isFavorite = false }) => ({
   policyId: String(policy.id),
   policyName: policy.title,
   categories: [policy.subtype],
@@ -248,7 +266,7 @@ export const buildPolicyDetail = (policy, { isAuthenticated }) => ({
   applyUrl: policy.applyUrl,
   refUrl: policy.applyUrl,
   activeYn: true,
-  isFavorite: isAuthenticated,
+  isFavorite: isAuthenticated && isFavorite,
   overallStatus: isAuthenticated ? 'DISABLE' : 'UNKNOWN',
   conditions: isAuthenticated
     ? JUDGEMENTS.map(toApiCondition)
@@ -307,16 +325,40 @@ export const NO_CANDIDATE_POLICY_SEARCH_RESPONSE = {
 
 export const FAVORITE_POLICY = POLICIES[1];
 
-export const FAVORITES = {
-  content: [
-    {
-      policyId: FAVORITE_POLICY.id,
-      status: 'INTEREST',
-      savedAt: '2026-09-19',
-      policy: toPolicySummary(FAVORITE_POLICY),
+/** 백엔드 FavoriteItemDTO. 관심 목록 응답에는 지역 정보가 없다. */
+export const toApiFavorite = (policy) => ({
+  favorite_id: policy.id + 100,
+  policy_id: policy.id,
+  policy_name: policy.title,
+  category_codes: [policy.subtype],
+  category_names: [findSubtypeName(policy.subtype)],
+  support_content: policy.summary,
+  apply_end_date: policy.applyEndDate,
+  apply_period_code: policy.applyPeriodType === 'ALWAYS' ? 'ALWAYS' : 'SPECIFIC_PERIOD',
+  apply_url: policy.applyUrl,
+  created_at: '2026-09-26T10:30:00',
+});
+
+export const buildFavoriteList = (policies, { page = 0, size = 8, totalElements } = {}) => {
+  const total = totalElements ?? policies.length;
+  const totalPages = Math.ceil(total / size);
+
+  return {
+    isSuccess: true,
+    code: 'SUCCESS_001',
+    message: '성공입니다.',
+    result: {
+      favorites: policies.map(toApiFavorite),
+      page,
+      size,
+      totalElements: total,
+      totalPages,
+      hasNext: page + 1 < totalPages,
     },
-  ],
+  };
 };
+
+export const FAVORITES = buildFavoriteList([FAVORITE_POLICY]);
 
 export const EMPTY_LIST = { content: [] };
 
@@ -339,6 +381,7 @@ export const NOTIFICATION_LIST = {
         created_at: notification.createdAt,
       };
     }),
+    unread_count: NOTIFICATIONS.filter((notification) => !notification.isRead).length,
     page: 0,
     size: 8,
     totalElements: NOTIFICATIONS.length,
@@ -347,12 +390,18 @@ export const NOTIFICATION_LIST = {
   },
 };
 
-export const COLLECT_LOG = {
-  status: 'SUCCESS',
-  startedAt: '2026-09-18T03:00:02+09:00',
-  finishedAt: '2026-09-18T03:01:47+09:00',
-  fetchedCount: 142,
-  newCount: 3,
-  updatedCount: 5,
-  closedCount: 2,
+/** 백엔드 POST /api/policies/sync 성공 응답. result는 저장 건수를 담은 문구 하나다. */
+export const POLICY_SYNC_RESPONSE = {
+  isSuccess: true,
+  code: 'SUCCESS_001',
+  message: '성공입니다.',
+  result: '온통청년 주거 정책 142건 동기화가 완료되었습니다.',
+};
+
+/** 온통청년 API가 중간에 실패하면 502(POLICY_002)와 함께 멈춘 페이지·저장 건수를 준다. */
+export const POLICY_SYNC_STOPPED_RESPONSE = {
+  isSuccess: false,
+  code: 'POLICY_002',
+  message: '온통청년 API 요청이 실패해 정책 수집이 중간에 멈췄어요. 잠시 후 다시 시도해 주세요.',
+  result: { stoppedPage: 3, savedCount: 200 },
 };
