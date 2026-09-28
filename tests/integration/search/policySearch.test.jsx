@@ -90,6 +90,26 @@ describe('추천 결과', () => {
     expect(await screen.findByText(TOAST_MESSAGES.NO_CANDIDATE)).toBeInTheDocument();
   });
 
+  it('해시태그를 누르면 검색창도 그 해시태그로 바뀌고 해당 검색어로 검색한다', async () => {
+    const requestedQueries = [];
+    server.use(
+      http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), ({ request }) => {
+        requestedQueries.push(new URL(request.url).searchParams.get('query'));
+
+        return ok(POLICY_SEARCH_RESULT);
+      }),
+    );
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp(RESULT_PATH);
+
+    expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '#전세' }));
+
+    expect(screen.getByRole('textbox', { name: '정책 검색' })).toHaveValue('전세');
+    await waitFor(() => expect(requestedQueries).toEqual(['월세', '전세']));
+  });
+
   it('서버 오류면 오류 상태를 보여 주고 다시 시도하면 결과를 불러온다', async () => {
     server.use(http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), () => fail(500), { once: true }));
     signInAs(TOKENS.MEMBER);
