@@ -20,7 +20,7 @@ import TermText from '@/components/policy/TermText';
 import { TOAST_MESSAGES } from '@/constants/messages';
 import { buildMyPagePath, MY_PAGE_TABS, ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
-import { useFavorites } from '@/hooks/useFavorites';
+import { useFavoriteToggle } from '@/hooks/useFavoriteToggle';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { usePolicyDetail } from '@/hooks/usePolicies';
 import { useTerms } from '@/hooks/useTerms';
@@ -175,7 +175,7 @@ function PolicyDetailPage() {
   const { openLoginDialog } = useLoginDialog();
   const { showError } = useToast();
   const { policy, isLoading, errorMessage, refetch } = usePolicyDetail(policyId);
-  const { isFavorite, isLoading: isFavoritesLoading, toggleFavorite } = useFavorites();
+  const { isFavorite, toggleFavorite } = useFavoriteToggle();
   const terms = useTerms();
   const [isCardNewsOpen, setIsCardNewsOpen] = useState(false);
   const wasAuthenticatedRef = useRef(isAuthenticated);
@@ -209,7 +209,7 @@ function PolicyDetailPage() {
     window.open(policy.applyUrl, '_blank', 'noopener');
   };
 
-  const saved = isFavoritesLoading ? policy.isFavorite : isFavorite(policy.id);
+  const saved = isFavorite(policy.id, policy.isFavorite);
   const policySource = [policy.organization, policy.regionName].filter(Boolean).join(' · ');
 
   return (
@@ -256,7 +256,7 @@ function PolicyDetailPage() {
               <Button
                 variant="outlined"
                 startIcon={<AppIcon name={saved ? 'heart' : 'heart-outline'} size={20} />}
-                onClick={() => toggleFavorite(policy.id)}
+                onClick={() => toggleFavorite(policy.id, saved)}
                 sx={{ '& .MuiButton-startIcon': { color: saved ? 'favorite.main' : 'inherit' } }}
               >
                 {saved ? '관심 해제' : '관심 저장'}
@@ -317,7 +317,7 @@ function PolicyDetailPage() {
         cardNews={isCardNewsOpen ? policy.cardNews : null}
         onClose={() => setIsCardNewsOpen(false)}
         isFavorite={saved}
-        onToggleFavorite={toggleFavorite}
+        onToggleFavorite={(policyId) => toggleFavorite(policyId, saved)}
       />
     </Stack>
   );

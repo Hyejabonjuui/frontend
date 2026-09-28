@@ -248,7 +248,7 @@ const toApiCondition = (judgement) => ({
 });
 
 /** 실제 정책 상세 API 계약을 재현한다. */
-export const buildPolicyDetail = (policy, { isAuthenticated }) => ({
+export const buildPolicyDetail = (policy, { isAuthenticated, isFavorite = false }) => ({
   policyId: String(policy.id),
   policyName: policy.title,
   categories: [policy.subtype],
@@ -266,7 +266,7 @@ export const buildPolicyDetail = (policy, { isAuthenticated }) => ({
   applyUrl: policy.applyUrl,
   refUrl: policy.applyUrl,
   activeYn: true,
-  isFavorite: isAuthenticated,
+  isFavorite: isAuthenticated && isFavorite,
   overallStatus: isAuthenticated ? 'DISABLE' : 'UNKNOWN',
   conditions: isAuthenticated
     ? JUDGEMENTS.map(toApiCondition)

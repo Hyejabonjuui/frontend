@@ -16,7 +16,7 @@ import { EMPTY_MESSAGES, LOGIN_NOTICE, TOAST_MESSAGES } from '@/constants/messag
 import { RECOMMENDATION_GROUP, RECOMMENDATION_GROUP_LABEL } from '@/constants/policy';
 import { buildMyPagePath, MY_PAGE_TABS, ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
-import { useFavorites } from '@/hooks/useFavorites';
+import { useFavoriteToggle } from '@/hooks/useFavoriteToggle';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { usePolicySearch } from '@/hooks/usePolicySearch';
 import { useToast } from '@/hooks/useToast';
@@ -46,7 +46,15 @@ function PolicySearchPage() {
     errorMessage,
     refetch,
   } = usePolicySearch({ query: searchQuery });
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { isFavorite, toggleFavorite } = useFavoriteToggle();
+
+  const isSearchedPolicyFavorite = (policyId) =>
+    isFavorite(
+      policyId,
+      GROUP_ORDER.flatMap((group) => groups[group]).find(
+        (policy) => String(policy.id) === String(policyId),
+      )?.isFavorite,
+    );
 
   // 설계서 S-05: 후보가 없으면 안내 toast를 함께 띄운다.
   useEffect(() => {
@@ -163,8 +171,10 @@ function PolicySearchPage() {
                 key={group}
                 group={group}
                 policies={groups[group]}
-                isFavorite={isFavorite}
-                onToggleFavorite={toggleFavorite}
+                isFavorite={isSearchedPolicyFavorite}
+                onToggleFavorite={(policyId) =>
+                  toggleFavorite(policyId, isSearchedPolicyFavorite(policyId))
+                }
               />
             ))
           )}

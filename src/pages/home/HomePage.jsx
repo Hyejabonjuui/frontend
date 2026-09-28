@@ -19,7 +19,7 @@ import { POLICY_PAGE_SIZE, POLICY_SORT_OPTIONS, POLICY_SUBTYPES } from '@/consta
 import { buildMyPagePath, MY_PAGE_TABS, ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
 import { useCardNews, useCardNewsDetail, usePolicies } from '@/hooks/usePolicies';
-import { useFavorites } from '@/hooks/useFavorites';
+import { useFavoriteToggle } from '@/hooks/useFavoriteToggle';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { useMyConditions } from '@/hooks/useMyConditions';
 import { useToast } from '@/hooks/useToast';
@@ -46,21 +46,20 @@ function HomePage() {
     page,
     size: POLICY_PAGE_SIZE,
   });
-  const { isFavorite, isLoading: isFavoritesLoading, toggleFavorite } = useFavorites();
+  const { isFavorite, toggleFavorite } = useFavoriteToggle();
   const { conditions, summary: conditionSummary } = useMyConditions({
     redirectOnMissingProfile: false,
   });
 
-  const isPolicyFavorite = (policyId) => {
-    const policy = policies.find((item) => String(item.id) === String(policyId));
+  const selectedCardNews = cardNewsDetailState.cardNews;
 
-    return policy?.isFavorite ?? isFavorite(policyId);
-  };
+  const isPolicyFavorite = (policyId) =>
+    isFavorite(
+      policyId,
+      policies.find((policy) => String(policy.id) === String(policyId))?.isFavorite,
+    );
 
-  const handlePolicyFavoriteToggle = async (policyId) => {
-    await toggleFavorite(policyId);
-    refetch();
-  };
+  const isCardNewsFavorite = (policyId) => isFavorite(policyId, selectedCardNews?.isFavorite);
 
   // 설계서 S-01: 목록이나 카드뉴스를 못 불러오면 오류 toast로 알린다.
   useEffect(() => {
@@ -220,23 +219,17 @@ function HomePage() {
           totalPages={totalPages}
           onPageChange={setPage}
           isFavorite={isPolicyFavorite}
-          onToggleFavorite={handlePolicyFavoriteToggle}
+          onToggleFavorite={(policyId) => toggleFavorite(policyId, isPolicyFavorite(policyId))}
           onRetry={refetch}
           memberRegionCode={conditions?.regionCode || null}
         />
       </Box>
 
       <CardNewsDialog
-        cardNews={cardNewsDetailState.cardNews}
+        cardNews={selectedCardNews}
         onClose={() => setSelectedCardNewsId(null)}
-        isFavorite={
-          cardNewsDetailState.cardNews
-            ? isFavoritesLoading
-              ? cardNewsDetailState.cardNews.isFavorite
-              : isFavorite(cardNewsDetailState.cardNews.policyId)
-            : false
-        }
-        onToggleFavorite={toggleFavorite}
+        isFavorite={selectedCardNews ? isCardNewsFavorite(selectedCardNews.policyId) : false}
+        onToggleFavorite={(policyId) => toggleFavorite(policyId, isCardNewsFavorite(policyId))}
       />
     </Stack>
   );

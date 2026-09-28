@@ -1,11 +1,13 @@
 /**
  * I-8 관심 정책 (S-07 관심 저장, S-14 관심 목록)
  *
- * notice: 실제 백엔드 없이 MSW가 관심 목록·저장·해제에 응답한다.
- *         저장 후 목록이 바뀌는 흐름은 테스트 안의 favoriteIds 배열로 서버 상태를 흉내 낸다.
+ * notice: 실제 백엔드 없이 MSW가 관심 목록·저장·해제와 정책 상세에 응답한다.
+ *         저장 후 목록이 바뀌는 흐름은 테스트 안의 favoriteIds 배열로 서버 상태를 흉내 내고,
+ *         상세 응답의 isFavorite도 같은 배열로 만든다.
+ * notice: 중복 저장(409 FAVORITE_001)·없는 관심 해제(404 FAVORITE_002) 코드는 백엔드 ErrorStatus 기준이다.
  */
 import { screen, waitFor, within } from '@testing-library/react';
-import { http } from 'msw';
+import { HttpResponse, http } from 'msw';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { ENDPOINTS } from '@/api/endpoints';
@@ -19,6 +21,7 @@ import {
   MEMBER_CREDENTIALS,
   POLICY,
   TOKENS,
+  buildPolicyDetail,
   toPolicySummary,
 } from '../../msw/fixtures';
 import { apiUrl, fail, ok } from '../../msw/respond';
@@ -54,6 +57,18 @@ const mockFavoriteServer = () => {
   };
 
   server.use(
+    http.get(apiUrl(ENDPOINTS.POLICY.DETAIL(':policyId')), ({ params, request }) => {
+      const policy = POLICIES.find((item) => item.id === Number(params.policyId));
+      const isAuthenticated = request.headers.has('Authorization');
+
+      return ok({
+        isSuccess: true,
+        result: buildPolicyDetail(policy, {
+          isAuthenticated,
+          isFavorite: favoriteIds.includes(policy.id),
+        }),
+      });
+    }),
     http.get(apiUrl(ENDPOINTS.FAVORITE.LIST), ({ request }) => {
       verifyTokenRequest(request);
       return ok({
@@ -122,6 +137,53 @@ describe('관심 정책 저장·해제', () => {
 
     await waitFor(() => expect(requests).toEqual([`POST ${POLICY.id}`]));
     expect(await screen.findByRole('button', { name: '관심 해제' })).toBeInTheDocument();
+  });
+});
+
+describe('관심 정책 하트 상태', () => {
+  it('관심 목록 첫 페이지에 없는 관심 정책도 상세 응답 기준으로 채운 하트를 보여 주고, 누르면 해제한다', async () => {
+    favoriteIds = [POLICY.id];
+    // 관심 목록 첫 페이지에는 다른 정책만 있다. 하트는 이 목록을 보지 않아야 한다.
+    server.use(
+      http.get(apiUrl(ENDPOINTS.FAVORITE.LIST), () =>
+        ok({
+          isSuccess: true,
+          result: {
+            favorites: [toBackendFavorite(FAVORITE_POLICY.id)],
+            page: 0,
+            size: 8,
+            totalElements: 9,
+            totalPages: 2,
+            hasNext: true,
+          },
+        }),
+      ),
+    );
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp(DETAIL_PATH);
+
+    await user.click(await screen.findByRole('button', { name: '관심 해제' }, { timeout: 5000 }));
+
+    expect(await screen.findByRole('button', { name: '관심 저장' })).toBeInTheDocument();
+    expect(requests).toEqual([`DELETE ${POLICY.id}`]);
+  });
+
+  it('이미 저장된 정책이라 409가 오면 오류 대신 저장된 하트로 맞춘다', async () => {
+    server.use(
+      http.post(apiUrl(ENDPOINTS.FAVORITE.DETAIL(':policyId')), () =>
+        HttpResponse.json(
+          { isSuccess: false, code: 'FAVORITE_001', message: '이미 등록된 관심 정책입니다.' },
+          { status: 409 },
+        ),
+      ),
+    );
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp(DETAIL_PATH);
+
+    await user.click(await screen.findByRole('button', { name: '관심 저장' }, { timeout: 5000 }));
+
+    expect(await screen.findByRole('button', { name: '관심 해제' })).toBeInTheDocument();
+    expect(screen.queryByText('이미 등록된 관심 정책입니다.')).not.toBeInTheDocument();
   });
 });
 

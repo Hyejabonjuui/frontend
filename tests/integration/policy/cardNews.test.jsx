@@ -5,8 +5,7 @@
  * notice: 상세 응답의 dDay는 백엔드 CardNewsDetailResponseDTO(record)의 Integer dDay가
  *         어노테이션 없이 그대로 직렬화된 키를 따른다. 키가 바뀌면 fixtures.buildCardNewsDetailResponse와
  *         policyApi.toCardNewsDetail부터 맞춘다.
- * notice: 홈 팝업의 하트는 관심 목록을 다 불러오면 관심 목록 기준으로 보인다.
- *         그래서 isFavorite: true를 확인할 때는 관심 목록에도 같은 정책을 넣어 두 값을 맞춘다.
+ * notice: 홈 팝업의 하트는 카드뉴스 상세 응답의 isFavorite 기준으로 보인다(관심 목록은 보지 않는다).
  */
 import { screen, within } from '@testing-library/react';
 import { http } from 'msw';
@@ -20,7 +19,6 @@ import {
   POLICY,
   TOKENS,
   buildCardNewsDetailResponse,
-  toPolicySummary,
 } from '../../msw/fixtures';
 import { apiUrl, ok } from '../../msw/respond';
 import { server } from '../../msw/server';
@@ -122,18 +120,6 @@ describe('홈 카드뉴스', () => {
         authorization = request.headers.get('Authorization');
         return ok(buildCardNewsDetailResponse(POLICY, { isAuthenticated: true }));
       }),
-      http.get(apiUrl(ENDPOINTS.FAVORITE.LIST), () =>
-        ok({
-          content: [
-            {
-              policyId: POLICY.id,
-              status: 'INTEREST',
-              savedAt: '2026-09-19',
-              policy: toPolicySummary(POLICY),
-            },
-          ],
-        }),
-      ),
     );
     signInAs(TOKENS.MEMBER);
     const { user } = renderApp('/home');

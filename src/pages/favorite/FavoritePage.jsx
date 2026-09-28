@@ -13,11 +13,18 @@ import FavoriteRow from '@/components/policy/FavoriteRow';
 import PolicySearchField from '@/components/policy/PolicySearchField';
 import { EMPTY_MESSAGES } from '@/constants/messages';
 import { ROUTES } from '@/constants/routes';
+import { useFavoriteToggle } from '@/hooks/useFavoriteToggle';
 import { useFavorites } from '@/hooks/useFavorites';
 import { compareByDeadline } from '@/utils/formatDate';
 
 function FavoritePage() {
-  const { favorites, isLoading, errorMessage, toggleFavorite, refetch } = useFavorites();
+  const { favorites, isLoading, errorMessage, reload, refetch } = useFavorites();
+  const { toggleFavorite } = useFavoriteToggle();
+
+  const handleRemove = async (policyId) => {
+    await toggleFavorite(policyId, true);
+    reload();
+  };
 
   // 설계서 S-14: 목록은 마감 임박순으로 보여 준다.
   const visibleFavorites = useMemo(
@@ -69,7 +76,7 @@ function FavoritePage() {
 
           <Box sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
             {visibleFavorites.map((favorite) => (
-              <FavoriteRow key={favorite.policyId} favorite={favorite} onRemove={toggleFavorite} />
+              <FavoriteRow key={favorite.policyId} favorite={favorite} onRemove={handleRemove} />
             ))}
           </Box>
         </Box>
