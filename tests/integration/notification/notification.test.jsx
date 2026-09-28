@@ -83,6 +83,9 @@ describe('알림 목록', () => {
       expect(url.searchParams.get('size')).toBe('8');
     });
 
+    // 헤더·마이페이지·알림 탭이 같은 알림을 보므로 목록 요청은 한 번만 나간다.
+    expect(listRequests).toHaveLength(1);
+
     await user.click(screen.getByText(CONTENT));
 
     await waitFor(() => expect(window.location.pathname).toBe(buildPolicyDetailPath(POLICY_ID)));

@@ -1,6 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import NotificationProvider from '@/contexts/NotificationProvider';
 import { useNotifications } from '@/hooks/useNotifications';
 
 const mocks = vi.hoisted(() => ({
@@ -17,7 +18,7 @@ vi.mock('@/api/notificationApi', () => ({
 }));
 
 vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ isAuthenticated: true }),
+  useAuth: () => ({ isAuthenticated: true, user: { id: 1 } }),
 }));
 
 vi.mock('@/hooks/useToast', () => ({
@@ -43,7 +44,7 @@ describe('useNotifications', () => {
       notificationId === 1 ? Promise.resolve() : Promise.reject(new Error('읽음 처리 실패')),
     );
 
-    const { result } = renderHook(() => useNotifications());
+    const { result } = renderHook(() => useNotifications(), { wrapper: NotificationProvider });
 
     await waitFor(() => expect(result.current.unreadCount).toBe(2));
 
