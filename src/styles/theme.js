@@ -31,10 +31,21 @@ const designTokens = {
   favorite: '#e5484d',
 };
 
+const SPACING_UNIT = 8;
+const CONTENT_WIDTH = 1120;
+const PAGE_GUTTER = { xs: 2, sm: 3, md: 4 };
+
 export const LAYOUT = {
-  contentWidth: 1120,
+  contentWidth: CONTENT_WIDTH,
   headerHeight: 64,
-  pageGutter: { xs: 2, sm: 3, md: 4 },
+  pageGutter: PAGE_GUTTER,
+  // 헤더·본문·푸터 공통 틀. 좌우 여백을 뺀 안쪽 폭이 설계서 콘텐츠 폭(1120)이 되게 여백만큼 넓힌다.
+  containerMaxWidth: Object.fromEntries(
+    Object.entries(PAGE_GUTTER).map(([breakpoint, gutter]) => [
+      breakpoint,
+      CONTENT_WIDTH + gutter * SPACING_UNIT * 2,
+    ]),
+  ),
   // 큰 검색창 폭. 추천 결과(S-05)는 검색창·조건 요약·결과를 이 폭 한 줄 기둥에 맞춘다.
   searchColumnWidth: 560,
 };
