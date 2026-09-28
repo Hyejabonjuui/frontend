@@ -1,60 +1,66 @@
 import { ENDPOINTS } from './endpoints';
 import httpClient from './httpClient';
-import { APPLY_PERIOD_TYPE, FAVORITE_STATUS } from '@/constants/policy';
+import { APPLY_PERIOD_TYPE, FAVORITE_STATUS, POLICY_PAGE_SIZE } from '@/constants/policy';
 
-const toFavorite = (favorite) => {
-  // 로컬 목 API는 이미 화면 모델을 반환하므로 변환하지 않는다.
-  if (favorite.policy) {
-    return favorite;
-  }
-
-  const subtype = favorite.category_code ?? favorite.category_codes?.[0];
-  const subtypeName = favorite.category_name ?? favorite.category_names?.[0];
-
-  return {
-    favoriteId: favorite.favorite_id,
-    policyId: favorite.policy_id,
-    status: FAVORITE_STATUS.INTEREST,
-    savedAt: favorite.created_at,
-    policy: {
-      id: favorite.policy_id,
-      title: favorite.policy_name,
-      subtype,
-      subtypeName,
-      regionName: '',
-      organization: '',
-      summary: favorite.support_content ?? '',
-      applyPeriodType: favorite.apply_end_date
-        ? APPLY_PERIOD_TYPE.PERIOD
-        : APPLY_PERIOD_TYPE.ALWAYS,
-      applyStartDate: null,
-      applyEndDate: favorite.apply_end_date,
-      applyUrl: favorite.apply_url,
-    },
-  };
+/** 백엔드 apply_period_code(ALWAYS·SPECIFIC_PERIOD·CLOSED)를 날짜로 추측하지 않고 그대로 옮긴다. */
+const APPLY_PERIOD_CODE_TO_TYPE = {
+  ALWAYS: APPLY_PERIOD_TYPE.ALWAYS,
+  SPECIFIC_PERIOD: APPLY_PERIOD_TYPE.PERIOD,
+  CLOSED: APPLY_PERIOD_TYPE.CLOSED,
 };
 
+const toFavorite = (favorite) => ({
+  favoriteId: favorite.favorite_id,
+  policyId: favorite.policy_id,
+  status: FAVORITE_STATUS.INTEREST,
+  savedAt: favorite.created_at,
+  policy: {
+    id: favorite.policy_id,
+    title: favorite.policy_name,
+    subtype: favorite.category_codes?.[0],
+    subtypeName: favorite.category_names?.[0],
+    regionName: '',
+    organization: '',
+    summary: favorite.support_content ?? '',
+    applyPeriodType:
+      APPLY_PERIOD_CODE_TO_TYPE[favorite.apply_period_code] ?? APPLY_PERIOD_TYPE.PERIOD,
+    applyStartDate: null,
+    applyEndDate: favorite.apply_end_date,
+    applyUrl: favorite.apply_url,
+  },
+});
+
 const unwrapResult = (response) => response?.result ?? response;
+
+/** 화면의 페이지는 1부터, 백엔드는 0부터 센다. 빈 검색어는 보내지 않아 전체 목록을 받는다. */
+export const toFavoriteListParams = ({ keyword, page, size } = {}) => ({
+  ...(keyword?.trim() ? { keyword: keyword.trim() } : {}),
+  page: Math.max(Number(page ?? 1) - 1, 0),
+  size: Number(size ?? POLICY_PAGE_SIZE),
+});
 
 /**
  * 백엔드의 ApiResponse/result + snake_case 계약을 화면에서 쓰는 모델로 변환한다.
  * 변환을 API 경계에 두어 훅과 컴포넌트가 서버 필드명에 의존하지 않게 한다.
+ * 목록은 서버가 최근 저장순으로 준다.
  */
-export const getFavorites = async (params = {}) => {
-  const response = await httpClient.get(ENDPOINTS.FAVORITE.LIST, {
-    params,
-  });
+export const toFavoriteList = (response) => {
   const result = unwrapResult(response) ?? {};
 
   return {
-    content: (result.favorites ?? result.content ?? []).map(toFavorite),
-    page: result.page ?? 0,
-    size: result.size ?? 0,
-    totalCount: result.totalElements ?? result.totalCount ?? 0,
-    totalPages: result.totalPages ?? 0,
-    hasNext: result.hasNext ?? false,
+    content: (result.favorites ?? []).map(toFavorite),
+    page: Number(result.page ?? 0) + 1,
+    size: Number(result.size ?? POLICY_PAGE_SIZE),
+    totalCount: Number(result.totalElements ?? 0),
+    totalPages: Number(result.totalPages ?? 0),
+    hasNext: Boolean(result.hasNext),
   };
 };
+
+export const getFavorites = async (params) =>
+  toFavoriteList(
+    await httpClient.get(ENDPOINTS.FAVORITE.LIST, { params: toFavoriteListParams(params) }),
+  );
 
 export const addFavorite = (policyId) => httpClient.post(ENDPOINTS.FAVORITE.DETAIL(policyId));
 

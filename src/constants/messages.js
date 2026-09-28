@@ -55,6 +55,8 @@ export const EMPTY_MESSAGES = {
   SEARCH_CAPTION: '후보 0건 · 정책을 지어내지 않음',
   FAVORITE: '아직 관심 정책이 없어요',
   FAVORITE_DESCRIPTION: '정책 옆 관심 표시를 누르면 여기 모이고, 마감 7일 전에 알려드려요',
+  FAVORITE_SEARCH: '검색어에 맞는 관심 정책이 없어요',
+  FAVORITE_SEARCH_DESCRIPTION: '정책 이름이나 지원 내용에 들어간 말로 찾아보세요',
   NOTIFICATION: '받은 알림이 없어요',
   NOTIFICATION_UNREAD: '새로 온 알림이 없어요',
 };

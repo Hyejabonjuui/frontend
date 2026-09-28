@@ -122,20 +122,6 @@ const remainingDays = (policy) => {
   return Math.round((end - today) / (1000 * 60 * 60 * 24));
 };
 
-const toPolicySummary = (policy) => ({
-  id: policy.id,
-  title: policy.title,
-  subtype: policy.subtype,
-  subtypeName: findSubtypeName(policy.subtype),
-  regionName: policy.regionName,
-  organization: policy.organization,
-  summary: policy.summary,
-  applyPeriodType: policy.applyPeriodType,
-  applyStartDate: policy.applyStartDate,
-  applyEndDate: policy.applyEndDate,
-  viewCount: policy.viewCount,
-});
-
 const UI_TO_API_CATEGORY = {
   SUBSCRIPTION: 'PURCHASE',
   PUBLIC_HOUSING: 'PUBLIC_RENT',
@@ -192,6 +178,21 @@ const toApiPolicyListItem = (policy, user) => ({
   ...(user
     ? { favorite_yn: getFavorites(user.id).some((favorite) => favorite.policyId === policy.id) }
     : {}),
+});
+
+/** 백엔드 FavoriteItemDTO 모양. 관심 목록 응답에는 지역 정보가 없다. */
+const toApiFavoriteItem = (favorite, policy) => ({
+  favorite_id: policy.id + 1000,
+  policy_id: String(policy.id),
+  policy_name: policy.title,
+  category_codes: [UI_TO_API_CATEGORY[policy.subtype] ?? policy.subtype],
+  category_names: [findSubtypeName(policy.subtype)],
+  support_content: policy.summary,
+  apply_end_date: policy.applyEndDate,
+  apply_period_code:
+    policy.applyPeriodType === APPLY_PERIOD_TYPE.ALWAYS ? 'ALWAYS' : 'SPECIFIC_PERIOD',
+  apply_url: policy.applyUrl,
+  created_at: `${favorite.savedAt}T00:00:00`,
 });
 
 const SUBTYPE_NAMES = {
@@ -806,21 +807,44 @@ export const HANDLERS = [
   {
     method: 'get',
     match: (url) => url === '/api/favorite',
-    handle: ({ user }) => {
+    handle: ({ params, user }) => {
       const denied = requireUser(user);
       if (denied) {
         return denied;
       }
 
-      const content = getFavorites(user.id)
+      // 백엔드처럼 최근 저장순(저장소 앞쪽이 최근)이고, keyword는 정책명·지원 내용에서 찾는다.
+      const keyword = (params.keyword ?? '').trim();
+      const page = Math.max(Number(params.page ?? 0), 0);
+      const size = Math.max(Number(params.size ?? 8), 1);
+      const favorites = getFavorites(user.id)
         .map((favorite) => {
           const policy = findActivePolicyById(favorite.policyId);
 
-          return policy ? { ...favorite, policy: toPolicySummary(policy) } : null;
+          return policy ? toApiFavoriteItem(favorite, policy) : null;
         })
-        .filter(Boolean);
+        .filter(Boolean)
+        .filter(
+          (favorite) =>
+            !keyword ||
+            favorite.policy_name.includes(keyword) ||
+            (favorite.support_content ?? '').includes(keyword),
+        );
+      const totalPages = Math.ceil(favorites.length / size);
 
-      return ok({ content });
+      return ok({
+        isSuccess: true,
+        code: 'SUCCESS_001',
+        message: '성공입니다.',
+        result: {
+          favorites: favorites.slice(page * size, (page + 1) * size),
+          page,
+          size,
+          totalElements: favorites.length,
+          totalPages,
+          hasNext: page + 1 < totalPages,
+        },
+      });
     },
   },
   {

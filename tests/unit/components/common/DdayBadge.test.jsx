@@ -25,6 +25,12 @@ describe('DdayBadge 남은 일수(remainingDays)', () => {
     expect(screen.getByText('마감')).toBeInTheDocument();
   });
 
+  it('백엔드가 마감(CLOSED)으로 준 정책은 마감일이 없어도 마감으로 표시한다', () => {
+    render(<DdayBadge applyPeriodType={APPLY_PERIOD_TYPE.CLOSED} applyEndDate={null} />);
+
+    expect(screen.getByText('마감')).toBeInTheDocument();
+  });
+
   it.each([0, 7])('%s일이면 임박 강조로 표시한다', (remainingDays) => {
     render(<DdayBadge remainingDays={remainingDays} />);
 

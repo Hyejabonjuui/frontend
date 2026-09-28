@@ -21,6 +21,8 @@ export const POLICY_SORT_OPTIONS = [
 export const APPLY_PERIOD_TYPE = {
   ALWAYS: 'ALWAYS',
   PERIOD: 'PERIOD',
+  /** 백엔드가 마감으로 분류한 정책. 관심 정책처럼 마감 뒤에도 남는 목록에서 온다. */
+  CLOSED: 'CLOSED',
 };
 
 export const JUDGE_RESULT = {

@@ -325,16 +325,40 @@ export const NO_CANDIDATE_POLICY_SEARCH_RESPONSE = {
 
 export const FAVORITE_POLICY = POLICIES[1];
 
-export const FAVORITES = {
-  content: [
-    {
-      policyId: FAVORITE_POLICY.id,
-      status: 'INTEREST',
-      savedAt: '2026-09-19',
-      policy: toPolicySummary(FAVORITE_POLICY),
+/** 백엔드 FavoriteItemDTO. 관심 목록 응답에는 지역 정보가 없다. */
+export const toApiFavorite = (policy) => ({
+  favorite_id: policy.id + 100,
+  policy_id: policy.id,
+  policy_name: policy.title,
+  category_codes: [policy.subtype],
+  category_names: [findSubtypeName(policy.subtype)],
+  support_content: policy.summary,
+  apply_end_date: policy.applyEndDate,
+  apply_period_code: policy.applyPeriodType === 'ALWAYS' ? 'ALWAYS' : 'SPECIFIC_PERIOD',
+  apply_url: policy.applyUrl,
+  created_at: '2026-09-26T10:30:00',
+});
+
+export const buildFavoriteList = (policies, { page = 0, size = 8, totalElements } = {}) => {
+  const total = totalElements ?? policies.length;
+  const totalPages = Math.ceil(total / size);
+
+  return {
+    isSuccess: true,
+    code: 'SUCCESS_001',
+    message: '성공입니다.',
+    result: {
+      favorites: policies.map(toApiFavorite),
+      page,
+      size,
+      totalElements: total,
+      totalPages,
+      hasNext: page + 1 < totalPages,
     },
-  ],
+  };
 };
+
+export const FAVORITES = buildFavoriteList([FAVORITE_POLICY]);
 
 export const EMPTY_LIST = { content: [] };
 

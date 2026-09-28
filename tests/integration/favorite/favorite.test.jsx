@@ -21,8 +21,8 @@ import {
   MEMBER_CREDENTIALS,
   POLICY,
   TOKENS,
+  buildFavoriteList,
   buildPolicyDetail,
-  toPolicySummary,
 } from '../../msw/fixtures';
 import { apiUrl, fail, ok } from '../../msw/respond';
 import { server } from '../../msw/server';
@@ -31,23 +31,7 @@ const DETAIL_PATH = `/policies/${POLICY.id}`;
 
 let favoriteIds;
 let requests;
-
-const toBackendFavorite = (policyId) => {
-  const policy = POLICIES.find((item) => item.id === policyId);
-
-  return {
-    favorite_id: policyId + 100,
-    policy_id: policyId,
-    policy_name: policy.title,
-    category_codes: [policy.subtype],
-    category_names: [toPolicySummary(policy).subtypeName],
-    support_content: policy.summary,
-    apply_end_date: policy.applyEndDate,
-    apply_period_code: policy.applyPeriodType,
-    apply_url: policy.applyUrl,
-    created_at: '2026-09-26T10:30:00',
-  };
-};
+let listRequests;
 
 /** 저장·해제 요청을 기록하고, 관심 목록 응답에 바로 반영하는 가짜 서버 상태 */
 const mockFavoriteServer = () => {
@@ -71,19 +55,12 @@ const mockFavoriteServer = () => {
     }),
     http.get(apiUrl(ENDPOINTS.FAVORITE.LIST), ({ request }) => {
       verifyTokenRequest(request);
-      return ok({
-        isSuccess: true,
-        code: 'SUCCESS_001',
-        message: '성공입니다.',
-        result: {
-          favorites: favoriteIds.map(toBackendFavorite),
-          page: 0,
-          size: 8,
-          totalElements: favoriteIds.length,
-          totalPages: favoriteIds.length ? 1 : 0,
-          hasNext: false,
-        },
-      });
+      listRequests.push(new URL(request.url).searchParams);
+      return ok(
+        buildFavoriteList(
+          favoriteIds.map((policyId) => POLICIES.find((policy) => policy.id === policyId)),
+        ),
+      );
     }),
     http.post(apiUrl(ENDPOINTS.FAVORITE.DETAIL(':policyId')), ({ params, request }) => {
       verifyTokenRequest(request);
@@ -103,6 +80,7 @@ const mockFavoriteServer = () => {
 beforeEach(() => {
   favoriteIds = [];
   requests = [];
+  listRequests = [];
   mockFavoriteServer();
 });
 
@@ -146,17 +124,7 @@ describe('관심 정책 하트 상태', () => {
     // 관심 목록 첫 페이지에는 다른 정책만 있다. 하트는 이 목록을 보지 않아야 한다.
     server.use(
       http.get(apiUrl(ENDPOINTS.FAVORITE.LIST), () =>
-        ok({
-          isSuccess: true,
-          result: {
-            favorites: [toBackendFavorite(FAVORITE_POLICY.id)],
-            page: 0,
-            size: 8,
-            totalElements: 9,
-            totalPages: 2,
-            hasNext: true,
-          },
-        }),
+        ok(buildFavoriteList([FAVORITE_POLICY], { totalElements: 9 })),
       ),
     );
     signInAs(TOKENS.MEMBER);
@@ -211,5 +179,49 @@ describe('관심 목록', () => {
 
     await waitFor(() => expect(screen.queryByText(FAVORITE_POLICY.title)).not.toBeInTheDocument());
     expect(requests).toEqual([`DELETE ${FAVORITE_POLICY.id}`]);
+  });
+
+  it('최근 저장순으로 보여 주고, 2페이지를 누르면 다음 페이지를 요청한다', async () => {
+    favoriteIds = [FAVORITE_POLICY.id];
+    server.use(
+      http.get(apiUrl(ENDPOINTS.FAVORITE.LIST), ({ request }) => {
+        const searchParams = new URL(request.url).searchParams;
+        listRequests.push(searchParams);
+        const page = Number(searchParams.get('page'));
+
+        return ok(
+          buildFavoriteList([page === 0 ? FAVORITE_POLICY : POLICY], {
+            page,
+            totalElements: 9,
+          }),
+        );
+      }),
+    );
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp(ROUTES.FAVORITE);
+
+    expect(
+      await screen.findByText(FAVORITE_POLICY.title, undefined, { timeout: 5000 }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('최근 저장순')).toBeInTheDocument();
+    expect(screen.queryByText('마감 임박순')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Go to page 2' }));
+
+    expect(await screen.findByText(POLICY.title)).toBeInTheDocument();
+    expect(listRequests.map((params) => params.get('page'))).toEqual(['0', '1']);
+  });
+
+  it('검색하면 관심 목록 안에서 keyword로 찾고, AI 검색 화면으로 가지 않는다', async () => {
+    favoriteIds = [FAVORITE_POLICY.id];
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp(ROUTES.FAVORITE);
+
+    await screen.findByText(FAVORITE_POLICY.title, undefined, { timeout: 5000 });
+    await user.type(screen.getByRole('textbox', { name: '관심 정책 검색' }), '  월세 {Enter}');
+
+    await waitFor(() => expect(listRequests.at(-1).get('keyword')).toBe('월세'));
+    expect(listRequests.at(-1).get('page')).toBe('0');
+    expect(window.location.pathname).toBe(ROUTES.FAVORITE);
   });
 });

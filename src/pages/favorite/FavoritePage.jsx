@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -8,32 +8,38 @@ import Typography from '@mui/material/Typography';
 import AppIcon from '@/components/common/AppIcon';
 import EmptyState from '@/components/common/EmptyState';
 import ErrorState from '@/components/common/ErrorState';
+import ListPagination from '@/components/common/ListPagination';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import FavoriteRow from '@/components/policy/FavoriteRow';
 import PolicySearchField from '@/components/policy/PolicySearchField';
 import { EMPTY_MESSAGES } from '@/constants/messages';
+import { POLICY_PAGE_SIZE } from '@/constants/policy';
 import { ROUTES } from '@/constants/routes';
 import { useFavoriteToggle } from '@/hooks/useFavoriteToggle';
 import { useFavorites } from '@/hooks/useFavorites';
-import { compareByDeadline } from '@/utils/formatDate';
 
 function FavoritePage() {
-  const { favorites, isLoading, errorMessage, reload, refetch } = useFavorites();
+  const [keyword, setKeyword] = useState('');
+  const [page, setPage] = useState(1);
+  const { favorites, totalCount, totalPages, isLoading, errorMessage, reload, refetch } =
+    useFavorites({ keyword, page, size: POLICY_PAGE_SIZE });
   const { toggleFavorite } = useFavoriteToggle();
+  // 해제로 마지막 페이지가 비면 남아 있는 마지막 페이지를 보여 준다.
+  const currentPage = Math.min(page, Math.max(totalPages, 1));
+
+  if (currentPage !== page) {
+    setPage(currentPage);
+  }
+
+  const handleSearch = (nextKeyword) => {
+    setKeyword(nextKeyword);
+    setPage(1);
+  };
 
   const handleRemove = async (policyId) => {
     await toggleFavorite(policyId, true);
     reload();
   };
-
-  // 설계서 S-14: 목록은 마감 임박순으로 보여 준다.
-  const visibleFavorites = useMemo(
-    () =>
-      favorites
-        .filter((favorite) => favorite.policy)
-        .sort((a, b) => compareByDeadline(a.policy, b.policy)),
-    [favorites],
-  );
 
   return (
     <Stack spacing={2}>
@@ -46,14 +52,22 @@ function FavoritePage() {
       </Stack>
 
       <Stack sx={{ alignItems: 'flex-end' }}>
-        <PolicySearchField />
+        <PolicySearchField placeholder="관심 정책 검색" onSearch={handleSearch} />
       </Stack>
 
       {isLoading && <LoadingSpinner />}
 
       {!isLoading && errorMessage && <ErrorState message={errorMessage} onRetry={refetch} />}
 
-      {!isLoading && !errorMessage && visibleFavorites.length === 0 && (
+      {!isLoading && !errorMessage && favorites.length === 0 && keyword && (
+        <EmptyState
+          isFramed
+          title={EMPTY_MESSAGES.FAVORITE_SEARCH}
+          description={EMPTY_MESSAGES.FAVORITE_SEARCH_DESCRIPTION}
+        />
+      )}
+
+      {!isLoading && !errorMessage && favorites.length === 0 && !keyword && (
         <EmptyState
           isFramed
           title={EMPTY_MESSAGES.FAVORITE}
@@ -66,19 +80,24 @@ function FavoritePage() {
         />
       )}
 
-      {!isLoading && !errorMessage && visibleFavorites.length > 0 && (
+      {!isLoading && !errorMessage && favorites.length > 0 && (
         <Box>
-          <Stack direction="row" sx={{ justifyContent: 'flex-end', pb: 1 }}>
+          <Stack direction="row" sx={{ justifyContent: 'space-between', pb: 1 }}>
             <Typography variant="caption" color="text.secondary">
-              마감 임박순
+              {keyword ? `'${keyword}' 검색 결과 ${totalCount}건` : `${totalCount}건`}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              최근 저장순
             </Typography>
           </Stack>
 
           <Box sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
-            {visibleFavorites.map((favorite) => (
+            {favorites.map((favorite) => (
               <FavoriteRow key={favorite.policyId} favorite={favorite} onRemove={handleRemove} />
             ))}
           </Box>
+
+          <ListPagination page={currentPage} totalPages={totalPages} onPageChange={setPage} />
         </Box>
       )}
     </Stack>
