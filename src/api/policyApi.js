@@ -141,6 +141,16 @@ export const toPolicyDetail = (response) => {
   };
 };
 
+/** 백엔드는 정책마다 cardNo 1~4를 정해진 주제로 만든다(PolicySyncItemService). */
+const CARD_NEWS_COUNT = 4;
+
+const CARD_NEWS_LABELS = {
+  1: '무슨 정책인가요',
+  2: '누가 받을 수 있나요',
+  3: '무엇을 받나요',
+  4: '어떻게 신청하나요',
+};
+
 export const toCardNewsList = (response) => {
   const result = unwrapResult(response);
 
@@ -149,7 +159,7 @@ export const toCardNewsList = (response) => {
     title: cardNews.policyName,
     summary: cardNews.description ?? '',
     applyEndDate: cardNews.applyEndDate,
-    cardCount: 4,
+    cardCount: CARD_NEWS_COUNT,
   }));
 };
 
@@ -160,19 +170,41 @@ export const toCardNewsDetail = (response) => {
     return null;
   }
 
-  const cards = (result.cards ?? []).map((card) => ({
-    id: card.cardNewsId,
-    order: Number(card.cardNo),
-    heading: card.title ?? '',
-    tags: card.badges ?? [],
-    body: card.body ?? '',
-  }));
+  const cardsByOrder = new Map(
+    (result.cards ?? []).map((card) => [
+      Number(card.cardNo),
+      {
+        id: card.cardNewsId,
+        order: Number(card.cardNo),
+        label: CARD_NEWS_LABELS[card.cardNo] ?? '',
+        heading: card.title ?? '',
+        tags: card.badges ?? [],
+        body: card.body ?? '',
+      },
+    ]),
+  );
+
+  // 데이터가 없는 장(데모 시드는 1장만 있다)은 번호만 보이는 빈 카드로 채워 항상 4장을 맞춘다.
+  const cards = Array.from({ length: CARD_NEWS_COUNT }, (unused, index) => {
+    const order = index + 1;
+
+    return (
+      cardsByOrder.get(order) ?? {
+        id: `empty-${order}`,
+        order,
+        label: '',
+        heading: '',
+        tags: [],
+        body: '',
+      }
+    );
+  });
 
   return {
     policyId: result.policyId,
     title: cards[0]?.heading ?? '',
     subtypeName: result.categoryLabel ?? '',
-    cardCount: cards.length,
+    cardCount: CARD_NEWS_COUNT,
     isAuthenticated: Boolean(result.isAuthenticated),
     isFavorite: Boolean(result.isFavorite),
     applyUrl: result.applyUrl,

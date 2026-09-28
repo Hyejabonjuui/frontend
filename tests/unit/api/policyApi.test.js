@@ -109,7 +109,7 @@ describe('카드뉴스 API 응답 변환', () => {
     ]);
   });
 
-  it('상세 응답의 카드 배열을 팝업 모델로 변환하고 카드 수를 배열 길이로 계산한다', () => {
+  it('상세 응답을 cardNo별 고정 라벨이 붙은 4장짜리 팝업 모델로 변환하고, 없는 장은 빈 카드로 채운다', () => {
     expect(
       toCardNewsDetail({
         result: {
@@ -133,7 +133,7 @@ describe('카드뉴스 API 응답 변환', () => {
       policyId: 'DEMO-HOUSING-001',
       title: '월세 부담 완화',
       subtypeName: '월세',
-      cardCount: 1,
+      cardCount: 4,
       isAuthenticated: false,
       isFavorite: false,
       applyUrl: 'https://example.com/apply',
@@ -141,12 +141,34 @@ describe('카드뉴스 API 응답 변환', () => {
         {
           id: 11,
           order: 1,
+          label: '무슨 정책인가요',
           heading: '월세 부담 완화',
           tags: ['청년'],
           body: '월 임대료 일부를 지원합니다.',
         },
+        { id: 'empty-2', order: 2, label: '', heading: '', tags: [], body: '' },
+        { id: 'empty-3', order: 3, label: '', heading: '', tags: [], body: '' },
+        { id: 'empty-4', order: 4, label: '', heading: '', tags: [], body: '' },
       ],
     });
+  });
+});
+
+describe('카드뉴스 상세 라벨', () => {
+  it('cardNo 1~4에 각각 고정 라벨을 붙인다', () => {
+    const { cards } = toCardNewsDetail({
+      result: {
+        policyId: 'R202609280001',
+        cards: [4, 2, 3, 1].map((cardNo) => ({ cardNewsId: cardNo, cardNo, title: '', body: '' })),
+      },
+    });
+
+    expect(cards.map((card) => [card.order, card.label])).toEqual([
+      [1, '무슨 정책인가요'],
+      [2, '누가 받을 수 있나요'],
+      [3, '무엇을 받나요'],
+      [4, '어떻게 신청하나요'],
+    ]);
   });
 });
 

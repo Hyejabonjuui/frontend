@@ -32,7 +32,8 @@ function CardNewsPanel({ card, cardCount, children }) {
       {/* 본문이 남은 높이를 모두 차지해, 액션은 카드 맨 아래에 붙는다. */}
       <Stack spacing={1.5} sx={{ flexGrow: 1 }}>
         <Typography variant="caption" color="text.secondary">
-          {card.order} / {cardCount} · {card.label}
+          {card.order} / {cardCount}
+          {card.label && ` · ${card.label}`}
         </Typography>
 
         {card.heading && (
