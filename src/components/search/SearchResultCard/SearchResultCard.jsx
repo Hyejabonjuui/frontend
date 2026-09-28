@@ -1,6 +1,5 @@
 import { Link as RouterLink } from 'react-router-dom';
 import AppIcon from '@/components/common/AppIcon';
-import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
@@ -13,7 +12,10 @@ import JudgeChip from '@/components/common/JudgeChip';
 import { RECOMMENDATION_GROUP } from '@/constants/policy';
 import { buildPolicyDetailPath } from '@/constants/routes';
 
-/** 설계서 S-05: 정책마다 "왜?" 한 문장과 조건별 판정을 함께 보여준다. */
+/**
+ * 설계서 S-05 Card/ResultItem: 정책마다 "왜?" 한 문장과 조건별 판정을 함께 보여준다.
+ * 왼쪽에 제목·이유·판정을, 오른쪽에 D-day·관심·상세 보기를 둔다.
+ */
 function SearchResultCard({ policy, group, isFavorite = false, onToggleFavorite }) {
   const isImpossible = group === RECOMMENDATION_GROUP.IMPOSSIBLE;
   const reasonLabel = isImpossible ? '이유' : '왜?';
@@ -22,91 +24,71 @@ function SearchResultCard({ policy, group, isFavorite = false, onToggleFavorite 
     <Card
       variant="outlined"
       sx={{
-        p: 2,
+        display: 'flex',
+        gap: { xs: 1.5, sm: 3 },
+        px: { xs: 2, sm: 3 },
+        py: { xs: 2, sm: 2.5 },
         backgroundColor: isImpossible ? 'grey.100' : 'background.paper',
       }}
     >
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '80px minmax(0, 1fr)', sm: '96px minmax(0, 1fr) auto' },
-          alignItems: 'center',
-          columnGap: 1,
-          rowGap: 1,
-        }}
-      >
-        <Chip
-          label={policy.subtypeName}
-          variant="outlined"
-          size="small"
-          sx={{ width: '100%', minWidth: 0, justifySelf: 'center' }}
-        />
+      <Stack spacing={1.25} sx={{ flex: 1, minWidth: 0 }}>
+        <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center', minWidth: 0 }}>
+          <Chip label={policy.subtypeName} variant="outlined" size="small" sx={{ flexShrink: 0 }} />
+          <Typography
+            variant="subtitle1"
+            color={isImpossible ? 'text.secondary' : 'text.primary'}
+            sx={{ minWidth: 0, wordBreak: 'keep-all', overflowWrap: 'anywhere' }}
+          >
+            {policy.title}
+          </Typography>
+        </Stack>
 
-        <Typography
-          variant="body2"
-          sx={{
-            minWidth: 0,
-            overflowWrap: 'anywhere',
-          }}
-        >
-          {policy.title}
-        </Typography>
+        <Stack direction="row" spacing={1.25} sx={{ alignItems: 'flex-start' }}>
+          <Typography variant="subtitle1" sx={{ flexShrink: 0 }}>
+            {reasonLabel}
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{ pt: '1px', minWidth: 0, wordBreak: 'keep-all', overflowWrap: 'anywhere' }}
+          >
+            {policy.reason}
+          </Typography>
+        </Stack>
 
-        <Stack
-          direction="row"
-          spacing={1}
-          sx={{
-            gridColumn: { xs: '1 / -1', sm: 'auto' },
-            alignItems: 'center',
-            justifySelf: 'end',
-          }}
-        >
+        <Stack direction="row" spacing={0.75} useFlexGap sx={{ flexWrap: 'wrap' }}>
+          {(policy.judgements ?? []).map((judgement) => (
+            <JudgeChip
+              key={judgement.conditionKey}
+              result={judgement.result}
+              label={judgement.conditionName}
+            />
+          ))}
+        </Stack>
+      </Stack>
+
+      <Stack spacing={1.5} sx={{ alignItems: 'flex-end', flexShrink: 0 }}>
+        <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
           <DdayBadge applyPeriodType={policy.applyPeriodType} applyEndDate={policy.applyEndDate} />
           <IconButton
-            size="small"
             aria-label={isFavorite ? '관심 정책 해제' : '관심 정책 저장'}
             onClick={() => onToggleFavorite?.(policy.id)}
-            sx={{ color: isFavorite ? 'favorite.main' : 'text.disabled' }}
+            sx={{
+              width: 36,
+              height: 36,
+              color: isFavorite ? 'favorite.main' : 'text.secondary',
+            }}
           >
             <AppIcon name={isFavorite ? 'heart' : 'heart-outline'} size={20} />
           </IconButton>
         </Stack>
-      </Box>
-
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        spacing={{ xs: 0.5, sm: 1 }}
-        sx={{ alignItems: { xs: 'flex-start', sm: 'baseline' }, mt: 1.5 }}
-      >
-        <Typography variant="body2" sx={{ flexShrink: 0 }}>
-          {reasonLabel}
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          {policy.reason}
-        </Typography>
-      </Stack>
-
-      <Stack
-        direction="row"
-        spacing={1}
-        useFlexGap
-        sx={{ flexWrap: 'wrap', alignItems: 'center', mt: 1.5 }}
-      >
-        {(policy.judgements ?? []).map((judgement) => (
-          <JudgeChip
-            key={judgement.conditionKey}
-            result={judgement.result}
-            label={judgement.conditionName}
-          />
-        ))}
-
-        <Box sx={{ flexGrow: 1 }} />
 
         <Link
           component={RouterLink}
           to={buildPolicyDetailPath(policy.id)}
-          variant="body1"
-          sx={{ flexShrink: 0 }}
+          variant="body2"
+          color="text.primary"
+          underline="hover"
+          sx={{ whiteSpace: 'nowrap' }}
         >
           상세 보기 <AppIcon name="arrow-right" size={16} />
         </Link>

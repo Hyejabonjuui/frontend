@@ -2,6 +2,7 @@ import { MOCK_PASSWORD, USERS } from '@/mocks/data/users';
 import { mockAdapter } from '@/mocks/mockAdapter';
 import { mockStore } from '@/mocks/store';
 import { conditionDraft } from '@/utils/conditionDraft';
+import { searchResultCache } from '@/utils/searchResultCache';
 import { tokenStorage } from '@/utils/tokenStorage';
 
 /**
@@ -13,9 +14,10 @@ export const enableMockApi = (httpClient) => {
 
   window.hyejaMock = {
     reset: () => {
-      // notice: 목 데이터 초기화 시 테스트 계정과 작성 중인 조건도 함께 초기 상태로 돌린다.
+      // notice: 목 데이터 초기화 시 테스트 계정, 작성 중인 조건, 저장해 둔 검색 결과도 함께 초기 상태로 돌린다.
       mockStore.reset();
       conditionDraft.clear();
+      searchResultCache.clear();
       tokenStorage.clear();
       window.location.reload();
     },

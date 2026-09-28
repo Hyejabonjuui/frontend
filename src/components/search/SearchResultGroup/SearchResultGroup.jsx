@@ -5,17 +5,10 @@ import Typography from '@mui/material/Typography';
 import JudgeIcon from '@/components/common/JudgeIcon';
 import SearchResultCard from '@/components/search/SearchResultCard';
 import {
-  JUDGE_RESULT,
-  RECOMMENDATION_GROUP,
+  JUDGE_RESULT_BY_GROUP,
   RECOMMENDATION_GROUP_DESCRIPTION,
   RECOMMENDATION_GROUP_LABEL,
 } from '@/constants/policy';
-
-const JUDGE_RESULT_BY_GROUP = {
-  [RECOMMENDATION_GROUP.POSSIBLE]: JUDGE_RESULT.MET,
-  [RECOMMENDATION_GROUP.NEED_CHECK]: JUDGE_RESULT.NEED_CHECK,
-  [RECOMMENDATION_GROUP.IMPOSSIBLE]: JUDGE_RESULT.NOT_MET,
-};
 
 function SearchResultGroup({ group, policies = [], isFavorite, onToggleFavorite }) {
   return (
@@ -24,19 +17,21 @@ function SearchResultGroup({ group, policies = [], isFavorite, onToggleFavorite 
         direction="row"
         spacing={1}
         useFlexGap
-        sx={{ alignItems: 'center', flexWrap: 'wrap', mb: 1.5 }}
+        sx={{ alignItems: 'center', flexWrap: 'wrap', columnGap: 1.5, mb: 1.5 }}
       >
-        <JudgeIcon result={JUDGE_RESULT_BY_GROUP[group]} size={20} />
-        <Typography variant="h2">
-          {RECOMMENDATION_GROUP_LABEL[group]} · {policies.length}건
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+          <JudgeIcon result={JUDGE_RESULT_BY_GROUP[group]} size={20} />
+          <Typography variant="h2">
+            {RECOMMENDATION_GROUP_LABEL[group]} · {policies.length}건
+          </Typography>
+        </Stack>
+        <Typography variant="body1" color="text.secondary" sx={{ wordBreak: 'keep-all' }}>
           {RECOMMENDATION_GROUP_DESCRIPTION[group]}
         </Typography>
       </Stack>
 
       {policies.length === 0 ? (
-        <Typography variant="body1" color="text.disabled" sx={{ py: 2 }}>
+        <Typography variant="body1" color="text.disabled" sx={{ py: 1 }}>
           해당하는 정책이 없어요
         </Typography>
       ) : (

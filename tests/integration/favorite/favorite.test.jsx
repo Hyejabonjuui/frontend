@@ -11,7 +11,7 @@ import { HttpResponse, http } from 'msw';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { ENDPOINTS } from '@/api/endpoints';
-import { ERROR_MESSAGES, TOAST_MESSAGES } from '@/constants/messages';
+import { EMPTY_MESSAGES, ERROR_MESSAGES, TOAST_MESSAGES } from '@/constants/messages';
 import { ROUTES } from '@/constants/routes';
 import { POLICIES } from '@/mocks/data/policies';
 
@@ -156,6 +156,21 @@ describe('관심 정책 하트 상태', () => {
 });
 
 describe('관심 목록', () => {
+  it('관심 정책이 없으면 하트를 누르라는 안내와 주거 정책으로 가는 버튼을 보여 준다', async () => {
+    signInAs(TOKENS.MEMBER);
+    renderApp(ROUTES.FAVORITE);
+
+    expect(
+      await screen.findByText(EMPTY_MESSAGES.FAVORITE, undefined, { timeout: 5000 }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('저장한 정책을 모아 두는 곳이에요.')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '하트' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '주거 정책 보러 가기' })).toHaveAttribute(
+      'href',
+      ROUTES.HOME,
+    );
+  });
+
   it('목록을 못 불러오면 오류 상태를 보여 주고, 다시 시도하면 목록을 보여 준다', async () => {
     favoriteIds = [FAVORITE_POLICY.id];
     server.use(http.get(apiUrl(ENDPOINTS.FAVORITE.LIST), () => fail(500), { once: true }));

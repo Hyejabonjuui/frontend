@@ -10,12 +10,7 @@ import { CODE_GROUPS } from '@/mocks/data/codes';
 import { POLICIES } from '@/mocks/data/policies';
 import { getPolicyStringLengthCase } from '@/mocks/data/policyStringLengthCases';
 import { TERMS } from '@/mocks/data/terms';
-import {
-  buildJudgementReason,
-  buildJudgements,
-  buildRawConditions,
-  getRecommendationGroup,
-} from '@/mocks/judge';
+import { buildJudgementReason, buildJudgements, getRecommendationGroup } from '@/mocks/judge';
 import { buildAccessToken, findUserByToken, mockStore } from '@/mocks/store';
 
 const ok = (data) => ({ status: 200, data });
@@ -77,18 +72,25 @@ const toInternationalAge = (birthDate) => {
 
 const emptyToNull = (value) => (value === '' || value === undefined ? null : value);
 
-/** 목 저장소의 조건(화면 폼 모양)을 백엔드 ProfileResponseDTO 모양으로 바꾼다. */
+const findCodeName = (codes, code) => codes.find((item) => item.code === code)?.name ?? null;
+
+/** 목 저장소의 조건(화면 폼 모양)을 백엔드 ProfileResponseDTO 모양으로 바꾼다. 코드와 이름을 같이 준다. */
 const toApiProfile = (profile) => ({
   birth: profile.birthDate,
   age: toInternationalAge(profile.birthDate),
   regionCode: profile.regionCode,
   regionName: findRegionName(profile.regionCode),
   employmentCode: profile.employmentCode,
+  employmentName: findCodeName(CODE_GROUPS.employments, profile.employmentCode),
   houselessYn: profile.houseless,
   marriageCode: emptyToNull(profile.marriageCode),
+  marriageName: findCodeName(CODE_GROUPS.marriages, profile.marriageCode),
   incomeRangeCode: emptyToNull(profile.incomeRange),
+  incomeRangeName: findCodeName(CODE_GROUPS.incomeRanges, profile.incomeRange),
   educationCode: emptyToNull(profile.educationCode),
+  educationName: findCodeName(CODE_GROUPS.educations, profile.educationCode),
   housingType: emptyToNull(profile.housingType),
+  housingTypeName: findCodeName(CODE_GROUPS.housingTypes, profile.housingType),
 });
 
 /** 백엔드 조건 요청 본문(가입의 profile, 조건 수정)을 목 저장소의 조건 모양으로 바꾼다. */
@@ -318,6 +320,19 @@ const buildPolicySearchResult = (query, user) => {
   const matchedSubtype = Object.entries(SUBTYPE_NAMES).find(([, name]) =>
     keyword.includes(name.split('·')[0]),
   );
+  // notice: 목 전용으로 주거와 관계없는 검색어 안내 화면을 확인하려고 둔 검색어다(백엔드 400 POLICY_SEARCH_002).
+  if (keyword.includes('주거아님')) {
+    return {
+      status: 400,
+      data: {
+        isSuccess: false,
+        code: 'POLICY_SEARCH_002',
+        message: '혜자는 주거 관련 혜택을 알려드려요.',
+        result: null,
+      },
+    };
+  }
+
   // notice: 목 전용으로 후보 0건 화면을 확인하려고 둔 검색어다.
   const isNoCandidateCase = keyword.includes('후보0건');
   const candidates = (isNoCandidateCase ? [] : getActivePolicies()).filter((policy) => {
@@ -740,21 +755,16 @@ export const HANDLERS = [
         [JUDGE_RESULT.NOT_MET]: 'DISABLE',
         [JUDGE_RESULT.NEED_CHECK]: 'UNKNOWN',
       };
-      const conditions = judgements.length
-        ? judgements.map((judgement) => ({
-            type: judgement.conditionKey,
-            status: resultStatus[judgement.result],
-            policyCondition: judgement.requirement,
-            memberValue: judgement.myValue,
-          }))
-        : buildRawConditions(policy).map((condition) => ({
-            type: condition.key,
-            status: 'UNKNOWN',
-            policyCondition: condition.value,
-            memberValue: '',
-          }));
-      const overallStatus =
-        group === RECOMMENDATION_GROUP.POSSIBLE
+      // 백엔드와 같이 비로그인은 조건별 결과를 주지 않는다(conditions 빈 목록, overallStatus null).
+      const conditions = judgements.map((judgement) => ({
+        type: judgement.conditionKey,
+        status: resultStatus[judgement.result],
+        policyCondition: judgement.requirement,
+        memberValue: judgement.myValue,
+      }));
+      const overallStatus = !group
+        ? null
+        : group === RECOMMENDATION_GROUP.POSSIBLE
           ? 'ABLE'
           : group === RECOMMENDATION_GROUP.IMPOSSIBLE
             ? 'DISABLE'

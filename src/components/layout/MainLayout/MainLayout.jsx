@@ -14,7 +14,7 @@ function MainLayout() {
         component="main"
         sx={{
           width: '100%',
-          maxWidth: LAYOUT.contentWidth,
+          maxWidth: LAYOUT.containerMaxWidth,
           minWidth: 0,
           mx: 'auto',
           px: LAYOUT.pageGutter,

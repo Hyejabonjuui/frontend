@@ -31,10 +31,23 @@ const designTokens = {
   favorite: '#e5484d',
 };
 
+const SPACING_UNIT = 8;
+const CONTENT_WIDTH = 1120;
+const PAGE_GUTTER = { xs: 2, sm: 3, md: 4 };
+
 export const LAYOUT = {
-  contentWidth: 1120,
+  contentWidth: CONTENT_WIDTH,
   headerHeight: 64,
-  pageGutter: { xs: 2, sm: 3, md: 4 },
+  pageGutter: PAGE_GUTTER,
+  // 헤더·본문·푸터 공통 틀. 좌우 여백을 뺀 안쪽 폭이 설계서 콘텐츠 폭(1120)이 되게 여백만큼 넓힌다.
+  containerMaxWidth: Object.fromEntries(
+    Object.entries(PAGE_GUTTER).map(([breakpoint, gutter]) => [
+      breakpoint,
+      CONTENT_WIDTH + gutter * SPACING_UNIT * 2,
+    ]),
+  ),
+  // 설계서 Search/Main(홈·추천 결과 공통 큰 검색창) 폭
+  searchBarWidth: 600,
 };
 
 export const RADIUS = {
@@ -47,8 +60,11 @@ export const RADIUS = {
 
 const fontFamily = "'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif";
 const mobileText = '@media (max-width:767.98px)';
-// Match the full tablet interval up to the desktop breakpoint, including fractional viewport widths.
-const tabletText = '@media (min-width:768px) and (max-width:1439.98px)';
+/**
+ * 콘텐츠 폭이 설계서(1120)보다 좁아지는 구간에서만 제목·버튼 글자를 줄인다.
+ * 1168px(1120 + 좌우 여백 24 × 2)부터는 배치가 1440 설계서와 같으므로 글자도 설계서 크기를 쓴다.
+ */
+const tabletText = '@media (min-width:768px) and (max-width:1167.98px)';
 
 const theme = createTheme({
   cssVariables: true,
@@ -100,9 +116,11 @@ const theme = createTheme({
       [mobileText]: { fontSize: 18, lineHeight: '26px' },
       [tabletText]: { fontSize: 19, lineHeight: '26px' },
     },
-    body1: { fontSize: 14, lineHeight: '21px', fontWeight: 400 },
-    body2: { fontSize: 14, lineHeight: '21px', fontWeight: 500 },
-    caption: { fontSize: 12, lineHeight: '17px', fontWeight: 400 },
+    // 설계서 텍스트 스타일: body/md 15/22 굵게(블록 제목·카드 제목), body/sm 14/20, body/sm-strong 14/20, caption 12/16
+    subtitle1: { fontSize: 15, lineHeight: '22px', fontWeight: 700 },
+    body1: { fontSize: 14, lineHeight: '20px', fontWeight: 400 },
+    body2: { fontSize: 14, lineHeight: '20px', fontWeight: 500 },
+    caption: { fontSize: 12, lineHeight: '16px', fontWeight: 400 },
     button: {
       fontSize: 14,
       lineHeight: '20px',
@@ -137,11 +155,12 @@ const theme = createTheme({
       defaultProps: { disableElevation: true },
       styleOverrides: {
         root: { minHeight: 36, paddingInline: 14, borderRadius: RADIUS.control },
-        sizeSmall: { minHeight: 32, paddingInline: 10, fontSize: 12, fontWeight: 700 },
-        // 설계서에서 파란색은 채움 버튼만 쓴다. 보조 버튼은 회색 테두리에 검은 글자다.
+        // 설계서 공통 규칙: 버튼 기본 높이 36, 작게 30
+        sizeSmall: { minHeight: 30, paddingInline: 10, fontSize: 12, fontWeight: 700 },
+        // 설계서에서 파란색은 채움 버튼만 쓴다. 보조 버튼은 회색(line-2) 테두리에 검은 글자다.
         outlined: {
           color: designTokens.text,
-          borderColor: designTokens.line,
+          borderColor: designTokens.line2,
           '&:hover': { borderColor: designTokens.line2, backgroundColor: designTokens.fill2 },
         },
         text: {
@@ -153,7 +172,17 @@ const theme = createTheme({
     MuiChip: {
       styleOverrides: {
         root: { borderRadius: RADIUS.chip },
+        outlined: { borderColor: designTokens.line2 },
+        // 설계서 Chip/SubtypeSmall: 높이 22 · 글자 12/16 · 좌우 8
+        sizeSmall: { height: 22, fontSize: 12, lineHeight: '16px' },
+        labelSmall: { paddingInline: 8 },
       },
+      variants: [
+        {
+          props: { variant: 'outlined', size: 'small' },
+          style: { color: designTokens.text2 },
+        },
+      ],
     },
     MuiLink: {
       styleOverrides: {

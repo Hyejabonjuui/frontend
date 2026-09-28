@@ -59,7 +59,7 @@ function Header() {
       <Toolbar
         sx={{
           width: '100%',
-          maxWidth: LAYOUT.contentWidth,
+          maxWidth: LAYOUT.containerMaxWidth,
           mx: 'auto',
           px: LAYOUT.pageGutter,
           minHeight: `${LAYOUT.headerHeight}px !important`,

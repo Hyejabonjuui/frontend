@@ -127,7 +127,14 @@ function CardNewsPanel({ card, cardCount, children }) {
   );
 }
 
-function CardNewsDialog({ cardNews, onClose, isFavorite = false, onToggleFavorite }) {
+/** isOpenedFromDetail은 정책 상세에서 열었다는 뜻이다. 이미 상세 화면이라 상세로 보내는 길을 두지 않는다. */
+function CardNewsDialog({
+  cardNews,
+  onClose,
+  isFavorite = false,
+  onToggleFavorite,
+  isOpenedFromDetail = false,
+}) {
   const navigate = useNavigate();
   const { showError } = useToast();
 
@@ -147,7 +154,10 @@ function CardNewsDialog({ cardNews, onClose, isFavorite = false, onToggleFavorit
     // 신청 링크가 없어도 막다른 길이 되지 않게, 신청 방법이 적힌 정책 상세로 보낸다.
     showError(TOAST_MESSAGES.APPLY_LINK_MISSING);
     onClose();
-    navigate(buildPolicyDetailPath(cardNews.policyId));
+
+    if (!isOpenedFromDetail) {
+      navigate(buildPolicyDetailPath(cardNews.policyId));
+    }
   };
 
   // 설계서 S-01: 마지막 장에서 바로 신청하거나 상세로 넘어갈 수 있어야 한다.
@@ -161,14 +171,16 @@ function CardNewsDialog({ cardNews, onClose, isFavorite = false, onToggleFavorit
         <Button variant="contained" fullWidth onClick={handleApplyClick}>
           이 정책 신청하기 <AppIcon name="arrow-up-right" size={16} />
         </Button>
-        <Link
-          component={RouterLink}
-          to={buildPolicyDetailPath(cardNews.policyId)}
-          onClick={onClose}
-          variant="body1"
-        >
-          정책 상세 보기 <AppIcon name="arrow-right" size={16} />
-        </Link>
+        {!isOpenedFromDetail && (
+          <Link
+            component={RouterLink}
+            to={buildPolicyDetailPath(cardNews.policyId)}
+            onClick={onClose}
+            variant="body1"
+          >
+            정책 상세 보기 <AppIcon name="arrow-right" size={16} />
+          </Link>
+        )}
       </Stack>
     );
   };
@@ -194,43 +206,51 @@ function CardNewsDialog({ cardNews, onClose, isFavorite = false, onToggleFavorit
         },
       }}
     >
+      {/* 좁은 화면에서는 제목 묶음만 줄바꿈하고, 관심·닫기는 늘 오른쪽 위에 둔다. */}
       <Stack
         direction="row"
         spacing={1}
-        useFlexGap
-        sx={{
-          alignItems: 'center',
-          flexWrap: { xs: 'wrap', sm: 'nowrap' },
-          px: { xs: 2, sm: 3 },
-          pt: 2.5,
-          pb: 0.5,
-        }}
+        sx={{ alignItems: 'flex-start', px: { xs: 2, sm: 3 }, pt: 2.5, pb: 0.5 }}
       >
-        <Chip label={cardNews.subtypeName} variant="outlined" size="small" sx={{ flexShrink: 0 }} />
+        <Stack
+          direction="row"
+          spacing={1}
+          useFlexGap
+          sx={{ flex: 1, minWidth: 0, minHeight: 40, alignItems: 'center', flexWrap: 'wrap' }}
+        >
+          <Chip
+            label={cardNews.subtypeName}
+            variant="outlined"
+            size="small"
+            sx={{ flexShrink: 0 }}
+          />
 
-        <Typography variant="h2" sx={{ flexGrow: 1, minWidth: 0, overflowWrap: 'anywhere' }}>
-          {cardNews.title}
-        </Typography>
+          <Typography variant="h2" sx={{ flexGrow: 1, minWidth: 0, overflowWrap: 'anywhere' }}>
+            {cardNews.title}
+          </Typography>
 
-        <DdayBadge
-          applyPeriodType={cardNews.applyPeriodType}
-          applyEndDate={cardNews.applyEndDate}
-          remainingDays={cardNews.remainingDays}
-        />
+          <DdayBadge
+            applyPeriodType={cardNews.applyPeriodType}
+            applyEndDate={cardNews.applyEndDate}
+            remainingDays={cardNews.remainingDays}
+          />
+        </Stack>
 
-        {onToggleFavorite && (
-          <IconButton
-            aria-label={isFavorite ? '관심 정책 해제' : '관심 정책 저장'}
-            onClick={() => onToggleFavorite(cardNews.policyId)}
-            sx={{ color: isFavorite ? 'favorite.main' : 'text.disabled' }}
-          >
-            <AppIcon name={isFavorite ? 'heart' : 'heart-outline'} size={20} />
+        <Stack direction="row" sx={{ flexShrink: 0 }}>
+          {onToggleFavorite && (
+            <IconButton
+              aria-label={isFavorite ? '관심 정책 해제' : '관심 정책 저장'}
+              onClick={() => onToggleFavorite(cardNews.policyId)}
+              sx={{ color: isFavorite ? 'favorite.main' : 'text.disabled' }}
+            >
+              <AppIcon name={isFavorite ? 'heart' : 'heart-outline'} size={20} />
+            </IconButton>
+          )}
+
+          <IconButton onClick={onClose} aria-label="닫기">
+            <AppIcon name="close" size={20} />
           </IconButton>
-        )}
-
-        <IconButton onClick={onClose} aria-label="닫기">
-          <AppIcon name="close" size={20} />
-        </IconButton>
+        </Stack>
       </Stack>
 
       <DialogContent sx={{ display: 'flex', px: { xs: 2, sm: 3 }, pb: 3 }}>

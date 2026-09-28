@@ -6,6 +6,8 @@ import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 
+const EMPTY_CONDITIONS = [];
+
 /** 홈처럼 조건이 없어도 머물러야 하는 화면은 redirectOnMissingProfile을 끈다. */
 export const useMyConditions = ({ redirectOnMissingProfile = true } = {}) => {
   const navigate = useNavigate();
@@ -16,6 +18,7 @@ export const useMyConditions = ({ redirectOnMissingProfile = true } = {}) => {
     memberId: null,
     conditions: null,
     summary: '',
+    appliedConditions: [],
     isLoading: isAuthenticated,
     errorMessage: '',
   });
@@ -29,10 +32,17 @@ export const useMyConditions = ({ redirectOnMissingProfile = true } = {}) => {
 
     const loadConditions = async () => {
       try {
-        const { conditions, summary } = await userApi.getMyConditions();
+        const { conditions, summary, appliedConditions } = await userApi.getMyConditions();
 
         if (isActive) {
-          setState({ memberId, conditions, summary, isLoading: false, errorMessage: '' });
+          setState({
+            memberId,
+            conditions,
+            summary,
+            appliedConditions,
+            isLoading: false,
+            errorMessage: '',
+          });
         }
       } catch (error) {
         if (redirectOnMissingProfile && error?.response?.data?.code === 'PROFILE_001') {
@@ -45,6 +55,7 @@ export const useMyConditions = ({ redirectOnMissingProfile = true } = {}) => {
             memberId,
             conditions: null,
             summary: '',
+            appliedConditions: [],
             isLoading: false,
             errorMessage: getErrorMessage(error),
           });
@@ -69,6 +80,7 @@ export const useMyConditions = ({ redirectOnMissingProfile = true } = {}) => {
   return {
     conditions: isCurrentMember ? state.conditions : null,
     summary: isCurrentMember ? state.summary : '',
+    appliedConditions: isCurrentMember ? state.appliedConditions : EMPTY_CONDITIONS,
     isLoading: isAuthenticated && (!isCurrentMember || state.isLoading),
     errorMessage: isCurrentMember ? state.errorMessage : '',
     refetch,

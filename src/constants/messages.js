@@ -48,11 +48,11 @@ export const ERROR_MESSAGES = {
 
 export const EMPTY_MESSAGES = {
   POLICY_LIST: '조건에 맞는 정책이 없어요',
-  SEARCH: '지금 조건에 맞는 주거 정책이 없어요',
-  SEARCH_DESCRIPTION: '조건을 바꾸거나 다른 유형으로 찾아보세요. 새 정책은 매일 모아요.',
-  SEARCH_CAPTION: '후보 0건 · 정책을 지어내지 않음',
+  SEARCH: '지금 조건에 맞는 혜택을 찾지 못했어요',
+  SEARCH_DESCRIPTION: '지역 같은 내 조건이나 검색어를 조금 바꿔 보세요',
+  SEARCH_NOT_HOUSING: '혜자는 주거 관련 혜택을 알려드려요',
+  SEARCH_NOT_HOUSING_DESCRIPTION: '월세·전세·청약처럼 주거와 관련된 말로 다시 검색해 보세요',
   FAVORITE: '아직 관심 정책이 없어요',
-  FAVORITE_DESCRIPTION: '정책 옆 관심 표시를 누르면 여기 모이고, 마감 7일 전에 알려드려요',
   FAVORITE_SEARCH: '검색어에 맞는 관심 정책이 없어요',
   FAVORITE_SEARCH_DESCRIPTION: '정책 이름이나 지원 내용에 들어간 말로 찾아보세요',
   NOTIFICATION: '받은 알림이 없어요',

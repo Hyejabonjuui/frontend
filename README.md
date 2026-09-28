@@ -44,7 +44,7 @@ npm run test:e2e          # E2E (목 모드로 빌드 후 실행)
 | `admin@hyeja.kr` | `hyeja1234!` | 관리자 (정책 수집 화면 접근)                |
 
 - 저장한 내용은 브라우저 `localStorage`에 남습니다. `window.hyejaMock.reset()`은 목 데이터, 로그인 토큰, 작성 중인 조건을 초기화합니다.
-- 검색어에 `AI실패`를 넣으면 추천 결과의 AI 실패 안내를 확인할 수 있습니다.
+- 검색어에 `후보0건`을 넣으면 추천 결과 0건 화면을, `주거아님`을 넣으면 주거와 관계없는 검색어 안내를 확인할 수 있습니다.
 - 목 관련 코드는 전부 `src/mocks/`에 있고, 연결부와 더미 데이터 설정은 `notice:` 주석으로 표시했습니다.
   (`src/main.jsx`의 조건부 블록, `.env.*`의 `VITE_USE_MOCK`)
 - 배포 빌드에는 `.env.production`의 `VITE_USE_MOCK=false`가 적용됩니다. 로컬에서 더미 데이터로 확인할 때는 `.env`에 `VITE_USE_MOCK=true`를 둡니다.

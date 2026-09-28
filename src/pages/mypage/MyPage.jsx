@@ -27,6 +27,12 @@ import { useToast } from '@/hooks/useToast';
 import ConditionEditor from '@/pages/onboarding/ConditionEditor';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 
+/**
+ * 설계서 S-08 내용 카드 폭. 제목·탭·내용을 이 폭 한 기둥으로 묶어 화면 가운데 둔다.
+ * 넓은 화면에서 내용이 한쪽으로 쏠리지 않고, 탭을 옮겨도 폭이 같다.
+ */
+const MY_PAGE_WIDTH = 720;
+
 function ConditionTab() {
   const { conditions, isLoading, errorMessage, refetch } = useMyConditions();
 
@@ -38,11 +44,7 @@ function ConditionTab() {
     return <ErrorState message={errorMessage} onRetry={refetch} />;
   }
 
-  return (
-    <Box sx={{ maxWidth: 620 }}>
-      <ConditionEditor initialConditions={conditions} submitLabel="저장" onSaved={refetch} />
-    </Box>
-  );
+  return <ConditionEditor initialConditions={conditions} submitLabel="저장" onSaved={refetch} />;
 }
 
 function AccountTab() {
@@ -70,7 +72,7 @@ function AccountTab() {
   ];
 
   return (
-    <Stack spacing={3} sx={{ maxWidth: 620 }}>
+    <Stack spacing={3}>
       <Card variant="outlined">
         <Stack divider={<Divider />}>
           {rows.map((row) => (
@@ -184,7 +186,7 @@ function MyPage() {
   ];
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={3} sx={{ width: '100%', maxWidth: MY_PAGE_WIDTH, mx: 'auto' }}>
       <Stack spacing={0.5}>
         <Typography variant="h1">마이페이지</Typography>
         <Typography variant="body1" color="text.secondary">

@@ -4,6 +4,7 @@ import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
+import { ELIGIBILITY_CONDITION_LABELS } from '@/constants/policy';
 import { RADIUS } from '@/styles/theme';
 
 /** 실제 결과가 채워질 자리와 같은 모양이라, 응답이 와도 화면이 덜컹거리지 않는다. */
@@ -15,37 +16,51 @@ const GROUP_SHAPES = [
 
 function CardSkeleton() {
   return (
-    <Card variant="outlined" sx={{ p: 2 }}>
-      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-        <Skeleton
-          variant="rounded"
-          width={41}
-          height={22}
-          sx={{ borderRadius: `${RADIUS.chip}px` }}
-        />
-        <Skeleton variant="text" sx={{ flexGrow: 1, maxWidth: 260 }} />
-        <Skeleton
-          variant="rounded"
-          width={39}
-          height={24}
-          sx={{ borderRadius: `${RADIUS.dday}px` }}
-        />
-        <Skeleton variant="circular" width={24} height={24} />
-      </Stack>
-
-      <Skeleton variant="text" sx={{ mt: 1.5, maxWidth: 520 }} />
-
-      <Stack direction="row" spacing={1} sx={{ mt: 1.5, alignItems: 'center' }}>
-        {['나이', '지역', '소득', '취업', '무주택'].map((condition) => (
+    <Card
+      variant="outlined"
+      sx={{
+        display: 'flex',
+        gap: { xs: 1.5, sm: 3 },
+        px: { xs: 2, sm: 3 },
+        py: { xs: 2, sm: 2.5 },
+      }}
+    >
+      <Stack spacing={1.25} sx={{ flex: 1, minWidth: 0 }}>
+        <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center' }}>
           <Skeleton
-            key={condition}
             variant="rounded"
-            width={62}
-            height={24}
+            width={41}
+            height={22}
             sx={{ borderRadius: `${RADIUS.chip}px` }}
           />
-        ))}
-        <Box sx={{ flexGrow: 1 }} />
+          <Skeleton variant="text" sx={{ flexGrow: 1, maxWidth: 260 }} />
+        </Stack>
+
+        <Skeleton variant="text" sx={{ maxWidth: 520 }} />
+
+        <Stack direction="row" spacing={0.75} sx={{ flexWrap: 'wrap' }}>
+          {Object.keys(ELIGIBILITY_CONDITION_LABELS).map((conditionKey) => (
+            <Skeleton
+              key={conditionKey}
+              variant="rounded"
+              width={62}
+              height={28}
+              sx={{ borderRadius: `${RADIUS.chip}px` }}
+            />
+          ))}
+        </Stack>
+      </Stack>
+
+      <Stack spacing={1.5} sx={{ alignItems: 'flex-end', flexShrink: 0 }}>
+        <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+          <Skeleton
+            variant="rounded"
+            width={39}
+            height={24}
+            sx={{ borderRadius: `${RADIUS.dday}px` }}
+          />
+          <Skeleton variant="circular" width={36} height={36} />
+        </Stack>
         <Skeleton variant="text" width={64} />
       </Stack>
     </Card>
@@ -55,22 +70,11 @@ function CardSkeleton() {
 /** 설계서 S-05 로딩: AI 판정이 오는 동안 결과와 같은 뼈대를 먼저 보여 준다. */
 function SearchResultSkeleton() {
   return (
-    <Stack spacing={4} aria-busy="true" aria-live="polite">
-      <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center' }}>
-        AI가 내 조건으로 정책을 확인하고 있어요
-      </Typography>
-
-      <Stack component="section" spacing={1.5}>
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-          <Skeleton
-            variant="rounded"
-            width={150}
-            height={24}
-            sx={{ borderRadius: `${RADIUS.chip}px` }}
-          />
-          <Skeleton variant="text" width={320} />
-        </Stack>
-
+    <Stack spacing={4.5} aria-busy="true" aria-live="polite">
+      <Stack spacing={1}>
+        <Typography variant="body1" color="text.secondary">
+          AI가 내 조건으로 정책을 확인하고 있어요
+        </Typography>
         <Stack direction="row" spacing={3}>
           {GROUP_SHAPES.map((group) => (
             <Skeleton key={group.key} variant="text" width={110} />

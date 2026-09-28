@@ -14,8 +14,10 @@ import { useToast } from '@/hooks/useToast';
 import ConditionForm from '@/pages/onboarding/ConditionForm';
 import { conditionDraft } from '@/utils/conditionDraft';
 import { getErrorMessage } from '@/utils/getErrorMessage';
+import { searchResultCache } from '@/utils/searchResultCache';
 
-function ConditionEditor({ initialConditions, draft, submitLabel, onSaved }) {
+/** onCancel을 주면 저장 버튼 옆에 취소 버튼을 둔다. 팝업처럼 저장하지 않고 닫을 수 있는 곳에서 쓴다. */
+function ConditionEditor({ initialConditions, draft, submitLabel, onSaved, onCancel }) {
   const { showSuccess, showError, showInfo } = useToast();
   const { refreshUser } = useAuth();
   const { codes, isLoading, errorMessage, refetch } = useCodes();
@@ -45,6 +47,8 @@ function ConditionEditor({ initialConditions, draft, submitLabel, onSaved }) {
     try {
       await userApi.updateMyConditions(form);
       conditionDraft.clear();
+      // 추천 판정은 내 조건으로 하므로, 이전 조건으로 받은 검색 결과는 더 쓰지 않는다.
+      searchResultCache.clear();
       await refreshUser();
       showSuccess(TOAST_MESSAGES.CONDITION_SAVED);
       onSaved?.();
@@ -69,14 +73,16 @@ function ConditionEditor({ initialConditions, draft, submitLabel, onSaved }) {
 
       <ConditionForm form={form} fieldErrors={fieldErrors} codes={codes} onChange={changeField} />
 
-      <Button
-        type="submit"
-        variant="contained"
-        disabled={isSubmitting}
-        sx={{ alignSelf: 'flex-end' }}
-      >
-        {submitLabel}
-      </Button>
+      <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
+        {onCancel && (
+          <Button variant="outlined" disabled={isSubmitting} onClick={onCancel}>
+            취소
+          </Button>
+        )}
+        <Button type="submit" variant="contained" disabled={isSubmitting}>
+          {submitLabel}
+        </Button>
+      </Stack>
     </Stack>
   );
 }

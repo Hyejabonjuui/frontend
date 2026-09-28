@@ -182,6 +182,14 @@ function HomePage() {
               size="small"
               onChange={(event) => changeListOption(() => setSort(event.target.value))}
               aria-label="정렬 기준"
+              // 설계서 Select/Sort: 140 × 32 고정이라 고른 옵션에 따라 상자 크기가 달라지지 않는다.
+              sx={{
+                width: 140,
+                height: 32,
+                typography: 'body2',
+                '& .MuiSelect-select': { pl: '12px' },
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'grey.500' },
+              }}
             >
               {POLICY_SORT_OPTIONS.map((option) => (
                 <MenuItem key={option.value} value={option.value}>

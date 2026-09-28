@@ -36,10 +36,14 @@ const toSession = (credentials, response, account) => {
   };
 };
 
+/**
+ * 로그인 응답에는 토큰·회원 번호·닉네임만 있고 이메일·가입일이 없다.
+ * 회원 정보는 새로고침으로 세션을 복원할 때처럼 계정 조회(/members/me)로 채운다.
+ */
 export const login = async (credentials) => {
   const response = await httpClient.post(ENDPOINTS.AUTH.LOGIN, credentials);
 
-  return toSession(credentials, response);
+  return { accessToken: unwrapResult(response).accessToken };
 };
 
 export const sendEmailVerification = async (email) => {

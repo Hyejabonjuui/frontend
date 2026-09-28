@@ -3,18 +3,11 @@ import httpClient from './httpClient';
 
 import {
   APPLY_PERIOD_TYPE,
+  ELIGIBILITY_CONDITION_LABELS,
   JUDGE_RESULT,
   POLICY_SUBTYPES,
   RECOMMENDATION_GROUP,
 } from '@/constants/policy';
-
-const CONDITION_LABELS = {
-  AGE: '나이',
-  REGION: '지역',
-  INCOME: '소득',
-  EMPLOYMENT: '취업',
-  HOUSELESS: '무주택',
-};
 
 const STATUS_TO_RESULT = {
   ABLE: JUDGE_RESULT.MET,
@@ -62,6 +55,12 @@ const POLICY_SEARCH_EMPTY_CODE = 'POLICY_SEARCH_001';
 const isEmptySearchResponse = (response) =>
   response?.isSuccess === false && response?.code === POLICY_SEARCH_EMPTY_CODE;
 
+/** 백엔드는 주거와 관계없는 검색어를 400 POLICY_SEARCH_002로 거절한다. 같은 검색어로 다시 물어도 결과가 같다. */
+const POLICY_SEARCH_NOT_HOUSING_CODE = 'POLICY_SEARCH_002';
+
+export const isNotHousingSearchError = (error) =>
+  error?.response?.data?.code === POLICY_SEARCH_NOT_HOUSING_CODE;
+
 export const toPolicyListParams = (
   { subtype, sort, onlyMatched, page, size } = {},
   { includeEligibility = false } = {},
@@ -108,7 +107,7 @@ export const toPolicyDetail = (response) => {
 
   const judgements = (result.conditions ?? []).map((condition) => ({
     conditionKey: condition.type,
-    conditionName: CONDITION_LABELS[condition.type] ?? condition.type,
+    conditionName: ELIGIBILITY_CONDITION_LABELS[condition.type] ?? condition.type,
     result: STATUS_TO_RESULT[condition.status] ?? JUDGE_RESULT.NEED_CHECK,
     requirement: condition.policyCondition,
     myValue: condition.memberValue,
@@ -134,11 +133,6 @@ export const toPolicyDetail = (response) => {
     active: result.activeYn,
     isFavorite: Boolean(result.isFavorite),
     judgements,
-    rawConditions: judgements.map((judgement) => ({
-      key: judgement.conditionKey,
-      label: judgement.conditionName,
-      value: judgement.requirement,
-    })),
     judgementSummary: STATUS_SUMMARIES[result.overallStatus] ?? '',
     judgementGroup: STATUS_TO_GROUP[result.overallStatus] ?? null,
   };
@@ -240,9 +234,9 @@ const toPolicySearchItem = (item) => {
     applyEndDate: item.applyEndDate,
     isFavorite: Boolean(item.isFavorite),
     reason: item.aiReason ?? '',
-    judgements: Object.keys(CONDITION_LABELS).map((conditionKey) => ({
+    judgements: Object.keys(ELIGIBILITY_CONDITION_LABELS).map((conditionKey) => ({
       conditionKey,
-      conditionName: CONDITION_LABELS[conditionKey],
+      conditionName: ELIGIBILITY_CONDITION_LABELS[conditionKey],
       result:
         STATUS_TO_RESULT[item.status?.[conditionKey.toLowerCase()]] ?? JUDGE_RESULT.NEED_CHECK,
     })),

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { toAccount, toConditionForm, toConditionSummary } from '@/api/userApi';
+import { toAccount, toAppliedConditions, toConditionForm, toConditionSummary } from '@/api/userApi';
 import { tokenStorage } from '@/utils/tokenStorage';
 
 const encodePayload = (payload) => {
@@ -81,5 +81,39 @@ describe('내 조건 조회 API', () => {
 
   it('조건이 없으면 빈 문자열을 준다', () => {
     expect(toConditionSummary(null)).toBe('');
+  });
+});
+
+describe('추천 결과의 적용된 내 조건', () => {
+  const profile = {
+    age: 27,
+    regionName: '서울특별시 마포구',
+    employmentName: '미취업자',
+    houselessYn: true,
+    housingTypeName: '월세',
+  };
+
+  it('서버가 준 이름으로 나이 · 지역 · 취업 · 무주택 · 주거 형태를 차례로 만든다', () => {
+    expect(toAppliedConditions(profile)).toEqual([
+      '만 27세',
+      '서울특별시 마포구',
+      '미취업자',
+      '무주택',
+      '월세 거주',
+    ]);
+  });
+
+  it('집이 있으면 주택 소유로 보여 준다', () => {
+    expect(toAppliedConditions({ ...profile, houselessYn: false })).toContain('주택 소유');
+  });
+
+  it('입력하지 않은 선택 항목은 빼고, 조건이 없으면 빈 목록을 준다', () => {
+    expect(toAppliedConditions({ ...profile, housingTypeName: null })).toEqual([
+      '만 27세',
+      '서울특별시 마포구',
+      '미취업자',
+      '무주택',
+    ]);
+    expect(toAppliedConditions(null)).toEqual([]);
   });
 });

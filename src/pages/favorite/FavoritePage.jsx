@@ -43,11 +43,10 @@ function FavoritePage() {
 
   return (
     <Stack spacing={2}>
-      <Stack spacing={0.5}>
+      <Stack spacing={0.75}>
         <Typography variant="h1">관심 정책</Typography>
         <Typography variant="body1" color="text.secondary">
-          <AppIcon name="heart-outline" size={14} /> 저장한 정책을 모아 두고, 마감 7일 전에
-          알려드려요.
+          <AppIcon name="heart-outline" size={14} /> 저장한 정책을 모아 두는 곳이에요.
         </Typography>
       </Stack>
 
@@ -71,9 +70,17 @@ function FavoritePage() {
         <EmptyState
           isFramed
           title={EMPTY_MESSAGES.FAVORITE}
-          description={EMPTY_MESSAGES.FAVORITE_DESCRIPTION}
+          description={
+            <>
+              정책 옆{' '}
+              <Box component="span" role="img" aria-label="하트" sx={{ color: 'text.primary' }}>
+                <AppIcon name="heart-outline" size={14} />
+              </Box>
+              를 누르면 여기 모이고, 마감 7일 전에 알려드려요
+            </>
+          }
           action={
-            <Button component={RouterLink} to={ROUTES.HOME} variant="outlined">
+            <Button component={RouterLink} to={ROUTES.HOME} variant="outlined" size="small">
               주거 정책 보러 가기
             </Button>
           }
@@ -82,11 +89,15 @@ function FavoritePage() {
 
       {!isLoading && !errorMessage && favorites.length > 0 && (
         <Box>
-          <Stack direction="row" sx={{ justifyContent: 'space-between', pb: 1 }}>
-            <Typography variant="caption" color="text.secondary">
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ justifyContent: 'space-between', alignItems: 'baseline', pb: 1.5 }}
+          >
+            <Typography variant="body2">
               {keyword ? `'${keyword}' 검색 결과 ${totalCount}건` : `${totalCount}건`}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="text.disabled">
               최근 저장순
             </Typography>
           </Stack>
