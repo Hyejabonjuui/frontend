@@ -73,8 +73,8 @@ const summarize = (regions, options = {}) =>
 
 describe('summarizePolicyRegions', () => {
   describe('회원이 서울특별시 강남구에 살 때', () => {
-    it('서울 25개 구 전체는 시·도 전체 하나로 묶는다', () => {
-      expect(summarize(ALL_SEOUL)).toBe('서울특별시 전체');
+    it('서울 25개 구 전체는 시·도 이름 하나로 묶는다', () => {
+      expect(summarize(ALL_SEOUL)).toBe('서울특별시');
     });
 
     it('회원 지역을 포함하면 회원 지역을 첫 단위로 둔다', () => {
@@ -87,8 +87,8 @@ describe('summarizePolicyRegions', () => {
       expect(summarize([seoul('송파구'), seoul('서초구')])).toBe('서울특별시 서초구 외 1개');
     });
 
-    it('시·도 전체로 묶은 뒤 남은 단위를 센다', () => {
-      expect(summarize([...ALL_SEOUL, BUNDANG])).toBe('서울특별시 전체 외 1개');
+    it('시·도로 묶은 뒤 남은 단위를 센다', () => {
+      expect(summarize([...ALL_SEOUL, BUNDANG])).toBe('서울특별시 외 1개');
     });
   });
 
@@ -98,7 +98,7 @@ describe('summarizePolicyRegions', () => {
     ).toBe('서울특별시 서초구 외 2개');
   });
 
-  it('회원 지역이 시·도 전체 단위에 속하면 그 단위를 첫 단위로 둔다', () => {
+  it('회원 지역이 시·도로 묶은 단위에 속하면 그 단위를 첫 단위로 둔다', () => {
     expect(summarize([...ALL_SEOUL, BUNDANG], { memberRegionCode: '41135' })).toBe(
       '경기도 성남시 분당구 외 1개',
     );
@@ -119,7 +119,7 @@ describe('summarizePolicyRegions', () => {
     expect(summarize([seoul('마포구')])).toBe('서울특별시 마포구');
   });
 
-  it('코드표가 없으면 시·도 전체로 묶지 않고 개수만 줄인다', () => {
+  it('코드표가 없으면 시·도로 묶지 않고 개수만 줄인다', () => {
     expect(summarize(ALL_SEOUL, { sidoRegions: [] })).toBe('서울특별시 강남구 외 24개');
     expect(summarize(ALL_SEOUL, { sidoRegions: [], memberRegionCode: null })).toBe(
       '서울특별시 종로구 외 24개',
@@ -138,7 +138,7 @@ describe('summarizePolicyRegions', () => {
       },
     ];
 
-    expect(summarize(ALL_SEOUL, { sidoRegions })).toBe('서울특별시 전체');
+    expect(summarize(ALL_SEOUL, { sidoRegions })).toBe('서울특별시');
   });
 
   it('시군구가 하나뿐인 시·도(세종)는 묶지 않는다', () => {
@@ -154,7 +154,7 @@ describe('summarizePolicyRegions', () => {
         memberRegionCode: '41135',
         sidoRegions: SIDO_REGIONS,
       }).regionLabels,
-    ).toEqual(['서울특별시 전체', '경기도 성남시 분당구']);
+    ).toEqual(['서울특별시', '경기도 성남시 분당구']);
   });
 
   it('지역이 없으면 빈 문자열을 돌려준다', () => {

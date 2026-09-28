@@ -4,7 +4,7 @@
  * notice: 실제 백엔드 없이 MSW가 정책 목록·시군구 목록(/api/regions)·내 조건(/api/members/me/profile)에 응답한다.
  * notice: 정책 지역은 백엔드 PolicySyncItemService처럼 시·도 코드를 시군구 전체로 풀어 둔 모양을 가정한다.
  *         시·도 코드표는 목 코드표(src/mocks/data/codes.js)라 서울이 4개 구뿐이다.
- *         백엔드가 시·도 단위로 내려주도록 바뀌면 REGIONS 값과 "전체" 기대값을 명세에 맞춘다.
+ *         백엔드가 시·도 단위로 내려주도록 바뀌면 REGIONS 값과 시·도 이름 기대값을 명세에 맞춘다.
  * notice: 회원 거주지는 목 회원 조건(MEMBER_PROFILE.regionCode = 11440 마포구)을 쓴다.
  */
 import { screen, waitFor, within } from '@testing-library/react';
@@ -84,7 +84,7 @@ describe('홈 정책 목록 지역 요약', () => {
     expect(
       await within(threeDistrictsRow).findByText('서울특별시 성동구 외 2개'),
     ).toBeInTheDocument();
-    expect(await within(wholeSeoulRow).findByText('서울특별시 전체')).toBeInTheDocument();
+    expect(await within(wholeSeoulRow).findByText('서울특별시')).toBeInTheDocument();
     expect(within(await findPolicyRow('전국 월세 지원')).getByText('전국')).toBeInTheDocument();
   });
 

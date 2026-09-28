@@ -44,7 +44,7 @@ const buildRegionUnits = (regions, sidoRegions) => {
     }
 
     const sido = sidoRegions.find((item) => item.sidoCode === sidoCode);
-    units.push({ label: `${sido.sidoName} 전체`, regionCode: null, sidoCode });
+    units.push({ label: sido.sidoName, regionCode: null, sidoCode });
   });
 
   return units;
@@ -55,7 +55,7 @@ const containsRegion = (unit, regionCode) =>
 
 /**
  * 정책 대상 지역을 목록 한 칸에 들어가도록 요약한다.
- * 시·도의 시군구를 전부 포함하면 "시·도 전체"로 묶고, 남은 단위가 여럿이면 "첫 단위 외 N개"로 줄인다.
+ * 시·도의 시군구를 전부 포함하면 시·도 이름 하나로 묶고, 남은 단위가 여럿이면 "첫 단위 외 N개"로 줄인다.
  * 첫 단위는 회원 거주지를 포함한 단위를 우선하고, 없으면 지역 코드 순서를 따른다.
  */
 export const summarizePolicyRegions = ({
