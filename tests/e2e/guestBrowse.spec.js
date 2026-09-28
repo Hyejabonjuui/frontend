@@ -26,7 +26,9 @@ test('비로그인 사용자는 검색 대신 로그인 안내를 보고, 정책
   await firstPolicy.click({ position: { x: 8, y: 8 } });
 
   await expect(page).toHaveURL(/\/policies\/\d+$/);
-  await expect(page.getByText('신청 조건 (공고 원문)')).toBeVisible();
+  await expect(
+    page.getByText('로그인하면 내 조건과 비교한 신청 가능 여부를 확인할 수 있어요.'),
+  ).toBeVisible();
   await expect(page.getByRole('button', { name: '로그인하고 확인하기' })).toBeVisible();
 
   await page.goBack();

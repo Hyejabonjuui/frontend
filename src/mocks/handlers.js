@@ -10,12 +10,7 @@ import { CODE_GROUPS } from '@/mocks/data/codes';
 import { POLICIES } from '@/mocks/data/policies';
 import { getPolicyStringLengthCase } from '@/mocks/data/policyStringLengthCases';
 import { TERMS } from '@/mocks/data/terms';
-import {
-  buildJudgementReason,
-  buildJudgements,
-  buildRawConditions,
-  getRecommendationGroup,
-} from '@/mocks/judge';
+import { buildJudgementReason, buildJudgements, getRecommendationGroup } from '@/mocks/judge';
 import { buildAccessToken, findUserByToken, mockStore } from '@/mocks/store';
 
 const ok = (data) => ({ status: 200, data });
@@ -740,21 +735,16 @@ export const HANDLERS = [
         [JUDGE_RESULT.NOT_MET]: 'DISABLE',
         [JUDGE_RESULT.NEED_CHECK]: 'UNKNOWN',
       };
-      const conditions = judgements.length
-        ? judgements.map((judgement) => ({
-            type: judgement.conditionKey,
-            status: resultStatus[judgement.result],
-            policyCondition: judgement.requirement,
-            memberValue: judgement.myValue,
-          }))
-        : buildRawConditions(policy).map((condition) => ({
-            type: condition.key,
-            status: 'UNKNOWN',
-            policyCondition: condition.value,
-            memberValue: '',
-          }));
-      const overallStatus =
-        group === RECOMMENDATION_GROUP.POSSIBLE
+      // 백엔드와 같이 비로그인은 조건별 결과를 주지 않는다(conditions 빈 목록, overallStatus null).
+      const conditions = judgements.map((judgement) => ({
+        type: judgement.conditionKey,
+        status: resultStatus[judgement.result],
+        policyCondition: judgement.requirement,
+        memberValue: judgement.myValue,
+      }));
+      const overallStatus = !group
+        ? null
+        : group === RECOMMENDATION_GROUP.POSSIBLE
           ? 'ABLE'
           : group === RECOMMENDATION_GROUP.IMPOSSIBLE
             ? 'DISABLE'

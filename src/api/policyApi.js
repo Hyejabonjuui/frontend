@@ -134,11 +134,6 @@ export const toPolicyDetail = (response) => {
     active: result.activeYn,
     isFavorite: Boolean(result.isFavorite),
     judgements,
-    rawConditions: judgements.map((judgement) => ({
-      key: judgement.conditionKey,
-      label: judgement.conditionName,
-      value: judgement.requirement,
-    })),
     judgementSummary: STATUS_SUMMARIES[result.overallStatus] ?? '',
     judgementGroup: STATUS_TO_GROUP[result.overallStatus] ?? null,
   };

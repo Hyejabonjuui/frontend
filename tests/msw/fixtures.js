@@ -204,12 +204,6 @@ export const buildCardNewsDetailResponse = (policy, { isAuthenticated = false } 
   };
 };
 
-export const RAW_CONDITIONS = [
-  { key: 'AGE', label: '나이', value: '만 19~34세' },
-  { key: 'REGION', label: '지역', value: '전국' },
-  { key: 'INCOME', label: '소득', value: '기준 중위소득 60% 이하' },
-];
-
 export const JUDGEMENTS = [
   {
     conditionKey: 'AGE',
@@ -267,15 +261,9 @@ export const buildPolicyDetail = (policy, { isAuthenticated, isFavorite = false 
   refUrl: policy.applyUrl,
   activeYn: true,
   isFavorite: isAuthenticated && isFavorite,
-  overallStatus: isAuthenticated ? 'DISABLE' : 'UNKNOWN',
-  conditions: isAuthenticated
-    ? JUDGEMENTS.map(toApiCondition)
-    : RAW_CONDITIONS.map((condition) => ({
-        type: condition.key,
-        status: 'UNKNOWN',
-        policyCondition: condition.value,
-        memberValue: '',
-      })),
+  // 비로그인은 조건별 결과를 주지 않는다(conditions 빈 목록, overallStatus null).
+  overallStatus: isAuthenticated ? 'DISABLE' : null,
+  conditions: isAuthenticated ? JUDGEMENTS.map(toApiCondition) : [],
 });
 
 /** 실제 정책 검색 API(PolicySearchResponseDTO) 계약을 재현한다. */

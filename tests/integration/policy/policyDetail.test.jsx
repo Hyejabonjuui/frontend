@@ -2,8 +2,9 @@
  * I-6 정책 상세 분기 (S-07)
  *
  * notice: 실제 백엔드 없이 MSW가 정책 상세에 응답한다. 판정 결과(judgements)는 fixtures의 고정값이다.
- *         실제 판정은 백엔드 몫이라, 여기서는 "비로그인이면 원문 조건, 로그인이면 판정 카드"라는
+ *         실제 판정은 백엔드 몫이라, 여기서는 "비로그인이면 로그인 안내, 로그인이면 판정 카드"라는
  *         화면 분기만 본다. 판정 규칙 자체의 테스트는 백엔드 저장소에서 한다.
+ * notice: 비로그인 상세 응답은 백엔드 PolicyController 설명대로 conditions가 빈 목록, overallStatus가 null이다.
  */
 import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
@@ -17,27 +18,25 @@ import {
   buildCardNewsDetailResponse,
   MEMBER_CREDENTIALS,
   POLICY,
-  RAW_CONDITIONS,
   TOKENS,
 } from '../../msw/fixtures';
 import { apiUrl, ok } from '../../msw/respond';
 import { server } from '../../msw/server';
 
 const DETAIL_PATH = `/policies/${POLICY.id}`;
-const RAW_CARD_TITLE = '신청 조건 (공고 원문)';
+const GUEST_CARD_GUIDE = '로그인하면 내 조건과 비교한 신청 가능 여부를 확인할 수 있어요.';
 const JUDGEMENT_CARD_TITLE = '내 조건으로 확인해 봤어요';
 
 const findPolicyTitle = () => screen.findByRole('heading', { name: POLICY.title });
 
 describe('정책 상세 분기', () => {
-  it('비로그인이면 공고 원문 조건 카드를 보여 주고 판정 아이콘은 없다', async () => {
+  it('비로그인이면 신청 조건 자리에 로그인 안내를 보여 주고 판정 아이콘은 없다', async () => {
     renderApp(DETAIL_PATH);
     await findPolicyTitle();
 
-    expect(screen.getByText(RAW_CARD_TITLE)).toBeInTheDocument();
-    RAW_CONDITIONS.forEach((condition) => {
-      expect(screen.getByText(condition.value)).toBeInTheDocument();
-    });
+    expect(screen.getByText('신청 조건')).toBeInTheDocument();
+    expect(screen.getByText(GUEST_CARD_GUIDE)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '로그인하고 확인하기' })).toBeInTheDocument();
     expect(screen.queryByText(JUDGEMENT_CARD_TITLE)).not.toBeInTheDocument();
     expect(screen.queryByRole('img', { name: JUDGE_RESULT_LABEL.MET })).not.toBeInTheDocument();
   });
@@ -54,10 +53,10 @@ describe('정책 상세 분기', () => {
         expect(screen.getByRole('img', { name: JUDGE_RESULT_LABEL[result] })).toBeInTheDocument();
       });
     });
-    expect(screen.queryByText(RAW_CARD_TITLE)).not.toBeInTheDocument();
+    expect(screen.queryByText(GUEST_CARD_GUIDE)).not.toBeInTheDocument();
   });
 
-  it('원문 카드에서 로그인하면 상세를 다시 불러와 판정 카드로 바뀐다', async () => {
+  it('로그인 안내 카드에서 로그인하면 상세를 다시 불러와 판정 카드로 바뀐다', async () => {
     const { user } = renderApp(DETAIL_PATH);
     await findPolicyTitle();
 
@@ -68,7 +67,7 @@ describe('정책 상세 분기', () => {
     await user.click(within(dialog).getByRole('button', { name: '로그인' }));
 
     expect(await screen.findByText(JUDGEMENT_CARD_TITLE)).toBeInTheDocument();
-    await waitFor(() => expect(screen.queryByText(RAW_CARD_TITLE)).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText(GUEST_CARD_GUIDE)).not.toBeInTheDocument());
   });
 
   it('없는 정책이면 오류 상태를 보여 준다', async () => {

@@ -92,49 +92,21 @@ function JudgementCard({ judgements, summary }) {
   );
 }
 
-function RawConditionsCard({ conditions, onLogin }) {
+/**
+ * 설계서 S-06 비로그인. 비로그인 상세 응답에는 조건별 원문이 없다(conditions가 빈 목록).
+ * 없는 값을 채우지 않고, 로그인하면 무엇을 확인할 수 있는지 알려 준다.
+ */
+function GuestConditionsCard({ onLogin }) {
   return (
-    <Card
-      variant="outlined"
-      sx={{
-        width: '100%',
-        minWidth: 0,
-        p: 3,
-        alignSelf: 'flex-start',
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: 'grey.100',
-      }}
-    >
-      <Typography variant="body2" sx={{ mb: 1.5 }}>
-        신청 조건 (공고 원문)
+    <Card variant="outlined" sx={{ width: '100%', minWidth: 0, p: 3, backgroundColor: 'grey.100' }}>
+      <Typography variant="body2">신청 조건</Typography>
+      <Typography
+        variant="body1"
+        color="text.secondary"
+        sx={{ mt: 1, wordBreak: 'keep-all', overflowWrap: 'break-word' }}
+      >
+        로그인하면 내 조건과 비교한 신청 가능 여부를 확인할 수 있어요.
       </Typography>
-
-      <Stack divider={<Divider flexItem />} sx={{ minWidth: 0, flexGrow: { xs: 0, sm: 1 } }}>
-        {conditions.map((condition) => (
-          <Stack
-            key={condition.key}
-            direction="row"
-            spacing={1.5}
-            sx={{
-              alignItems: { xs: 'flex-start', sm: 'center' },
-              flex: { xs: '0 0 auto', sm: '1 1 0' },
-              py: 1,
-              minWidth: 0,
-            }}
-          >
-            <Typography variant="body2" sx={{ width: 72, flexShrink: 0 }}>
-              {condition.label}
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{ flex: 1, minWidth: 0, whiteSpace: 'pre-line', overflowWrap: 'anywhere' }}
-            >
-              {condition.value}
-            </Typography>
-          </Stack>
-        ))}
-      </Stack>
 
       <Stack
         spacing={1.25}
@@ -318,10 +290,7 @@ function PolicyDetailPage() {
             {isAuthenticated ? (
               <JudgementCard judgements={policy.judgements} summary={policy.judgementSummary} />
             ) : (
-              <RawConditionsCard
-                conditions={policy.rawConditions ?? []}
-                onLogin={openLoginDialog}
-              />
+              <GuestConditionsCard onLogin={openLoginDialog} />
             )}
           </Box>
         )}
