@@ -320,6 +320,19 @@ const buildPolicySearchResult = (query, user) => {
   const matchedSubtype = Object.entries(SUBTYPE_NAMES).find(([, name]) =>
     keyword.includes(name.split('·')[0]),
   );
+  // notice: 목 전용으로 주거와 관계없는 검색어 안내 화면을 확인하려고 둔 검색어다(백엔드 400 POLICY_SEARCH_002).
+  if (keyword.includes('주거아님')) {
+    return {
+      status: 400,
+      data: {
+        isSuccess: false,
+        code: 'POLICY_SEARCH_002',
+        message: '혜자는 주거 관련 혜택을 알려드려요.',
+        result: null,
+      },
+    };
+  }
+
   // notice: 목 전용으로 후보 0건 화면을 확인하려고 둔 검색어다.
   const isNoCandidateCase = keyword.includes('후보0건');
   const candidates = (isNoCandidateCase ? [] : getActivePolicies()).filter((policy) => {

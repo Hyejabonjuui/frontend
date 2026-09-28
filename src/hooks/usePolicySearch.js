@@ -16,6 +16,7 @@ const INITIAL_STATE = {
   groups: EMPTY_GROUPS,
   isLoading: true,
   errorMessage: '',
+  isNotHousing: false,
 };
 
 const IDLE_STATE = { ...INITIAL_STATE, isLoading: false };
@@ -78,6 +79,7 @@ export const usePolicySearch = (params = {}, { historyKey } = {}) => {
             ...INITIAL_STATE,
             isLoading: false,
             errorMessage: getErrorMessage(error),
+            isNotHousing: policyApi.isNotHousingSearchError(error),
             requestKey,
           });
         }
@@ -94,7 +96,12 @@ export const usePolicySearch = (params = {}, { historyKey } = {}) => {
   /** 저장해 둔 결과가 있어도 서버에 다시 묻는다. */
   const refetch = useCallback(() => {
     setRefetchedTarget(cacheTarget);
-    setState((previous) => ({ ...previous, isLoading: true, errorMessage: '' }));
+    setState((previous) => ({
+      ...previous,
+      isLoading: true,
+      errorMessage: '',
+      isNotHousing: false,
+    }));
     setReloadToken((previous) => previous + 1);
   }, [cacheTarget]);
 
@@ -104,18 +111,27 @@ export const usePolicySearch = (params = {}, { historyKey } = {}) => {
     }
 
     if (cachedResult) {
-      return { ...cachedResult, isLoading: false, errorMessage: '' };
+      return { ...cachedResult, isLoading: false, errorMessage: '', isNotHousing: false };
     }
 
     return state.requestKey === requestKey ? state : INITIAL_STATE;
   };
 
-  const { groups, isLoading, errorMessage } = getCurrentState();
+  const { groups, isLoading, errorMessage, isNotHousing } = getCurrentState();
   const groupCounts = Object.entries(groups).reduce(
     (counts, [group, policies]) => ({ ...counts, [group]: policies.length }),
     {},
   );
   const totalCount = Object.values(groupCounts).reduce((sum, count) => sum + count, 0);
 
-  return { groups, isLoading, errorMessage, isIdle, groupCounts, totalCount, refetch };
+  return {
+    groups,
+    isLoading,
+    errorMessage,
+    isNotHousing,
+    isIdle,
+    groupCounts,
+    totalCount,
+    refetch,
+  };
 };

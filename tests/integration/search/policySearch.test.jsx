@@ -13,7 +13,7 @@
  * notice: 검색 유형은 응답에 없어서 "#월세"처럼 해시태그 검색일 때만 보여 준다(백엔드 PolicySearchService.HASHTAG_CATEGORIES).
  */
 import { screen, waitFor, within } from '@testing-library/react';
-import { http } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
 import { ENDPOINTS } from '@/api/endpoints';
@@ -491,5 +491,63 @@ describe('0건일 때 조건 수정', () => {
     expect(state.savedProfile).toBeNull();
     expect(state.requestedQueries).toEqual(['월세']);
     expect(screen.getByText(EMPTY_MESSAGES.SEARCH)).toBeInTheDocument();
+  });
+});
+
+/**
+ * notice: 백엔드는 주거와 관계없는 검색어를 400 POLICY_SEARCH_002로 거절한다(ErrorStatus.POLICY_SEARCH_NOT_HOUSING).
+ *         같은 검색어로 다시 요청해도 결과가 같고 요청마다 AI 비용이 들어서, 다시 시도 대신 검색어 수정을 권한다.
+ */
+describe('주거와 관계없는 검색어', () => {
+  const NOT_HOUSING_PATH = `/search?query=${encodeURIComponent('취업 지원금 알려줘')}`;
+
+  const mockNotHousingSearch = () => {
+    const requestedQueries = [];
+    server.use(
+      http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), ({ request }) => {
+        requestedQueries.push(new URL(request.url).searchParams.get('query'));
+
+        return HttpResponse.json(
+          {
+            isSuccess: false,
+            code: 'POLICY_SEARCH_002',
+            message: '혜자는 주거 관련 혜택을 알려드려요.',
+            result: null,
+          },
+          { status: 400 },
+        );
+      }),
+    );
+
+    return requestedQueries;
+  };
+
+  it('다시 시도 대신 검색어를 고치라고 안내하고, 누르면 검색창에 포커스한다', async () => {
+    mockNotHousingSearch();
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp(NOT_HOUSING_PATH);
+
+    expect(await screen.findByText(EMPTY_MESSAGES.SEARCH_NOT_HOUSING)).toBeInTheDocument();
+    expect(screen.getByText(EMPTY_MESSAGES.SEARCH_NOT_HOUSING_DESCRIPTION)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '다시 시도' })).not.toBeInTheDocument();
+    expect(screen.queryByText(EMPTY_MESSAGES.SEARCH)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '검색어 수정' }));
+
+    expect(screen.getByRole('textbox', { name: '정책 검색' })).toHaveFocus();
+  });
+
+  it('같은 검색어로 다시 검색해도 요청하지 않는다', async () => {
+    const requestedQueries = mockNotHousingSearch();
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp(NOT_HOUSING_PATH);
+
+    expect(await screen.findByText(EMPTY_MESSAGES.SEARCH_NOT_HOUSING)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '검색', exact: true }));
+
+    expect(await screen.findAllByText(EMPTY_MESSAGES.SEARCH_NOT_HOUSING_DESCRIPTION)).toHaveLength(
+      2,
+    );
+    expect(requestedQueries).toEqual(['취업 지원금 알려줘']);
   });
 });

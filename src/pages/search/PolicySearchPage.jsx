@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -50,8 +50,17 @@ function PolicySearchPage() {
   const [searchKeyword, setSearchKeyword] = useState(searchQuery);
   const [syncedQuery, setSyncedQuery] = useState(searchQuery);
   const [isConditionDialogOpen, setIsConditionDialogOpen] = useState(false);
-  const { groups, groupCounts, totalCount, isIdle, isLoading, errorMessage, refetch } =
-    usePolicySearch({ query: searchQuery }, { historyKey: location.key });
+  const searchInputRef = useRef(null);
+  const {
+    groups,
+    groupCounts,
+    totalCount,
+    isIdle,
+    isLoading,
+    errorMessage,
+    isNotHousing,
+    refetch,
+  } = usePolicySearch({ query: searchQuery }, { historyKey: location.key });
   const { isFavorite, toggleFavorite } = useFavoriteToggle();
   // 검색 API는 서버에 저장된 내 조건으로 판정한다. 요약·칩·조건 수정 기본값 모두 이 한 곳을 본다.
   const {
@@ -89,8 +98,11 @@ function PolicySearchPage() {
     }
 
     // 같은 검색어는 URL이 그대로라 요청이 나가지 않는다. 실패했던 검색만 다시 요청한다.
+    // 주거 검색이 아니라고 거절된 검색어는 다시 물어도 같으므로 요청하지 않는다.
     if (nextQuery === searchQuery) {
-      if (errorMessage) {
+      if (isNotHousing) {
+        showInfo(EMPTY_MESSAGES.SEARCH_NOT_HOUSING_DESCRIPTION);
+      } else if (errorMessage) {
         refetch();
       } else {
         showSuccess(`${withDirectionParticle(nextQuery)} ${TOAST_MESSAGES.SEARCHED}`);
@@ -102,6 +114,11 @@ function PolicySearchPage() {
   };
 
   const openConditionDialog = () => setIsConditionDialogOpen(true);
+
+  const focusSearchInput = () => {
+    searchInputRef.current?.focus();
+    searchInputRef.current?.select();
+  };
 
   /** 바뀐 내 조건으로 같은 검색어를 다시 묻는다. 이전 조건으로 저장해 둔 결과는 조건 저장 때 이미 지웠다. */
   const handleConditionSaved = () => {
@@ -123,6 +140,7 @@ function PolicySearchPage() {
           onSubmit={handleSearch}
           onRequestLogin={isAuthenticated ? undefined : () => openLoginNotice(LOGIN_NOTICE.SEARCH)}
           isResultPage
+          inputRef={searchInputRef}
         />
 
         {!isIdle && !errorMessage && (
@@ -163,7 +181,23 @@ function PolicySearchPage() {
       {/* 설계서 S-05 로딩: AI 응답을 기다리는 동안 결과와 같은 뼈대를 보여 준다. */}
       {isLoading && <SearchResultSkeleton />}
 
-      {!isLoading && errorMessage && <ErrorState message={errorMessage} onRetry={refetch} />}
+      {/* 주거와 관계없는 검색어는 오류가 아니라 검색어를 바꾸면 되는 경우라, 다시 시도 대신 검색어 수정을 권한다. */}
+      {!isLoading && isNotHousing && (
+        <EmptyState
+          isFramed
+          title={EMPTY_MESSAGES.SEARCH_NOT_HOUSING}
+          description={EMPTY_MESSAGES.SEARCH_NOT_HOUSING_DESCRIPTION}
+          action={
+            <Button variant="outlined" onClick={focusSearchInput}>
+              검색어 수정
+            </Button>
+          }
+        />
+      )}
+
+      {!isLoading && errorMessage && !isNotHousing && (
+        <ErrorState message={errorMessage} onRetry={refetch} />
+      )}
 
       {isIdle && !isAuthenticated && (
         <Typography variant="body1" color="text.secondary">

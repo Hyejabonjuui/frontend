@@ -55,6 +55,12 @@ const POLICY_SEARCH_EMPTY_CODE = 'POLICY_SEARCH_001';
 const isEmptySearchResponse = (response) =>
   response?.isSuccess === false && response?.code === POLICY_SEARCH_EMPTY_CODE;
 
+/** 백엔드는 주거와 관계없는 검색어를 400 POLICY_SEARCH_002로 거절한다. 같은 검색어로 다시 물어도 결과가 같다. */
+const POLICY_SEARCH_NOT_HOUSING_CODE = 'POLICY_SEARCH_002';
+
+export const isNotHousingSearchError = (error) =>
+  error?.response?.data?.code === POLICY_SEARCH_NOT_HOUSING_CODE;
+
 export const toPolicyListParams = (
   { subtype, sort, onlyMatched, page, size } = {},
   { includeEligibility = false } = {},

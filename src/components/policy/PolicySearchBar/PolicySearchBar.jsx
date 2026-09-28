@@ -14,6 +14,7 @@ import { LAYOUT } from '@/styles/theme';
  * 설계서 Search/Main: 600 × 52 · 테두리 1.5 · 글자 16/24 · 오른쪽 끝 44px 원형 검색 버튼.
  * onRequestLogin을 받으면 검색은 잠긴 상태다. 입력도 막고 로그인 안내 창만 띄운다.
  * isResultPage는 추천 결과(S-05) 맨 위 검색창이다. 왼쪽에 붙이고, 해시태그 바로가기와 오류 문구 자리를 두지 않는다.
+ * inputRef로 입력칸을 받아 검색어를 고치도록 포커스할 수 있다.
  */
 function PolicySearchBar({
   keyword,
@@ -22,6 +23,7 @@ function PolicySearchBar({
   errorMessage,
   onRequestLogin,
   isResultPage = false,
+  inputRef,
 }) {
   const isLocked = Boolean(onRequestLogin);
 
@@ -76,6 +78,7 @@ function PolicySearchBar({
           onKeywordChange(event.target.value.slice(0, SEARCH_KEYWORD_MAX_LENGTH))
         }
         onMouseDown={handleLockedMouseDown}
+        inputRef={inputRef}
         placeholder="예: 월세 지원 알려줘"
         error={Boolean(errorMessage)}
         helperText={errorMessage ? <FieldError>{errorMessage}</FieldError> : emptyHelperText}

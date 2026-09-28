@@ -34,6 +34,7 @@
 | 카드뉴스 상세는 남은 일수를 `dDay`(마감일 없으면 `null`)로만 준다              | `tests/integration/policy/cardNews.test.jsx`            | 키가 바뀌면 `fixtures.buildCardNewsDetailResponse`와 `toCardNewsDetail` 수정                    |
 | 검색 후보 0건은 HTTP 200 + `POLICY_SEARCH_001` 실패 봉투로 온다                | `tests/integration/search/policySearch.test.jsx`        | 코드·상태가 바뀌면 `fixtures.NO_CANDIDATE_POLICY_SEARCH_RESPONSE`와 `toPolicySearchResult` 수정 |
 | 정책 수집이 멈추면 502 `POLICY_002`와 `result.stoppedPage`·`savedCount`가 온다 | `tests/integration/admin/policySync.test.jsx`           | 모양이 바뀌면 `fixtures.POLICY_SYNC_STOPPED_RESPONSE`와 `adminApi.toPolicySyncStop` 수정        |
+| 주거와 관계없는 검색어는 400 `POLICY_SEARCH_002`로 거절된다                    | `tests/integration/search/policySearch.test.jsx`        | 코드·상태가 바뀌면 `policyApi.isNotHousingSearchError`와 테스트 응답 수정                       |
 
 `src/mocks/judge.js`(목 서버의 판정 로직)는 일부러 테스트하지 않는다. 실제 판정은 백엔드가 하므로,
 목 서버 내부를 테스트해도 제품 품질과 관계가 없다.
