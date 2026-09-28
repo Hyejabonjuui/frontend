@@ -29,7 +29,7 @@ import { formatDateRange } from '@/utils/formatDate';
 
 function JudgementCard({ judgements, summary }) {
   return (
-    <Card variant="outlined" sx={{ p: 2, flex: 1, backgroundColor: 'grey.100' }}>
+    <Card variant="outlined" sx={{ width: '100%', p: 2, backgroundColor: 'grey.100' }}>
       <Typography variant="body2" sx={{ mb: 1.5 }}>
         내 조건으로 확인해 봤어요
       </Typography>
@@ -99,9 +99,8 @@ function RawConditionsCard({ conditions, onLogin }) {
       sx={{
         width: '100%',
         minWidth: 0,
-        height: { xs: 'auto', sm: '100%' },
         p: 3,
-        alignSelf: { xs: 'flex-start', sm: 'stretch' },
+        alignSelf: 'flex-start',
         display: 'flex',
         flexDirection: 'column',
         backgroundColor: 'grey.100',
@@ -275,7 +274,7 @@ function PolicyDetailPage() {
             </Stack>
           </Stack>
 
-          <Stack spacing={3} sx={{ flex: 1, justifyContent: { sm: 'space-between' } }}>
+          <Stack spacing={3} sx={{ flex: 1 }}>
             <DetailSection label="어떤 정책인가요">{policy.description}</DetailSection>
             <DetailSection label="지원 내용">{policy.benefit}</DetailSection>
             <DetailSection label="신청 기간">
@@ -299,7 +298,7 @@ function PolicyDetailPage() {
             sx={{
               width: { xs: '100%', sm: 'clamp(260px, 30vw, 340px)', md: 340 },
               flexShrink: 0,
-              display: 'flex',
+              alignSelf: 'flex-start',
             }}
           >
             {isAuthenticated ? (
