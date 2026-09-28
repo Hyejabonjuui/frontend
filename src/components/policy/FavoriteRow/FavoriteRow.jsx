@@ -33,8 +33,8 @@ function FavoriteRow({ favorite, onRemove }) {
         alignItems: 'center',
         columnGap: { xs: 1, sm: 2 },
         rowGap: 1,
-        px: 2,
-        py: 1.5,
+        px: 1,
+        py: 1.75,
         borderBottom: '1px solid',
         borderColor: 'divider',
         color: 'inherit',
@@ -52,8 +52,8 @@ function FavoriteRow({ favorite, onRemove }) {
       />
 
       <Typography
-        variant="body2"
-        color={isClosed ? 'text.disabled' : 'text.primary'}
+        variant="subtitle1"
+        color={isClosed ? 'text.secondary' : 'text.primary'}
         sx={{
           minWidth: 0,
           wordBreak: 'keep-all',

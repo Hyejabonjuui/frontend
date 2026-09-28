@@ -43,7 +43,7 @@ function FavoritePage() {
 
   return (
     <Stack spacing={2}>
-      <Stack spacing={0.5}>
+      <Stack spacing={0.75}>
         <Typography variant="h1">관심 정책</Typography>
         <Typography variant="body1" color="text.secondary">
           <AppIcon name="heart-outline" size={14} /> 저장한 정책을 모아 두는 곳이에요.
@@ -89,11 +89,15 @@ function FavoritePage() {
 
       {!isLoading && !errorMessage && favorites.length > 0 && (
         <Box>
-          <Stack direction="row" sx={{ justifyContent: 'space-between', pb: 1 }}>
-            <Typography variant="caption" color="text.secondary">
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ justifyContent: 'space-between', alignItems: 'baseline', pb: 1.5 }}
+          >
+            <Typography variant="body2">
               {keyword ? `'${keyword}' 검색 결과 ${totalCount}건` : `${totalCount}건`}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="text.disabled">
               최근 저장순
             </Typography>
           </Stack>
