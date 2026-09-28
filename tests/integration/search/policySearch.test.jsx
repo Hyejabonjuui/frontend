@@ -110,6 +110,39 @@ describe('추천 결과', () => {
     await waitFor(() => expect(requestedQueries).toEqual(['월세', '전세']));
   });
 
+  it('같은 검색어로 다시 검색하면 요청 없이 안내 토스트를 보여 준다', async () => {
+    const requestedQueries = [];
+    server.use(
+      http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), ({ request }) => {
+        requestedQueries.push(new URL(request.url).searchParams.get('query'));
+
+        return ok(POLICY_SEARCH_RESULT);
+      }),
+    );
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp(RESULT_PATH);
+
+    expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '검색', exact: true }));
+
+    expect(await screen.findByText('월세로 검색했어요')).toBeInTheDocument();
+    expect(requestedQueries).toEqual(['월세']);
+  });
+
+  it('같은 검색어가 실패했었다면 다시 검색할 때 재요청한다', async () => {
+    server.use(http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), () => fail(500), { once: true }));
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp(RESULT_PATH);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(ERROR_MESSAGES.SERVER);
+
+    await user.click(screen.getByRole('button', { name: '검색', exact: true }));
+
+    expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
+    expect(screen.queryByText('월세로 검색했어요')).not.toBeInTheDocument();
+  });
+
   it('서버 오류면 오류 상태를 보여 주고 다시 시도하면 결과를 불러온다', async () => {
     server.use(http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), () => fail(500), { once: true }));
     signInAs(TOKENS.MEMBER);

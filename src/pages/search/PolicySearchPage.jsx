@@ -20,6 +20,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { usePolicySearch } from '@/hooks/usePolicySearch';
 import { useToast } from '@/hooks/useToast';
+import { withDirectionParticle } from '@/utils/koreanParticle';
 
 const GROUP_ORDER = [
   RECOMMENDATION_GROUP.POSSIBLE,
@@ -32,7 +33,7 @@ function PolicySearchPage() {
   const searchQuery = searchParams.get('query') ?? '';
   const { isAuthenticated } = useAuth();
   const { openLoginNotice } = useLoginDialog();
-  const { showInfo } = useToast();
+  const { showInfo, showSuccess } = useToast();
   const [searchKeyword, setSearchKeyword] = useState(searchQuery);
   const { groups, groupCounts, totalCount, query, isAiFailed, isLoading, errorMessage, refetch } =
     usePolicySearch({ query: searchQuery });
@@ -46,11 +47,23 @@ function PolicySearchPage() {
   }, [isLoading, errorMessage, totalCount, showInfo]);
 
   const handleSearch = (nextKeyword) => {
-    if (!nextKeyword.trim()) {
+    const nextQuery = nextKeyword.trim();
+
+    if (!nextQuery) {
       return;
     }
 
-    setSearchParams({ query: nextKeyword.trim() });
+    // 같은 검색어는 URL이 그대로라 요청이 나가지 않는다. 실패했던 검색만 다시 요청한다.
+    if (nextQuery === searchQuery) {
+      if (errorMessage) {
+        refetch();
+      } else {
+        showSuccess(`${withDirectionParticle(nextQuery)} ${TOAST_MESSAGES.SEARCHED}`);
+      }
+      return;
+    }
+
+    setSearchParams({ query: nextQuery });
   };
 
   return (
