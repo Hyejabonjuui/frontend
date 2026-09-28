@@ -41,9 +41,16 @@ function AuthProvider({ children }) {
 
   const applySession = useCallback(async ({ accessToken, refreshToken, user: sessionUser }) => {
     tokenStorage.setTokens({ accessToken, refreshToken });
-    const authenticatedUser = sessionUser ?? (await userApi.getMyAccount());
-    setUser(authenticatedUser);
-    return authenticatedUser;
+
+    try {
+      const authenticatedUser = sessionUser ?? (await userApi.getMyAccount());
+      setUser(authenticatedUser);
+      return authenticatedUser;
+    } catch (error) {
+      // 계정을 못 불러오면 로그인 전으로 되돌려, 저장된 토큰과 화면의 로그인 상태가 어긋나지 않게 한다.
+      tokenStorage.clear();
+      throw error;
+    }
   }, []);
 
   const login = useCallback(
