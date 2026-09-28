@@ -224,7 +224,46 @@ describe('관심 목록', () => {
     await user.click(screen.getByRole('button', { name: 'Go to page 2' }));
 
     expect(await screen.findByText(POLICY.title)).toBeInTheDocument();
+    expect(`${window.location.pathname}${window.location.search}`).toBe('/favorites?page=2');
     expect(listRequests.map((params) => params.get('page'))).toEqual(['0', '1']);
+  });
+
+  it('2페이지의 상세에 갔다가 뒤로 가면 검색어와 페이지를 복원한다', async () => {
+    server.use(
+      http.get(apiUrl(ENDPOINTS.FAVORITE.LIST), ({ request }) => {
+        const searchParams = new URL(request.url).searchParams;
+        listRequests.push(searchParams);
+
+        return ok(
+          buildFavoriteList([POLICY], {
+            page: Number(searchParams.get('page')),
+            totalElements: 9,
+          }),
+        );
+      }),
+    );
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp('/favorites?keyword=청년&page=2');
+
+    expect(await screen.findByText(POLICY.title, undefined, { timeout: 5000 })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: '관심 정책 검색' })).toHaveValue('청년');
+
+    await user.click(screen.getByText(POLICY.title));
+    expect(
+      await screen.findByRole('heading', { level: 1, name: POLICY.title }),
+    ).toBeInTheDocument();
+
+    window.history.back();
+
+    await waitFor(() =>
+      expect(`${window.location.pathname}${window.location.search}`).toBe(
+        '/favorites?keyword=%EC%B2%AD%EB%85%84&page=2',
+      ),
+    );
+    expect(await screen.findByText(POLICY.title)).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: '관심 정책 검색' })).toHaveValue('청년');
+    expect(listRequests.map((params) => params.get('page'))).toEqual(['1', '1']);
+    expect(listRequests.map((params) => params.get('keyword'))).toEqual(['청년', '청년']);
   });
 
   it('검색하면 관심 목록 안에서 keyword로 찾고, AI 검색 화면으로 가지 않는다', async () => {
@@ -237,6 +276,8 @@ describe('관심 목록', () => {
 
     await waitFor(() => expect(listRequests.at(-1).get('keyword')).toBe('월세'));
     expect(listRequests.at(-1).get('page')).toBe('0');
-    expect(window.location.pathname).toBe(ROUTES.FAVORITE);
+    expect(`${window.location.pathname}${window.location.search}`).toBe(
+      '/favorites?keyword=%EC%9B%94%EC%84%B8',
+    );
   });
 });
