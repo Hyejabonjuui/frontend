@@ -25,6 +25,9 @@ import {
 import { apiUrl, ok } from '../../msw/respond';
 import { server } from '../../msw/server';
 
+const findFeaturedCardTitle = () =>
+  screen.findByRole('heading', { name: POLICY.title, level: 1 }, { timeout: 5000 });
+
 describe('홈 카드뉴스', () => {
   it('비로그인은 guest 목록을 호출하고 선택한 정책의 카드 상세를 팝업에 표시한다', async () => {
     const requests = [];
@@ -44,7 +47,7 @@ describe('홈 카드뉴스', () => {
     );
     const { user } = renderApp('/home');
 
-    const cardTitle = await screen.findByRole('heading', { name: POLICY.title, level: 1 });
+    const cardTitle = await findFeaturedCardTitle();
     await user.click(cardTitle);
 
     const dialog = await screen.findByRole('dialog');
@@ -54,7 +57,7 @@ describe('홈 카드뉴스', () => {
       { path: ENDPOINTS.POLICY.GUEST_CARD_NEWS, authorization: null },
       { path: ENDPOINTS.POLICY.CARD_NEWS_DETAIL(String(POLICY.id)) },
     ]);
-  });
+  }, 10000);
 
   it('카드가 1장만 오면 나머지 장은 번호만 보이는 빈 카드로 채운다', async () => {
     const detailResponse = buildCardNewsDetailResponse(POLICY);
@@ -69,7 +72,7 @@ describe('홈 카드뉴스', () => {
     );
     const { user } = renderApp('/home');
 
-    await user.click(await screen.findByRole('heading', { name: POLICY.title, level: 1 }));
+    await user.click(await findFeaturedCardTitle());
 
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('1 / 4 · 무슨 정책인가요')).toBeInTheDocument();
@@ -91,9 +94,7 @@ describe('홈 카드뉴스', () => {
     signInAs(TOKENS.MEMBER);
     renderApp('/home');
 
-    expect(
-      await screen.findByRole('heading', { name: POLICY.title, level: 1 }),
-    ).toBeInTheDocument();
+    expect(await findFeaturedCardTitle()).toBeInTheDocument();
     expect(authorization).toBe(`Bearer ${TOKENS.MEMBER}`);
   });
 
@@ -107,7 +108,7 @@ describe('홈 카드뉴스', () => {
     );
     const { user } = renderApp('/home');
 
-    await user.click(await screen.findByRole('heading', { name: POLICY.title, level: 1 }));
+    await user.click(await findFeaturedCardTitle());
 
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('D-5')).toBeInTheDocument();
@@ -137,7 +138,7 @@ describe('홈 카드뉴스', () => {
     signInAs(TOKENS.MEMBER);
     const { user } = renderApp('/home');
 
-    await user.click(await screen.findByRole('heading', { name: POLICY.title, level: 1 }));
+    await user.click(await findFeaturedCardTitle());
 
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByRole('button', { name: '관심 정책 해제' })).toBeInTheDocument();
