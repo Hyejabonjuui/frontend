@@ -8,13 +8,14 @@ export const useTerms = () => {
 
   useEffect(() => {
     let isActive = true;
+    const controller = new AbortController();
 
     const loadTerms = async () => {
       try {
-        const data = await policyApi.getTerms();
+        const termList = await policyApi.getTerms({ signal: controller.signal });
 
         if (isActive) {
-          setTerms(data.content ?? []);
+          setTerms(termList);
         }
       } catch {
         // 용어 풀이는 보조 정보라, 실패하면 본문만 그대로 보여준다.
@@ -25,6 +26,7 @@ export const useTerms = () => {
 
     return () => {
       isActive = false;
+      controller.abort();
     };
   }, []);
 
