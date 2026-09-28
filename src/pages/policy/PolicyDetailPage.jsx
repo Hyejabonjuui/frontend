@@ -18,6 +18,7 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 import CardNewsDialog from '@/components/policy/CardNewsDialog';
 import TermText from '@/components/policy/TermText';
 import { TOAST_MESSAGES } from '@/constants/messages';
+import { ELIGIBILITY_CONDITION_LABELS, JUDGE_RESULT_BY_GROUP } from '@/constants/policy';
 import { buildMyPagePath, MY_PAGE_TABS, ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavoriteToggle } from '@/hooks/useFavoriteToggle';
@@ -25,115 +26,153 @@ import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { useCardNewsDetail, usePolicyDetail } from '@/hooks/usePolicies';
 import { useTerms } from '@/hooks/useTerms';
 import { useToast } from '@/hooks/useToast';
+import { RADIUS } from '@/styles/theme';
 import { formatDateRange } from '@/utils/formatDate';
 
-function JudgementCard({ judgements, summary }) {
+/** 설계서 S-06 오른쪽 카드 폭 */
+const DETAIL_ASIDE_WIDTH = 380;
+/** 본문과 카드를 나란히 둘 만큼 넓은 화면. 더 좁으면 카드가 본문 아래로 내려간다. */
+const SIDE_BY_SIDE = '@media (min-width:1024px)';
+
+/** 설계서 S-06 오른쪽 카드 공통 틀: 폭 380 · 여백 24 · 회색 바탕 */
+const ASIDE_CARD_SX = { width: '100%', minWidth: 0, p: 3, backgroundColor: 'grey.100' };
+
+/** 설계서 S-06 로그인: 종합 판정과 조건별 판정을 보여 준다. */
+function JudgementCard({ judgements, summary, group }) {
   return (
-    <Card variant="outlined" sx={{ width: '100%', p: 2, backgroundColor: 'grey.100' }}>
-      <Typography variant="body2" sx={{ mb: 1.5 }}>
-        내 조건으로 확인해 봤어요
-      </Typography>
+    <Card variant="outlined" sx={ASIDE_CARD_SX}>
+      <Stack spacing={1.75}>
+        <Typography variant="subtitle1">내 조건으로 확인해 봤어요</Typography>
 
-      {summary && (
-        <Stack
-          direction="row"
-          spacing={1}
-          sx={{
-            alignItems: 'center',
-            p: 1.5,
-            mb: 1.5,
-            borderRadius: 1,
-            backgroundColor: 'background.paper',
-          }}
-        >
-          <Typography variant="body1">{summary}</Typography>
-        </Stack>
-      )}
-
-      <Stack divider={<Divider />}>
-        {judgements.map((judgement) => (
+        {summary && (
           <Stack
-            key={judgement.conditionKey}
             direction="row"
-            spacing={1.5}
-            sx={{ alignItems: 'center', py: 1.5 }}
+            spacing={1}
+            sx={{
+              alignItems: 'center',
+              px: 1.5,
+              py: 1.25,
+              border: 1,
+              borderColor: 'grey.500',
+              borderRadius: `${RADIUS.toast}px`,
+              backgroundColor: 'background.paper',
+            }}
           >
-            <JudgeIcon result={judgement.result} size={22} />
-            <Typography variant="body2" sx={{ width: 56 }}>
-              {judgement.conditionName}
-            </Typography>
-            <Box sx={{ flexGrow: 1 }}>
-              <Typography variant="caption" color="text.secondary" component="div">
-                조건: {judgement.requirement}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" component="div">
-                내 정보: {judgement.myValue}
-              </Typography>
-            </Box>
+            {/* 옆 문장이 판정을 말해 주므로 아이콘은 화면 낭독기에 읽히지 않게 둔다. */}
+            {group && (
+              <Box component="span" aria-hidden="true" sx={{ display: 'inline-flex' }}>
+                <JudgeIcon result={JUDGE_RESULT_BY_GROUP[group]} size={24} />
+              </Box>
+            )}
+            <Typography variant="body2">{summary}</Typography>
           </Stack>
-        ))}
+        )}
+
+        <Stack divider={<Divider />} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          {judgements.map((judgement) => (
+            <Stack
+              key={judgement.conditionKey}
+              direction="row"
+              spacing={1.25}
+              sx={{ alignItems: 'center', py: 1.25 }}
+            >
+              <JudgeIcon result={judgement.result} size={24} />
+              <Typography variant="body2" sx={{ width: 52, flexShrink: 0 }}>
+                {judgement.conditionName}
+              </Typography>
+              <Stack spacing={0.25} sx={{ flexGrow: 1, minWidth: 0 }}>
+                <Typography variant="caption" color="text.secondary">
+                  조건: {judgement.requirement}
+                </Typography>
+                <Typography variant="caption">내 정보: {judgement.myValue}</Typography>
+              </Stack>
+            </Stack>
+          ))}
+        </Stack>
+
+        <Typography variant="caption" color="text.disabled">
+          <AppIcon name="check" size={12} /> 충족 · <AppIcon name="cross" size={12} /> 미충족 ·{' '}
+          <AppIcon name="question" size={12} /> 확인 필요 — 나이·지역·소득·취업은 코드로,
+          무주택·추가 자격은 AI가 판정해요
+        </Typography>
+
+        <Link
+          component={RouterLink}
+          to={buildMyPagePath(MY_PAGE_TABS.CONDITION)}
+          variant="body2"
+          color="text.primary"
+          underline="always"
+          sx={{ alignSelf: 'flex-start' }}
+        >
+          내 조건 수정 <AppIcon name="arrow-right" size={16} />
+        </Link>
       </Stack>
-
-      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>
-        <AppIcon name="check" size={12} /> 충족 · <AppIcon name="cross" size={12} /> 미충족 ·{' '}
-        <AppIcon name="question" size={12} /> 확인 필요 — 나이·지역·소득·취업은 코드로, 무주택·추가
-        자격은 AI가 판정해요
-      </Typography>
-
-      <Link
-        component={RouterLink}
-        to={buildMyPagePath(MY_PAGE_TABS.CONDITION)}
-        variant="body1"
-        sx={{ mt: 1.5 }}
-      >
-        내 조건 수정 <AppIcon name="arrow-right" size={16} />
-      </Link>
     </Card>
   );
 }
 
 /**
  * 설계서 S-06 비로그인. 비로그인 상세 응답에는 조건별 원문이 없다(conditions가 빈 목록).
- * 없는 값을 채우지 않고, 로그인하면 무엇을 확인할 수 있는지 알려 준다.
+ * 없는 값은 채우지 않고, 로그인하면 판정해 주는 조건만 설계서와 같은 표로 보여 준다.
  */
 function GuestConditionsCard({ onLogin }) {
   return (
-    <Card variant="outlined" sx={{ width: '100%', minWidth: 0, p: 3, backgroundColor: 'grey.100' }}>
-      <Typography variant="body2">신청 조건</Typography>
-      <Typography
-        variant="body1"
-        color="text.secondary"
-        sx={{ mt: 1, wordBreak: 'keep-all', overflowWrap: 'break-word' }}
-      >
-        로그인하면 내 조건과 비교한 신청 가능 여부를 확인할 수 있어요.
-      </Typography>
+    <Card variant="outlined" sx={ASIDE_CARD_SX}>
+      <Stack spacing={1.5}>
+        <Stack spacing={0.5}>
+          <Typography variant="subtitle1">신청 조건</Typography>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ wordBreak: 'keep-all', overflowWrap: 'break-word' }}
+          >
+            로그인하면 내 조건과 비교한 신청 가능 여부를 확인할 수 있어요.
+          </Typography>
+        </Stack>
 
-      <Stack
-        spacing={1.25}
-        sx={{
-          mt: 1.5,
-          p: 1.75,
-          border: 1,
-          borderColor: 'grey.500',
-          borderRadius: 2,
-          backgroundColor: 'background.paper',
-        }}
-      >
-        <Typography variant="body2" align="center">
-          로그인하고 1초만에 확인하기
-        </Typography>
-        <Button variant="contained" fullWidth onClick={() => onLogin()}>
-          로그인하고 확인하기
-        </Button>
+        {Object.entries(ELIGIBILITY_CONDITION_LABELS).map(([conditionKey, conditionName]) => (
+          <Stack
+            key={conditionKey}
+            direction="row"
+            spacing={1.5}
+            sx={{ py: 1, borderBottom: 1, borderColor: 'divider' }}
+          >
+            <Typography variant="body2" sx={{ width: 72, flexShrink: 0 }}>
+              {conditionName}
+            </Typography>
+            <Typography variant="body1" color="text.disabled">
+              로그인 후 확인
+            </Typography>
+          </Stack>
+        ))}
+
+        <Stack
+          spacing={1.25}
+          sx={{
+            p: 1.75,
+            border: 1,
+            borderColor: 'grey.500',
+            borderRadius: `${RADIUS.toast}px`,
+            backgroundColor: 'background.paper',
+          }}
+        >
+          <Typography variant="body2" align="center">
+            로그인하고 1초만에 확인하기
+          </Typography>
+          <Button variant="contained" fullWidth onClick={() => onLogin()}>
+            로그인하고 확인하기
+          </Button>
+        </Stack>
       </Stack>
     </Card>
   );
 }
 
+/** 설계서 S-06 본문 블록: 제목 15/22 굵게, 내용과 8px 간격 */
 function DetailSection({ label, children }) {
   return (
-    <Stack spacing={0.5}>
-      <Typography variant="body2">{label}</Typography>
+    <Stack spacing={1}>
+      <Typography variant="subtitle1">{label}</Typography>
       <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
         {children}
       </Typography>
@@ -203,98 +242,107 @@ function PolicyDetailPage() {
   const saved = isFavorite(policy.id, policy.isFavorite);
 
   return (
-    <Stack spacing={3}>
-      <Breadcrumbs separator={<AppIcon name="chevron-right" size={14} />}>
-        <Link component={RouterLink} to={ROUTES.HOME} variant="caption" color="text.secondary">
-          주거 정책
-        </Link>
-        <Typography variant="caption" color="text.secondary">
-          {policy.subtypeName}
-        </Typography>
-      </Breadcrumbs>
+    <Stack spacing={4}>
+      <Stack component="header" spacing={1.5}>
+        <Breadcrumbs separator={<AppIcon name="chevron-right" size={14} />}>
+          <Link
+            component={RouterLink}
+            to={ROUTES.HOME}
+            variant="caption"
+            color="text.secondary"
+            underline="hover"
+          >
+            주거 정책
+          </Link>
+          <Typography variant="caption" color="text.secondary">
+            {policy.subtypeName}
+          </Typography>
+        </Breadcrumbs>
 
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        spacing={{ xs: 3, sm: 3, md: 4 }}
-        sx={{ alignItems: 'stretch', minWidth: 0 }}
+        <Stack
+          direction="row"
+          spacing={1.5}
+          useFlexGap
+          sx={{ alignItems: 'center', flexWrap: 'wrap' }}
+        >
+          <Chip label={policy.subtypeName} variant="outlined" size="small" />
+          <Typography variant="h1" sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+            {policy.title}
+          </Typography>
+          <DdayBadge applyPeriodType={policy.applyPeriodType} applyEndDate={policy.applyEndDate} />
+        </Stack>
+
+        <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', pt: 0.5 }}>
+          <Button
+            variant="outlined"
+            startIcon={<AppIcon name={saved ? 'heart' : 'heart-outline'} size={20} />}
+            onClick={() => toggleFavorite(policy.id, saved)}
+            sx={{ '& .MuiButton-startIcon': { color: saved ? 'favorite.main' : 'inherit' } }}
+          >
+            {saved ? '관심 해제' : '관심 저장'}
+          </Button>
+
+          <Button
+            variant="outlined"
+            loading={Boolean(requestedCardNewsId) && cardNewsState.isLoading}
+            onClick={handleCardNewsClick}
+          >
+            카드뉴스로 보기
+          </Button>
+
+          <Button variant="contained" onClick={handleApplyClick}>
+            신청하러 가기 <AppIcon name="arrow-up-right" size={16} />
+          </Button>
+        </Stack>
+      </Stack>
+
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 3,
+          minWidth: 0,
+          [SIDE_BY_SIDE]: { flexDirection: 'row', alignItems: 'flex-start', gap: 4 },
+        }}
       >
-        <Stack spacing={3} sx={{ flex: 1, minWidth: 0 }}>
-          <Stack component="header" spacing={1.5}>
-            <Stack
-              direction="row"
-              spacing={1}
-              useFlexGap
-              sx={{ alignItems: 'center', flexWrap: 'wrap' }}
-            >
-              <Chip label={policy.subtypeName} variant="outlined" size="small" />
-              <Typography variant="h1" sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
-                {policy.title}
+        <Stack spacing={3.5} sx={{ flex: 1, minWidth: 0, width: '100%' }}>
+          <DetailSection label="어떤 정책인가요">{policy.description}</DetailSection>
+          <DetailSection label="지원 내용">{policy.benefit}</DetailSection>
+          <DetailSection label="신청 기간">
+            {formatDateRange(policy.applyStartDate, policy.applyEndDate)}
+          </DetailSection>
+          <DetailSection label="신청 방법">{policy.applyMethod}</DetailSection>
+          {policy.extraQualification && (
+            <Stack spacing={1}>
+              <Typography variant="subtitle1">추가 자격</Typography>
+              <TermText text={policy.extraQualification} terms={terms} />
+              <Typography variant="caption" color="text.disabled">
+                밑줄 친 단어에 마우스를 올리면 쉬운 설명이 나와요
               </Typography>
-              <DdayBadge
-                applyPeriodType={policy.applyPeriodType}
-                applyEndDate={policy.applyEndDate}
-              />
             </Stack>
-
-            <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
-              <Button
-                variant="outlined"
-                startIcon={<AppIcon name={saved ? 'heart' : 'heart-outline'} size={20} />}
-                onClick={() => toggleFavorite(policy.id, saved)}
-                sx={{ '& .MuiButton-startIcon': { color: saved ? 'favorite.main' : 'inherit' } }}
-              >
-                {saved ? '관심 해제' : '관심 저장'}
-              </Button>
-
-              <Button
-                variant="outlined"
-                loading={Boolean(requestedCardNewsId) && cardNewsState.isLoading}
-                onClick={handleCardNewsClick}
-              >
-                카드뉴스로 보기
-              </Button>
-
-              <Button variant="contained" onClick={handleApplyClick}>
-                신청하러 가기 <AppIcon name="arrow-up-right" size={16} />
-              </Button>
-            </Stack>
-          </Stack>
-
-          <Stack spacing={3} sx={{ flex: 1 }}>
-            <DetailSection label="어떤 정책인가요">{policy.description}</DetailSection>
-            <DetailSection label="지원 내용">{policy.benefit}</DetailSection>
-            <DetailSection label="신청 기간">
-              {formatDateRange(policy.applyStartDate, policy.applyEndDate)}
-            </DetailSection>
-            <DetailSection label="신청 방법">{policy.applyMethod}</DetailSection>
-            {policy.extraQualification && (
-              <Stack spacing={0.5}>
-                <Typography variant="body2">추가 자격</Typography>
-                <TermText text={policy.extraQualification} terms={terms} />
-                <Typography variant="caption" color="text.disabled">
-                  밑줄 친 단어에 마우스를 올리면 쉬운 설명이 나와요
-                </Typography>
-              </Stack>
-            )}
-          </Stack>
+          )}
         </Stack>
 
         {(!isAuthenticated || policy.judgements?.length > 0) && (
           <Box
             sx={{
-              width: { xs: '100%', sm: 'clamp(260px, 30vw, 340px)', md: 340 },
+              width: '100%',
               flexShrink: 0,
-              alignSelf: 'flex-start',
+              [SIDE_BY_SIDE]: { width: `min(${DETAIL_ASIDE_WIDTH}px, 36vw)` },
             }}
           >
             {isAuthenticated ? (
-              <JudgementCard judgements={policy.judgements} summary={policy.judgementSummary} />
+              <JudgementCard
+                judgements={policy.judgements}
+                summary={policy.judgementSummary}
+                group={policy.judgementGroup}
+              />
             ) : (
               <GuestConditionsCard onLogin={openLoginDialog} />
             )}
           </Box>
         )}
-      </Stack>
+      </Box>
 
       <CardNewsDialog
         cardNews={cardNewsState.cardNews}

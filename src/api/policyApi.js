@@ -3,18 +3,11 @@ import httpClient from './httpClient';
 
 import {
   APPLY_PERIOD_TYPE,
+  ELIGIBILITY_CONDITION_LABELS,
   JUDGE_RESULT,
   POLICY_SUBTYPES,
   RECOMMENDATION_GROUP,
 } from '@/constants/policy';
-
-const CONDITION_LABELS = {
-  AGE: '나이',
-  REGION: '지역',
-  INCOME: '소득',
-  EMPLOYMENT: '취업',
-  HOUSELESS: '무주택',
-};
 
 const STATUS_TO_RESULT = {
   ABLE: JUDGE_RESULT.MET,
@@ -108,7 +101,7 @@ export const toPolicyDetail = (response) => {
 
   const judgements = (result.conditions ?? []).map((condition) => ({
     conditionKey: condition.type,
-    conditionName: CONDITION_LABELS[condition.type] ?? condition.type,
+    conditionName: ELIGIBILITY_CONDITION_LABELS[condition.type] ?? condition.type,
     result: STATUS_TO_RESULT[condition.status] ?? JUDGE_RESULT.NEED_CHECK,
     requirement: condition.policyCondition,
     myValue: condition.memberValue,
@@ -235,9 +228,9 @@ const toPolicySearchItem = (item) => {
     applyEndDate: item.applyEndDate,
     isFavorite: Boolean(item.isFavorite),
     reason: item.aiReason ?? '',
-    judgements: Object.keys(CONDITION_LABELS).map((conditionKey) => ({
+    judgements: Object.keys(ELIGIBILITY_CONDITION_LABELS).map((conditionKey) => ({
       conditionKey,
-      conditionName: CONDITION_LABELS[conditionKey],
+      conditionName: ELIGIBILITY_CONDITION_LABELS[conditionKey],
       result:
         STATUS_TO_RESULT[item.status?.[conditionKey.toLowerCase()]] ?? JUDGE_RESULT.NEED_CHECK,
     })),

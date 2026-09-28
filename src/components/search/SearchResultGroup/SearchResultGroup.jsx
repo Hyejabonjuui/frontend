@@ -5,17 +5,10 @@ import Typography from '@mui/material/Typography';
 import JudgeIcon from '@/components/common/JudgeIcon';
 import SearchResultCard from '@/components/search/SearchResultCard';
 import {
-  JUDGE_RESULT,
-  RECOMMENDATION_GROUP,
+  JUDGE_RESULT_BY_GROUP,
   RECOMMENDATION_GROUP_DESCRIPTION,
   RECOMMENDATION_GROUP_LABEL,
 } from '@/constants/policy';
-
-const JUDGE_RESULT_BY_GROUP = {
-  [RECOMMENDATION_GROUP.POSSIBLE]: JUDGE_RESULT.MET,
-  [RECOMMENDATION_GROUP.NEED_CHECK]: JUDGE_RESULT.NEED_CHECK,
-  [RECOMMENDATION_GROUP.IMPOSSIBLE]: JUDGE_RESULT.NOT_MET,
-};
 
 function SearchResultGroup({ group, policies = [], isFavorite, onToggleFavorite }) {
   return (

@@ -37,6 +37,15 @@ export const JUDGE_RESULT_COLOR = {
   [JUDGE_RESULT.NEED_CHECK]: '#FFE449',
 };
 
+/** 백엔드가 회원 조건과 비교해 판정하는 조건(EligibilityConditionType). 화면에도 이 순서로 보여 준다. */
+export const ELIGIBILITY_CONDITION_LABELS = {
+  AGE: '나이',
+  REGION: '지역',
+  INCOME: '소득',
+  EMPLOYMENT: '취업',
+  HOUSELESS: '무주택',
+};
+
 export const JUDGE_RESULT_LABEL = {
   [JUDGE_RESULT.MET]: '충족',
   [JUDGE_RESULT.NOT_MET]: '미충족',
@@ -47,6 +56,13 @@ export const RECOMMENDATION_GROUP = {
   POSSIBLE: 'POSSIBLE',
   NEED_CHECK: 'NEED_CHECK',
   IMPOSSIBLE: 'IMPOSSIBLE',
+};
+
+/** 추천 그룹과 종합 판정을 같은 판정 아이콘(✓ · ? · ✗)으로 보여 준다. */
+export const JUDGE_RESULT_BY_GROUP = {
+  [RECOMMENDATION_GROUP.POSSIBLE]: JUDGE_RESULT.MET,
+  [RECOMMENDATION_GROUP.NEED_CHECK]: JUDGE_RESULT.NEED_CHECK,
+  [RECOMMENDATION_GROUP.IMPOSSIBLE]: JUDGE_RESULT.NOT_MET,
 };
 
 /** 설계서 S-05의 그룹 제목을 그대로 쓴다. */
