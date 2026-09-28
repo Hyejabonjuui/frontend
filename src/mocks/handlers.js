@@ -246,7 +246,7 @@ const toApiSearchItem = (policy, judgements, group, user) => ({
   ),
 });
 
-const buildRecommendations = (query, user) => {
+const buildPolicySearchResult = (query, user) => {
   const keyword = (query ?? '').trim();
   const matchedSubtype = Object.entries(SUBTYPE_NAMES).find(([, name]) =>
     keyword.includes(name.split('·')[0]),
@@ -669,7 +669,7 @@ export const HANDLERS = [
   {
     method: 'get',
     match: (url) => url === '/api/policies/search',
-    handle: ({ params, user }) => requireUser(user) ?? buildRecommendations(params.query, user),
+    handle: ({ params, user }) => requireUser(user) ?? buildPolicySearchResult(params.query, user),
   },
   {
     method: 'get',

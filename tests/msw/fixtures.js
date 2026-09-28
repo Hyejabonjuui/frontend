@@ -280,13 +280,13 @@ const toSearchResponse = (result) => ({
   result,
 });
 
-export const RECOMMENDATIONS = toSearchResponse({
+export const POLICY_SEARCH_RESULT = toSearchResponse({
   approved: [toSearchItem(POLICIES[0], '조건을 모두 만족해요')],
   underReview: [toSearchItem(POLICIES[1], '소득 확인이 필요해요')],
   declined: [toSearchItem(POLICIES[2], '무주택 조건이 달라요')],
 });
 
-export const EMPTY_RECOMMENDATIONS = toSearchResponse({
+export const EMPTY_POLICY_SEARCH_RESULT = toSearchResponse({
   approved: [],
   underReview: [],
   declined: [],

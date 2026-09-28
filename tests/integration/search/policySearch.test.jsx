@@ -3,7 +3,7 @@
  *
  * notice: 실제 백엔드(AI 판정) 없이 MSW가 GET /api/policies/search 응답을 준다. 그룹 구성은 fixtures의 고정값이다.
  *         응답 형태(approved · underReview · declined)는 백엔드 PolicySearchResponseDTO를 따른다.
- *         DTO가 바뀌면 fixtures.RECOMMENDATIONS와 policyApi.toRecommendations부터 맞춘다.
+ *         DTO가 바뀌면 fixtures.POLICY_SEARCH_RESULT와 policyApi.toPolicySearchResult부터 맞춘다.
  */
 import { screen } from '@testing-library/react';
 import { http } from 'msw';
@@ -14,7 +14,7 @@ import { EMPTY_MESSAGES, ERROR_MESSAGES, TOAST_MESSAGES } from '@/constants/mess
 import { RECOMMENDATION_GROUP, RECOMMENDATION_GROUP_LABEL } from '@/constants/policy';
 
 import { renderApp, signInAs } from '../../helpers/renderApp';
-import { EMPTY_RECOMMENDATIONS, RECOMMENDATIONS, TOKENS } from '../../msw/fixtures';
+import { EMPTY_POLICY_SEARCH_RESULT, POLICY_SEARCH_RESULT, TOKENS } from '../../msw/fixtures';
 import { apiUrl, fail, ok } from '../../msw/respond';
 import { server } from '../../msw/server';
 
@@ -45,7 +45,7 @@ describe('추천 결과', () => {
     renderApp(RESULT_PATH);
 
     for (const group of Object.values(RECOMMENDATION_GROUP)) {
-      const [policy] = RECOMMENDATIONS.result[SEARCH_RESULT_KEYS[group]];
+      const [policy] = POLICY_SEARCH_RESULT.result[SEARCH_RESULT_KEYS[group]];
 
       expect(await groupHeading(group, 1)).toBeInTheDocument();
       expect(screen.getByText(policy.policyName)).toBeInTheDocument();
@@ -54,7 +54,7 @@ describe('추천 결과', () => {
   });
 
   it('후보가 0건이면 빈 상태와 안내 토스트를 보여 준다', async () => {
-    server.use(http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), () => ok(EMPTY_RECOMMENDATIONS)));
+    server.use(http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), () => ok(EMPTY_POLICY_SEARCH_RESULT)));
     signInAs(TOKENS.MEMBER);
     renderApp(RESULT_PATH);
 
