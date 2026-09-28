@@ -46,8 +46,7 @@ function FavoritePage() {
       <Stack spacing={0.5}>
         <Typography variant="h1">관심 정책</Typography>
         <Typography variant="body1" color="text.secondary">
-          <AppIcon name="heart-outline" size={14} /> 저장한 정책을 모아 두고, 마감 7일 전에
-          알려드려요.
+          <AppIcon name="heart-outline" size={14} /> 저장한 정책을 모아 두는 곳이에요.
         </Typography>
       </Stack>
 
@@ -71,9 +70,17 @@ function FavoritePage() {
         <EmptyState
           isFramed
           title={EMPTY_MESSAGES.FAVORITE}
-          description={EMPTY_MESSAGES.FAVORITE_DESCRIPTION}
+          description={
+            <>
+              정책 옆{' '}
+              <Box component="span" role="img" aria-label="하트" sx={{ color: 'text.primary' }}>
+                <AppIcon name="heart-outline" size={14} />
+              </Box>
+              를 누르면 여기 모이고, 마감 7일 전에 알려드려요
+            </>
+          }
           action={
-            <Button component={RouterLink} to={ROUTES.HOME} variant="outlined">
+            <Button component={RouterLink} to={ROUTES.HOME} variant="outlined" size="small">
               주거 정책 보러 가기
             </Button>
           }
