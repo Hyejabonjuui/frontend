@@ -1,7 +1,12 @@
 import { ENDPOINTS } from './endpoints';
 import httpClient from './httpClient';
 
-import { APPLY_PERIOD_TYPE, JUDGE_RESULT, RECOMMENDATION_GROUP } from '@/constants/policy';
+import {
+  APPLY_PERIOD_TYPE,
+  JUDGE_RESULT,
+  POLICY_SUBTYPES,
+  RECOMMENDATION_GROUP,
+} from '@/constants/policy';
 
 const CONDITION_LABELS = {
   AGE: '나이',
@@ -35,6 +40,16 @@ const CATEGORY_TO_API = {
   SUBSCRIPTION: 'PURCHASE',
   PUBLIC_HOUSING: 'PUBLIC_RENT',
   ETC_HOUSING: 'OTHER',
+};
+
+const API_TO_CATEGORY = Object.fromEntries(
+  Object.entries(CATEGORY_TO_API).map(([category, apiCategory]) => [apiCategory, category]),
+);
+
+const SEARCH_GROUP_KEYS = {
+  [RECOMMENDATION_GROUP.POSSIBLE]: 'approved',
+  [RECOMMENDATION_GROUP.NEED_CHECK]: 'underReview',
+  [RECOMMENDATION_GROUP.IMPOSSIBLE]: 'declined',
 };
 
 const SORT_TO_API = {
@@ -126,6 +141,16 @@ export const toPolicyDetail = (response) => {
   };
 };
 
+/** 백엔드는 정책마다 cardNo 1~4를 정해진 주제로 만든다(PolicySyncItemService). */
+const CARD_NEWS_COUNT = 4;
+
+const CARD_NEWS_LABELS = {
+  1: '무슨 정책인가요',
+  2: '누가 받을 수 있나요',
+  3: '무엇을 받나요',
+  4: '어떻게 신청하나요',
+};
+
 export const toCardNewsList = (response) => {
   const result = unwrapResult(response);
 
@@ -134,7 +159,7 @@ export const toCardNewsList = (response) => {
     title: cardNews.policyName,
     summary: cardNews.description ?? '',
     applyEndDate: cardNews.applyEndDate,
-    cardCount: 4,
+    cardCount: CARD_NEWS_COUNT,
   }));
 };
 
@@ -145,23 +170,82 @@ export const toCardNewsDetail = (response) => {
     return null;
   }
 
-  const cards = (result.cards ?? []).map((card) => ({
-    id: card.cardNewsId,
-    order: Number(card.cardNo),
-    heading: card.title ?? '',
-    tags: card.badges ?? [],
-    body: card.body ?? '',
-  }));
+  const cardsByOrder = new Map(
+    (result.cards ?? []).map((card) => [
+      Number(card.cardNo),
+      {
+        id: card.cardNewsId,
+        order: Number(card.cardNo),
+        label: CARD_NEWS_LABELS[card.cardNo] ?? '',
+        heading: card.title ?? '',
+        tags: card.badges ?? [],
+        body: card.body ?? '',
+      },
+    ]),
+  );
+
+  // 데이터가 없는 장(데모 시드는 1장만 있다)은 번호만 보이는 빈 카드로 채워 항상 4장을 맞춘다.
+  const cards = Array.from({ length: CARD_NEWS_COUNT }, (unused, index) => {
+    const order = index + 1;
+
+    return (
+      cardsByOrder.get(order) ?? {
+        id: `empty-${order}`,
+        order,
+        label: '',
+        heading: '',
+        tags: [],
+        body: '',
+      }
+    );
+  });
 
   return {
     policyId: result.policyId,
     title: cards[0]?.heading ?? '',
     subtypeName: result.categoryLabel ?? '',
-    cardCount: cards.length,
+    cardCount: CARD_NEWS_COUNT,
     isAuthenticated: Boolean(result.isAuthenticated),
     isFavorite: Boolean(result.isFavorite),
     applyUrl: result.applyUrl,
     cards,
+  };
+};
+
+const toPolicySearchItem = (item) => {
+  const subtype = API_TO_CATEGORY[item.categories?.[0]] ?? item.categories?.[0] ?? '';
+
+  return {
+    id: item.policyId,
+    title: item.policyName,
+    subtype,
+    subtypeName: POLICY_SUBTYPES.find((option) => option.value === subtype)?.label ?? '기타 주거',
+    applyPeriodType:
+      item.applyPeriod === 'ALWAYS' ? APPLY_PERIOD_TYPE.ALWAYS : APPLY_PERIOD_TYPE.PERIOD,
+    applyEndDate: item.applyEndDate,
+    isFavorite: Boolean(item.isFavorite),
+    reason: item.aiReason ?? '',
+    judgements: Object.keys(CONDITION_LABELS).map((conditionKey) => ({
+      conditionKey,
+      conditionName: CONDITION_LABELS[conditionKey],
+      result:
+        STATUS_TO_RESULT[item.status?.[conditionKey.toLowerCase()]] ?? JUDGE_RESULT.NEED_CHECK,
+    })),
+  };
+};
+
+export const toPolicySearchResult = (response) => {
+  const result = unwrapResult(response) ?? {};
+
+  return {
+    groups: Object.fromEntries(
+      Object.entries(SEARCH_GROUP_KEYS).map(([group, resultKey]) => [
+        group,
+        (result[resultKey] ?? []).map(toPolicySearchItem),
+      ]),
+    ),
+    query: null,
+    isAiFailed: false,
   };
 };
 
@@ -187,8 +271,8 @@ export const getCardNews = async ({ isAuthenticated = false, signal } = {}) => {
 export const getCardNewsDetail = async (policyId, { signal } = {}) =>
   toCardNewsDetail(await httpClient.get(ENDPOINTS.POLICY.CARD_NEWS_DETAIL(policyId), { signal }));
 
-/** F-14: 설계서대로 검색어를 body의 query로 보낸다. */
-export const getRecommendations = ({ keyword }) =>
-  httpClient.post(ENDPOINTS.POLICY.RECOMMENDATIONS, { query: keyword });
+/** F-14: 백엔드 검색 API는 GET 쿼리스트링으로 검색어를 받고, 로그인이 필요하다. */
+export const searchPolicies = async ({ query }) =>
+  toPolicySearchResult(await httpClient.get(ENDPOINTS.POLICY.SEARCH, { params: { query } }));
 
 export const getTerms = () => httpClient.get(ENDPOINTS.POLICY.TERMS);

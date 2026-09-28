@@ -22,6 +22,14 @@ function PolicySearchBar({ keyword, onKeywordChange, onSubmit, errorMessage, onR
     onSubmit(searchKeyword);
   };
 
+  const handleHashtagClick = (hashtag) => {
+    if (!isLocked) {
+      onKeywordChange(hashtag);
+    }
+
+    requestSearch(hashtag);
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
     requestSearch(keyword);
@@ -93,7 +101,11 @@ function PolicySearchBar({ keyword, onKeywordChange, onSubmit, errorMessage, onR
         sx={{ justifyContent: 'center', flexWrap: 'wrap' }}
       >
         {POLICY_SEARCH_HASHTAGS.map((hashtag) => (
-          <SubtypeChip key={hashtag} label={`#${hashtag}`} onClick={() => requestSearch(hashtag)} />
+          <SubtypeChip
+            key={hashtag}
+            label={`#${hashtag}`}
+            onClick={() => handleHashtagClick(hashtag)}
+          />
         ))}
       </Stack>
     </Stack>

@@ -14,7 +14,7 @@ import { RECOMMENDATION_GROUP } from '@/constants/policy';
 import { buildPolicyDetailPath } from '@/constants/routes';
 
 /** 설계서 S-05: 정책마다 "왜?" 한 문장과 조건별 판정을 함께 보여준다. */
-function RecommendationCard({ policy, group, isFavorite = false, onToggleFavorite }) {
+function SearchResultCard({ policy, group, isFavorite = false, onToggleFavorite }) {
   const isImpossible = group === RECOMMENDATION_GROUP.IMPOSSIBLE;
   const reasonLabel = isImpossible ? '이유' : '왜?';
 
@@ -101,4 +101,4 @@ function RecommendationCard({ policy, group, isFavorite = false, onToggleFavorit
   );
 }
 
-export default RecommendationCard;
+export default SearchResultCard;

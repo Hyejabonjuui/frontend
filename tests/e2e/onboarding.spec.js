@@ -45,7 +45,7 @@ test('계정과 조건을 함께 등록하고 검색하면 추천 결과를 본�
   await page.getByRole('textbox', { name: '정책 검색' }).fill('월세');
   await page.getByRole('button', { name: '검색', exact: true }).click();
 
-  await expect(page).toHaveURL(/\/recommendations\?keyword=/);
+  await expect(page).toHaveURL(/\/search\?query=/);
   for (const groupLabel of ['받을 수 있어요', '확인이 필요해요', '아쉽게 안 돼요']) {
     await expect(
       page.getByRole('heading', { name: new RegExp(`^${groupLabel} · \\d+건$`) }),

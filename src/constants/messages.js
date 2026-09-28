@@ -14,6 +14,7 @@ export const TOAST_MESSAGES = {
   AI_FAILED:
     '지금은 AI 설명을 불러오지 못해 조건 판정 결과만 보여드려요. 자세한 자격은 상세에서 확인하세요.',
   NO_CANDIDATE: '조건에 맞는 정책을 찾지 못했어요',
+  SEARCHED: '검색했어요', // 앞에 '검색어(으)로'를 붙여 쓴다.
   APPLY_LINK_MISSING: '신청 링크가 없는 정책이에요',
   NOTIFICATION_DELETED: '알림을 삭제했어요',
   ACCOUNT_DELETED: '회원 탈퇴가 끝났어요',
@@ -48,9 +49,9 @@ export const ERROR_MESSAGES = {
 
 export const EMPTY_MESSAGES = {
   POLICY_LIST: '조건에 맞는 정책이 없어요',
-  RECOMMENDATION: '지금 조건에 맞는 주거 정책이 없어요',
-  RECOMMENDATION_DESCRIPTION: '조건을 바꾸거나 다른 유형으로 찾아보세요. 새 정책은 매일 모아요.',
-  RECOMMENDATION_CAPTION: '후보 0건 · 정책을 지어내지 않음',
+  SEARCH: '지금 조건에 맞는 주거 정책이 없어요',
+  SEARCH_DESCRIPTION: '조건을 바꾸거나 다른 유형으로 찾아보세요. 새 정책은 매일 모아요.',
+  SEARCH_CAPTION: '후보 0건 · 정책을 지어내지 않음',
   FAVORITE: '아직 관심 정책이 없어요',
   FAVORITE_DESCRIPTION: '정책 옆 관심 표시를 누르면 여기 모이고, 마감 7일 전에 알려드려요',
   NOTIFICATION: '받은 알림이 없어요',

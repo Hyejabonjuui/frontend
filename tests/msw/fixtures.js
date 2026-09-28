@@ -7,7 +7,7 @@
  * notice: 판정 결과(judgements)는 목 서버의 판정 로직(src/mocks/judge.js)을 쓰지 않고 고정값으로 둔다.
  *         실제 판정은 백엔드가 하므로, 프론트 테스트는 "받은 판정을 어떻게 보여 주는지"만 본다.
  */
-import { JUDGE_RESULT, POLICY_SUBTYPES, RECOMMENDATION_GROUP } from '@/constants/policy';
+import { APPLY_PERIOD_TYPE, JUDGE_RESULT, POLICY_SUBTYPES } from '@/constants/policy';
 import { buildCardNews } from '@/mocks/data/cardNews';
 import { CODE_GROUPS } from '@/mocks/data/codes';
 import { NOTIFICATIONS } from '@/mocks/data/notifications';
@@ -255,31 +255,42 @@ export const buildPolicyDetail = (policy, { isAuthenticated }) => ({
       })),
 });
 
-const toRecommendation = (policy, reason) => ({
-  ...toPolicySummary(policy),
-  judgements: JUDGEMENTS,
-  reason,
+/** 실제 정책 검색 API(PolicySearchResponseDTO) 계약을 재현한다. */
+const toSearchItem = (policy, aiReason) => ({
+  policyId: String(policy.id),
+  policyName: policy.title,
+  categories: [UI_TO_API_CATEGORY[policy.subtype] ?? policy.subtype],
+  applyEndDate: policy.applyEndDate,
+  applyPeriod: policy.applyPeriodType === APPLY_PERIOD_TYPE.ALWAYS ? 'ALWAYS' : 'SPECIFIC_PERIOD',
+  isFavorite: false,
+  aiReason,
+  status: {
+    age: 'ABLE',
+    region: 'ABLE',
+    income: 'UNKNOWN',
+    employment: 'ABLE',
+    houseless: 'DISABLE',
+  },
 });
 
-export const RECOMMENDATIONS = {
-  query: { keyword: '월세', matchedSubtypeName: '월세', conditionSummary: '' },
-  groups: {
-    [RECOMMENDATION_GROUP.POSSIBLE]: [toRecommendation(POLICIES[0], '조건을 모두 만족해요')],
-    [RECOMMENDATION_GROUP.NEED_CHECK]: [toRecommendation(POLICIES[1], '소득 확인이 필요해요')],
-    [RECOMMENDATION_GROUP.IMPOSSIBLE]: [toRecommendation(POLICIES[2], '무주택 조건이 달라요')],
-  },
-  isAiFailed: false,
-};
+const toSearchResponse = (result) => ({
+  isSuccess: true,
+  code: 'SUCCESS_001',
+  message: '요청에 성공했습니다.',
+  result,
+});
 
-export const EMPTY_RECOMMENDATIONS = {
-  query: { keyword: '없는 정책', matchedSubtypeName: '', conditionSummary: '' },
-  groups: {
-    [RECOMMENDATION_GROUP.POSSIBLE]: [],
-    [RECOMMENDATION_GROUP.NEED_CHECK]: [],
-    [RECOMMENDATION_GROUP.IMPOSSIBLE]: [],
-  },
-  isAiFailed: false,
-};
+export const POLICY_SEARCH_RESULT = toSearchResponse({
+  approved: [toSearchItem(POLICIES[0], '조건을 모두 만족해요')],
+  underReview: [toSearchItem(POLICIES[1], '소득 확인이 필요해요')],
+  declined: [toSearchItem(POLICIES[2], '무주택 조건이 달라요')],
+});
+
+export const EMPTY_POLICY_SEARCH_RESULT = toSearchResponse({
+  approved: [],
+  underReview: [],
+  declined: [],
+});
 
 export const FAVORITE_POLICY = POLICIES[1];
 

@@ -77,7 +77,7 @@ function HomePage() {
     }
 
     setSearchError('');
-    navigate(`${ROUTES.RECOMMENDATION}?keyword=${encodeURIComponent(searchKeyword)}`);
+    navigate(`${ROUTES.SEARCH}?query=${encodeURIComponent(searchKeyword)}`);
   };
 
   /** 목록 조건이 바뀌면 항상 첫 페이지부터 다시 본다. */
