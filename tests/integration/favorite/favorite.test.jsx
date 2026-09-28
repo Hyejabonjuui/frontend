@@ -7,7 +7,7 @@
  * notice: 중복 저장(409 FAVORITE_001)·없는 관심 해제(404 FAVORITE_002) 코드는 백엔드 ErrorStatus 기준이다.
  */
 import { screen, waitFor, within } from '@testing-library/react';
-import { HttpResponse, http } from 'msw';
+import { HttpResponse, delay, http } from 'msw';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { ENDPOINTS } from '@/api/endpoints';
@@ -264,6 +264,51 @@ describe('관심 목록', () => {
     expect(screen.getByRole('textbox', { name: '관심 정책 검색' })).toHaveValue('청년');
     expect(listRequests.map((params) => params.get('page'))).toEqual(['1', '1']);
     expect(listRequests.map((params) => params.get('keyword'))).toEqual(['청년', '청년']);
+  });
+
+  it('다른 검색 결과를 본 뒤 뒤로 가도 현재 요청이 끝나기 전에 이전 결과로 페이지를 보정하지 않는다', async () => {
+    let secondPageRequestCount = 0;
+    server.use(
+      http.get(apiUrl(ENDPOINTS.FAVORITE.LIST), async ({ request }) => {
+        const searchParams = new URL(request.url).searchParams;
+        listRequests.push(searchParams);
+        const keyword = searchParams.get('keyword');
+        const page = Number(searchParams.get('page'));
+
+        if (keyword === 'B' && page === 1) {
+          secondPageRequestCount += 1;
+          if (secondPageRequestCount === 2) {
+            await delay(200);
+          }
+
+          return ok(buildFavoriteList([POLICY], { page, totalElements: 9 }));
+        }
+
+        return ok(buildFavoriteList([FAVORITE_POLICY], { page, totalElements: 1 }));
+      }),
+    );
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp('/favorites?keyword=B&page=2');
+
+    expect(await screen.findByText(POLICY.title, undefined, { timeout: 5000 })).toBeInTheDocument();
+
+    const searchField = screen.getByRole('textbox', { name: '관심 정책 검색' });
+    await user.clear(searchField);
+    await user.type(searchField, 'A{Enter}');
+
+    expect(await screen.findByText(FAVORITE_POLICY.title)).toBeInTheDocument();
+    expect(`${window.location.pathname}${window.location.search}`).toBe('/favorites?keyword=A');
+
+    window.history.back();
+
+    expect(await screen.findByRole('progressbar', { name: '불러오는 중' })).toBeInTheDocument();
+    expect(`${window.location.pathname}${window.location.search}`).toBe(
+      '/favorites?keyword=B&page=2',
+    );
+    expect(await screen.findByText(POLICY.title)).toBeInTheDocument();
+    expect(`${window.location.pathname}${window.location.search}`).toBe(
+      '/favorites?keyword=B&page=2',
+    );
   });
 
   it('검색하면 관심 목록 안에서 keyword로 찾고, AI 검색 화면으로 가지 않는다', async () => {

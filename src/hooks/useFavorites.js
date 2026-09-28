@@ -15,6 +15,7 @@ export const useFavorites = (params = {}) => {
   const [reloadToken, setReloadToken] = useState(0);
   const [state, setState] = useState({
     memberId: null,
+    paramsKey: null,
     favorites: [],
     totalCount: 0,
     totalPages: 0,
@@ -36,6 +37,7 @@ export const useFavorites = (params = {}) => {
         if (isActive) {
           setState({
             memberId,
+            paramsKey,
             favorites: data.content ?? [],
             totalCount: data.totalCount ?? 0,
             totalPages: data.totalPages ?? 0,
@@ -47,6 +49,7 @@ export const useFavorites = (params = {}) => {
         if (isActive) {
           setState({
             memberId,
+            paramsKey,
             favorites: [],
             totalCount: 0,
             totalPages: 0,
@@ -65,10 +68,11 @@ export const useFavorites = (params = {}) => {
   }, [isAuthenticated, memberId, paramsKey, reloadToken]);
 
   const isCurrentMember = isAuthenticated && state.memberId === memberId;
+  const isCurrentRequest = isCurrentMember && state.paramsKey === paramsKey;
 
   const favorites = useMemo(
-    () => (isCurrentMember ? state.favorites : []),
-    [isCurrentMember, state.favorites],
+    () => (isCurrentRequest ? state.favorites : []),
+    [isCurrentRequest, state.favorites],
   );
 
   /** 해제한 뒤처럼 화면을 비우지 않고 목록만 다시 받는다. */
@@ -81,10 +85,10 @@ export const useFavorites = (params = {}) => {
 
   return {
     favorites,
-    totalCount: isCurrentMember ? state.totalCount : 0,
-    totalPages: isCurrentMember ? state.totalPages : 0,
-    isLoading: isAuthenticated && (!isCurrentMember || state.isLoading),
-    errorMessage: isCurrentMember ? state.errorMessage : '',
+    totalCount: isCurrentRequest ? state.totalCount : 0,
+    totalPages: isCurrentRequest ? state.totalPages : 0,
+    isLoading: isAuthenticated && (!isCurrentRequest || state.isLoading),
+    errorMessage: isCurrentRequest ? state.errorMessage : '',
     reload,
     refetch,
   };
