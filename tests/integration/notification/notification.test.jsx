@@ -3,7 +3,7 @@
  *
  * notice: MSW가 백엔드의 ApiResponse + snake_case 알림 계약으로 응답한다.
  */
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { http } from 'msw';
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -92,5 +92,32 @@ describe('알림 목록', () => {
     await waitFor(() => expect(readRequests).toHaveLength(1));
     expect(readRequests[0].id).toBe(String(NOTIFICATION_ID));
     expect(readRequests[0].request.headers.get('Authorization')).toBe(`Bearer ${TOKENS.MEMBER}`);
+  });
+
+  it('안 읽은 개수는 현재 페이지가 아니라 서버가 준 전체 개수로 보여 주고, 모두 읽음은 두지 않는다', async () => {
+    server.use(
+      http.get(apiUrl(ENDPOINTS.NOTIFICATION.LIST), () =>
+        ok(
+          success({
+            notifications: [notification()],
+            unread_count: 15,
+            page: 0,
+            size: 8,
+            totalElements: 20,
+            totalPages: 3,
+            hasNext: true,
+          }),
+        ),
+      ),
+    );
+    signInAs(TOKENS.MEMBER);
+    renderApp(`${ROUTES.MY_PAGE}?tab=${MY_PAGE_TABS.NOTIFICATION}`);
+
+    expect(await screen.findByRole('tab', { name: '알림 목록 15' })).toBeInTheDocument();
+    expect(screen.getByText('[마감 7일 이하] 알림 / 안 읽음 (15)')).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('button', { name: '알림 열기' })).getByText('15'),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '모두 읽음' })).not.toBeInTheDocument();
   });
 });

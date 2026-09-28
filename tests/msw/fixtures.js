@@ -357,6 +357,7 @@ export const NOTIFICATION_LIST = {
         created_at: notification.createdAt,
       };
     }),
+    unread_count: NOTIFICATIONS.filter((notification) => !notification.isRead).length,
     page: 0,
     size: 8,
     totalElements: NOTIFICATIONS.length,

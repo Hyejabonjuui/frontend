@@ -3,7 +3,6 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Popover from '@mui/material/Popover';
-import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import NotificationList from '@/components/notification/NotificationList';
@@ -16,7 +15,10 @@ const ITEM_HEIGHT = 84;
 const ITEM_GAP = 8;
 const LIST_MAX_HEIGHT = VISIBLE_ITEM_COUNT * ITEM_HEIGHT + (VISIBLE_ITEM_COUNT - 1) * ITEM_GAP;
 
-/** 설계서 S-09: 헤더 알림창은 안 읽은 알림만 보여 주고, 읽은 알림은 알림함에서 본다. */
+/**
+ * 설계서 S-09: 헤더 알림창은 안 읽은 알림만 보여 주고, 읽은 알림은 알림함에서 본다.
+ * 목록은 최근 8건 중 안 읽은 알림이고, 개수는 전체 안 읽은 알림 수라서 둘이 다를 수 있다.
+ */
 function NotificationPopover({
   anchorEl,
   onClose,
@@ -25,7 +27,6 @@ function NotificationPopover({
   errorMessage,
   unreadCount,
   onRead,
-  onMarkAllAsRead,
 }) {
   return (
     <Popover
@@ -38,22 +39,10 @@ function NotificationPopover({
         paper: { sx: { width: 'min(380px, calc(100vw - 32px))', maxWidth: 'calc(100vw - 32px)' } },
       }}
     >
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        sx={{
-          alignItems: { xs: 'flex-start', sm: 'center' },
-          justifyContent: 'space-between',
-          px: 2,
-          py: 1.5,
-        }}
-      >
-        <Typography variant="body2">[마감 7일 이하] 알림 / 안 읽음 ({unreadCount})</Typography>
-        {unreadCount > 0 && (
-          <Button size="small" variant="text" onClick={onMarkAllAsRead}>
-            모두 읽음
-          </Button>
-        )}
-      </Stack>
+      {/* "모두 읽음"은 백엔드 일괄 읽음 API가 생기면 다시 둔다. 지금은 한 건씩만 읽음 처리할 수 있다. */}
+      <Typography variant="body2" sx={{ px: 2, py: 1.5 }}>
+        [마감 7일 이하] 알림 / 안 읽음 ({unreadCount})
+      </Typography>
 
       <Divider />
 

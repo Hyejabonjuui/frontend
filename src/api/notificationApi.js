@@ -22,6 +22,8 @@ export const toNotificationList = (response) => {
 
   return {
     content: (result.notifications ?? result.content ?? []).map(toNotification),
+    // 현재 페이지가 아니라 삭제되지 않은 전체 알림 중 안 읽은 개수다.
+    unreadCount: Number(result.unread_count ?? 0),
     page: Number(result.page ?? 0),
     size: Number(result.size ?? NOTIFICATION_PAGE_SIZE),
     totalCount: Number(result.totalElements ?? result.totalCount ?? 0),

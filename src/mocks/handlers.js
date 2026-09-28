@@ -909,6 +909,7 @@ export const HANDLERS = [
         message: '성공입니다.',
         result: {
           notifications: items,
+          unread_count: notifications.filter((notification) => !notification.isRead).length,
           page,
           size,
           totalElements: notifications.length,

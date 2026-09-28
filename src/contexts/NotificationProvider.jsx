@@ -10,6 +10,7 @@ import { getErrorMessage } from '@/utils/getErrorMessage';
 /**
  * 헤더 알림창과 마이페이지 알림 탭이 같은 알림을 본다.
  * 화면마다 따로 조회하면 같은 요청이 여러 번 나가므로, 로그인한 동안 이곳에서 한 번만 불러온다.
+ * 목록은 최근 한 페이지(8건)만 들고, 안 읽은 개수는 서버가 전체 알림 기준으로 준 값을 쓴다.
  */
 function NotificationProvider({ children }) {
   const { isAuthenticated, user } = useAuth();
@@ -19,6 +20,7 @@ function NotificationProvider({ children }) {
   const [state, setState] = useState({
     memberId: null,
     notifications: [],
+    unreadCount: 0,
     isLoading: isAuthenticated,
     errorMessage: '',
   });
@@ -38,6 +40,7 @@ function NotificationProvider({ children }) {
           setState({
             memberId,
             notifications: data.content ?? [],
+            unreadCount: data.unreadCount ?? 0,
             isLoading: false,
             errorMessage: '',
           });
@@ -47,6 +50,7 @@ function NotificationProvider({ children }) {
           setState({
             memberId,
             notifications: [],
+            unreadCount: 0,
             isLoading: false,
             errorMessage: getErrorMessage(error),
           });
@@ -74,52 +78,26 @@ function NotificationProvider({ children }) {
     [notifications],
   );
 
-  const unreadCount = unreadNotifications.length;
+  /** 읽음·삭제 뒤에는 서버의 안 읽은 개수와 목록을 다시 받는다. 로딩 표시는 하지 않는다. */
+  const refresh = useCallback(() => setReloadToken((previous) => previous + 1), []);
 
-  const markAsRead = useCallback(async (notificationId) => {
-    try {
-      await notificationApi.markNotificationAsRead(notificationId);
-      setState((previous) => ({
-        ...previous,
-        notifications: previous.notifications.map((notification) =>
-          notification.id === notificationId ? { ...notification, isRead: true } : notification,
-        ),
-      }));
-    } catch (error) {
-      setState((previous) => ({ ...previous, errorMessage: getErrorMessage(error) }));
-    }
-  }, []);
-
-  const markAllAsRead = useCallback(async () => {
-    const results = await Promise.allSettled(
-      unreadNotifications.map((notification) =>
-        notificationApi.markNotificationAsRead(notification.id),
-      ),
-    );
-    const readNotificationIds = new Set(
-      results.flatMap((result, index) =>
-        result.status === 'fulfilled' ? [unreadNotifications[index].id] : [],
-      ),
-    );
-    const failedResult = results.find((result) => result.status === 'rejected');
-
-    if (readNotificationIds.size > 0) {
-      setState((previous) => ({
-        ...previous,
-        notifications: previous.notifications.map((notification) =>
-          readNotificationIds.has(notification.id)
-            ? { ...notification, isRead: true }
-            : notification,
-        ),
-        errorMessage: failedResult ? getErrorMessage(failedResult.reason) : '',
-      }));
-    } else if (failedResult) {
-      setState((previous) => ({
-        ...previous,
-        errorMessage: getErrorMessage(failedResult.reason),
-      }));
-    }
-  }, [unreadNotifications]);
+  const markAsRead = useCallback(
+    async (notificationId) => {
+      try {
+        await notificationApi.markNotificationAsRead(notificationId);
+        setState((previous) => ({
+          ...previous,
+          notifications: previous.notifications.map((notification) =>
+            notification.id === notificationId ? { ...notification, isRead: true } : notification,
+          ),
+        }));
+        refresh();
+      } catch (error) {
+        setState((previous) => ({ ...previous, errorMessage: getErrorMessage(error) }));
+      }
+    },
+    [refresh],
+  );
 
   const removeNotification = useCallback(
     async (notificationId) => {
@@ -131,12 +109,13 @@ function NotificationProvider({ children }) {
             (notification) => notification.id !== notificationId,
           ),
         }));
+        refresh();
         showSuccess(TOAST_MESSAGES.NOTIFICATION_DELETED);
       } catch (error) {
         showError(getErrorMessage(error));
       }
     },
-    [showError, showSuccess],
+    [refresh, showError, showSuccess],
   );
 
   const refetch = useCallback(() => {
@@ -150,9 +129,8 @@ function NotificationProvider({ children }) {
       unreadNotifications,
       isLoading: isAuthenticated && (!isCurrentMember || state.isLoading),
       errorMessage: isCurrentMember ? state.errorMessage : '',
-      unreadCount,
+      unreadCount: isCurrentMember ? state.unreadCount : 0,
       markAsRead,
-      markAllAsRead,
       removeNotification,
       refetch,
     }),
@@ -163,9 +141,8 @@ function NotificationProvider({ children }) {
       isCurrentMember,
       state.isLoading,
       state.errorMessage,
-      unreadCount,
+      state.unreadCount,
       markAsRead,
-      markAllAsRead,
       removeNotification,
       refetch,
     ],

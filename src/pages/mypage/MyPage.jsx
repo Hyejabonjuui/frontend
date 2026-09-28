@@ -132,27 +132,16 @@ function NotificationTab() {
     isLoading,
     errorMessage,
     markAsRead,
-    markAllAsRead,
     removeNotification,
     refetch,
   } = useNotifications();
 
   return (
     <Stack spacing={1.5}>
-      <Stack
-        direction="row"
-        useFlexGap
-        sx={{ alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}
-      >
-        <Typography variant="body1" color="text.secondary">
-          [마감 7일 이하] 알림 / 안 읽음 ({unreadCount})
-        </Typography>
-        {unreadCount > 0 && (
-          <Button variant="text" size="small" onClick={markAllAsRead}>
-            모두 읽음
-          </Button>
-        )}
-      </Stack>
+      {/* "모두 읽음"은 백엔드 일괄 읽음 API가 생기면 다시 둔다. */}
+      <Typography variant="body1" color="text.secondary">
+        [마감 7일 이하] 알림 / 안 읽음 ({unreadCount})
+      </Typography>
 
       <NotificationList
         notifications={notifications}
