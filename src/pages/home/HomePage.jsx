@@ -182,23 +182,14 @@ function HomePage() {
               size="small"
               onChange={(event) => changeListOption(() => setSort(event.target.value))}
               aria-label="정렬 기준"
-              // 고른 옵션에 따라 상자 폭이 달라지지 않게, 옵션 이름을 한 칸에 겹쳐 가장 긴 이름에 맞춘다.
-              renderValue={(value) => (
-                <Box component="span" sx={{ display: 'inline-grid' }}>
-                  {POLICY_SORT_OPTIONS.map((option) => (
-                    <Box
-                      key={option.value}
-                      component="span"
-                      sx={{
-                        gridArea: '1 / 1',
-                        visibility: option.value === value ? 'visible' : 'hidden',
-                      }}
-                    >
-                      {option.label}
-                    </Box>
-                  ))}
-                </Box>
-              )}
+              // 설계서 Select/Sort: 140 × 32 고정이라 고른 옵션에 따라 상자 크기가 달라지지 않는다.
+              sx={{
+                width: 140,
+                height: 32,
+                typography: 'body2',
+                '& .MuiSelect-select': { pl: '12px' },
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'grey.500' },
+              }}
             >
               {POLICY_SORT_OPTIONS.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
