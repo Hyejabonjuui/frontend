@@ -28,7 +28,7 @@ export const useRecommendations = (params = {}) => {
 
     const loadRecommendations = async () => {
       try {
-        const data = await policyApi.getRecommendations(JSON.parse(paramsKey));
+        const data = await policyApi.searchPolicies(JSON.parse(paramsKey));
 
         if (isActive) {
           setState({

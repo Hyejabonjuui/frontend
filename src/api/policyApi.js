@@ -180,7 +180,7 @@ export const toCardNewsDetail = (response) => {
   };
 };
 
-const toRecommendationItem = (item) => {
+const toPolicySearchItem = (item) => {
   const subtype = API_TO_CATEGORY[item.categories?.[0]] ?? item.categories?.[0] ?? '';
 
   return {
@@ -202,14 +202,14 @@ const toRecommendationItem = (item) => {
   };
 };
 
-export const toRecommendations = (response) => {
+export const toPolicySearchResult = (response) => {
   const result = unwrapResult(response) ?? {};
 
   return {
     groups: Object.fromEntries(
       Object.entries(SEARCH_GROUP_KEYS).map(([group, resultKey]) => [
         group,
-        (result[resultKey] ?? []).map(toRecommendationItem),
+        (result[resultKey] ?? []).map(toPolicySearchItem),
       ]),
     ),
     query: null,
@@ -240,7 +240,7 @@ export const getCardNewsDetail = async (policyId, { signal } = {}) =>
   toCardNewsDetail(await httpClient.get(ENDPOINTS.POLICY.CARD_NEWS_DETAIL(policyId), { signal }));
 
 /** F-14: 백엔드 검색 API는 GET 쿼리스트링으로 검색어를 받고, 로그인이 필요하다. */
-export const getRecommendations = async ({ keyword }) =>
-  toRecommendations(await httpClient.get(ENDPOINTS.POLICY.SEARCH, { params: { query: keyword } }));
+export const searchPolicies = async ({ query }) =>
+  toPolicySearchResult(await httpClient.get(ENDPOINTS.POLICY.SEARCH, { params: { query } }));
 
 export const getTerms = () => httpClient.get(ENDPOINTS.POLICY.TERMS);

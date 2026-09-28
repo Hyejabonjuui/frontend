@@ -6,7 +6,7 @@ import {
   toPolicyDetail,
   toPolicyList,
   toPolicyListParams,
-  toRecommendations,
+  toPolicySearchResult,
 } from '@/api/policyApi';
 import { APPLY_PERIOD_TYPE, JUDGE_RESULT, RECOMMENDATION_GROUP } from '@/constants/policy';
 
@@ -253,7 +253,7 @@ describe('정책 검색(추천) API 응답 변환', () => {
   });
 
   it('approved · underReview · declined를 가능 · 확인 필요 · 불가 그룹으로 나눈다', () => {
-    const { groups, query, isAiFailed } = toRecommendations({
+    const { groups, query, isAiFailed } = toPolicySearchResult({
       isSuccess: true,
       code: 'SUCCESS_001',
       message: '요청에 성공했습니다.',
@@ -275,7 +275,7 @@ describe('정책 검색(추천) API 응답 변환', () => {
   });
 
   it('검색 항목을 추천 카드 모델로 변환한다', () => {
-    const { groups } = toRecommendations({
+    const { groups } = toPolicySearchResult({
       result: {
         approved: [toSearchItem({ applyPeriod: 'ALWAYS', isFavorite: true })],
       },
@@ -299,7 +299,7 @@ describe('정책 검색(추천) API 응답 변환', () => {
     ['OTHER', 'ETC_HOUSING', '기타 주거'],
     ['JEONSE', 'JEONSE', '전세'],
   ])('백엔드 카테고리 %s를 프론트 코드 %s로 바꾼다', (apiCategory, subtype, subtypeName) => {
-    const { groups } = toRecommendations({
+    const { groups } = toPolicySearchResult({
       result: { approved: [toSearchItem({ categories: [apiCategory] })] },
     });
 
@@ -307,7 +307,7 @@ describe('정책 검색(추천) API 응답 변환', () => {
   });
 
   it('조건별 status를 판정 목록으로 바꾸고, 없는 값은 확인 필요로 둔다', () => {
-    const { groups } = toRecommendations({
+    const { groups } = toPolicySearchResult({
       result: {
         declined: [
           toSearchItem({
@@ -328,12 +328,14 @@ describe('정책 검색(추천) API 응답 변환', () => {
 
   it('검색 결과가 비어 있으면 세 그룹 모두 빈 배열로 둔다', () => {
     expect(
-      toRecommendations({ result: { approved: [], underReview: [], declined: [] } }).groups,
+      toPolicySearchResult({ result: { approved: [], underReview: [], declined: [] } }).groups,
     ).toEqual({
       [RECOMMENDATION_GROUP.POSSIBLE]: [],
       [RECOMMENDATION_GROUP.NEED_CHECK]: [],
       [RECOMMENDATION_GROUP.IMPOSSIBLE]: [],
     });
-    expect(toRecommendations({ result: null }).groups[RECOMMENDATION_GROUP.POSSIBLE]).toEqual([]);
+    expect(toPolicySearchResult({ result: null }).groups[RECOMMENDATION_GROUP.POSSIBLE]).toEqual(
+      [],
+    );
   });
 });

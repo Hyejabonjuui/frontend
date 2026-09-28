@@ -35,7 +35,7 @@ function RecommendationPage() {
   const { showInfo } = useToast();
   const [searchKeyword, setSearchKeyword] = useState(keyword);
   const { groups, groupCounts, totalCount, query, isAiFailed, isLoading, errorMessage, refetch } =
-    useRecommendations({ keyword });
+    useRecommendations({ query: keyword });
   const { isFavorite, toggleFavorite } = useFavorites();
 
   // 설계서 S-05: 후보가 없으면 안내 toast를 함께 띄운다.
