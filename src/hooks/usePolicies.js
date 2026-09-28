@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import * as policyApi from '@/api/policyApi';
 import { useAuth } from '@/hooks/useAuth';
-import { getErrorMessage } from '@/utils/getErrorMessage';
+import { getErrorMessage, isCanceledError } from '@/utils/getErrorMessage';
 
 const INITIAL_LIST_STATE = {
   policies: [],
@@ -105,20 +105,30 @@ export const usePolicyDetail = (policyId) => {
 };
 
 export const useCardNews = () => {
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const [reloadToken, setReloadToken] = useState(0);
   const [state, setState] = useState({ cardNewsList: [], isLoading: true, errorMessage: '' });
 
   useEffect(() => {
+    if (isAuthLoading) {
+      return undefined;
+    }
+
     let isActive = true;
+    const controller = new AbortController();
 
     const loadCardNews = async () => {
       try {
-        const data = await policyApi.getCardNews();
+        const cardNewsList = await policyApi.getCardNews({
+          isAuthenticated,
+          signal: controller.signal,
+        });
 
         if (isActive) {
-          setState({ cardNewsList: data.content ?? [], isLoading: false, errorMessage: '' });
+          setState({ cardNewsList, isLoading: false, errorMessage: '' });
         }
       } catch (error) {
-        if (isActive) {
+        if (isActive && !isCanceledError(error)) {
           setState({ cardNewsList: [], isLoading: false, errorMessage: getErrorMessage(error) });
         }
       }
@@ -128,8 +138,76 @@ export const useCardNews = () => {
 
     return () => {
       isActive = false;
+      controller.abort();
     };
+  }, [isAuthenticated, isAuthLoading, reloadToken]);
+
+  const refetch = useCallback(() => {
+    setState((previous) => ({ ...previous, isLoading: true, errorMessage: '' }));
+    setReloadToken((previous) => previous + 1);
   }, []);
 
-  return state;
+  return { ...state, refetch };
+};
+
+export const useCardNewsDetail = (policyId) => {
+  const [reloadToken, setReloadToken] = useState(0);
+  const [state, setState] = useState({
+    policyId: null,
+    cardNews: null,
+    isLoading: false,
+    errorMessage: '',
+  });
+
+  useEffect(() => {
+    if (!policyId) {
+      return undefined;
+    }
+
+    let isActive = true;
+    const controller = new AbortController();
+
+    const loadCardNewsDetail = async () => {
+      try {
+        const cardNews = await policyApi.getCardNewsDetail(policyId, {
+          signal: controller.signal,
+        });
+
+        if (isActive) {
+          setState({ policyId, cardNews, isLoading: false, errorMessage: '' });
+        }
+      } catch (error) {
+        if (isActive && !isCanceledError(error)) {
+          setState({
+            policyId,
+            cardNews: null,
+            isLoading: false,
+            errorMessage: getErrorMessage(error),
+          });
+        }
+      }
+    };
+
+    loadCardNewsDetail();
+
+    return () => {
+      isActive = false;
+      controller.abort();
+    };
+  }, [policyId, reloadToken]);
+
+  const refetch = useCallback(() => {
+    setState((previous) => ({ ...previous, isLoading: true, errorMessage: '' }));
+    setReloadToken((previous) => previous + 1);
+  }, []);
+
+  if (!policyId) {
+    return { cardNews: null, isLoading: false, errorMessage: '', refetch };
+  }
+
+  if (state.policyId !== policyId) {
+    return { cardNews: null, isLoading: true, errorMessage: '', refetch };
+  }
+
+  return { ...state, refetch };
 };

@@ -275,6 +275,22 @@ const buildRecommendations = (query, user) => {
 
 const requireUser = (user) => (user ? null : fail(401, '로그인이 필요한 서비스예요'));
 
+const buildCardNewsListResponse = () => {
+  const featured = sortPolicies(getActivePolicies(), 'DEADLINE').slice(0, 4);
+
+  return ok({
+    isSuccess: true,
+    code: 'SUCCESS_001',
+    message: '성공입니다.',
+    result: featured.map((policy) => ({
+      policyId: String(policy.id),
+      policyName: policy.title,
+      description: policy.summary,
+      applyEndDate: policy.applyEndDate,
+    })),
+  });
+};
+
 export const HANDLERS = [
   {
     method: 'post',
@@ -576,10 +592,47 @@ export const HANDLERS = [
   {
     method: 'get',
     match: (url) => url === '/api/policies/card-news',
-    handle: () => {
-      const featured = sortPolicies(getActivePolicies(), 'DEADLINE').slice(0, 4);
+    handle: ({ user }) => requireUser(user) ?? buildCardNewsListResponse(),
+  },
+  {
+    method: 'get',
+    match: (url) => url === '/api/policies/card-news/guest',
+    handle: buildCardNewsListResponse,
+  },
+  {
+    method: 'get',
+    match: (url) => /^\/api\/policies\/card-detail\/[^/]+$/.test(url),
+    handle: ({ url, user }) => {
+      const policy = findActivePolicyById(url.split('/').at(-1));
 
-      return ok({ content: featured.map(buildCardNews) });
+      if (!policy) {
+        return fail(404, '요청한 정보를 찾을 수 없어요');
+      }
+
+      const cardNews = buildCardNews(policy);
+
+      return ok({
+        isSuccess: true,
+        code: 'SUCCESS_001',
+        message: '성공입니다.',
+        result: {
+          policyId: String(policy.id),
+          categoryLabel: cardNews.subtypeName,
+          dDay: policy.applyPeriodType === APPLY_PERIOD_TYPE.ALWAYS ? null : remainingDays(policy),
+          isAuthenticated: Boolean(user),
+          isFavorite: Boolean(
+            user && getFavorites(user.id).some((favorite) => favorite.policyId === policy.id),
+          ),
+          applyUrl: cardNews.applyUrl,
+          cards: cardNews.cards.map((card) => ({
+            cardNewsId: card.order,
+            cardNo: card.order,
+            title: card.heading ?? '',
+            badges: card.tags ?? [],
+            body: card.body ?? '',
+          })),
+        },
+      });
     },
   },
   {

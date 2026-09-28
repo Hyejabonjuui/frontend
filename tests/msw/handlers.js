@@ -15,7 +15,7 @@ import { ENDPOINTS } from '@/api/endpoints';
 import { POLICIES } from '@/mocks/data/policies';
 
 import {
-  CARD_NEWS,
+  CARD_NEWS_LIST_RESPONSE,
   COLLECT_LOG,
   FAVORITES,
   FIND_EMAIL_RESULT,
@@ -29,6 +29,7 @@ import {
   USER_BY_TOKEN,
   buildPolicyList,
   buildPolicyDetail,
+  buildCardNewsDetailResponse,
   buildMemberAccountResponse,
 } from './fixtures';
 import { apiUrl, fail, ok } from './respond';
@@ -122,7 +123,20 @@ export const handlers = [
 
   http.get(apiUrl(ENDPOINTS.CODE.REGIONS), () => ok(REGION_LIST_RESPONSE)),
   http.get(apiUrl(ENDPOINTS.POLICY.TERMS), () => ok(TERM_LIST)),
-  http.get(apiUrl(ENDPOINTS.POLICY.CARD_NEWS), () => ok(CARD_NEWS)),
+  http.get(
+    apiUrl(ENDPOINTS.POLICY.CARD_NEWS),
+    withUser(() => ok(CARD_NEWS_LIST_RESPONSE)),
+  ),
+  http.get(apiUrl(ENDPOINTS.POLICY.GUEST_CARD_NEWS), () => ok(CARD_NEWS_LIST_RESPONSE)),
+  http.get(apiUrl(ENDPOINTS.POLICY.CARD_NEWS_DETAIL(':policyId')), ({ params, request }) => {
+    const policy = POLICIES.find((item) => item.id === Number(params.policyId));
+
+    if (!policy) {
+      return fail(404, '요청한 정보를 찾을 수 없어요');
+    }
+
+    return ok(buildCardNewsDetailResponse(policy, { isAuthenticated: Boolean(findUser(request)) }));
+  }),
   http.get(apiUrl(ENDPOINTS.POLICY.LIST), () =>
     ok({ isSuccess: true, result: buildPolicyList({ isAuthenticated: false }) }),
   ),

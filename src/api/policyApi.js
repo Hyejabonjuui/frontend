@@ -126,6 +126,45 @@ export const toPolicyDetail = (response) => {
   };
 };
 
+export const toCardNewsList = (response) => {
+  const result = unwrapResult(response);
+
+  return (Array.isArray(result) ? result : []).map((cardNews) => ({
+    policyId: cardNews.policyId,
+    title: cardNews.policyName,
+    summary: cardNews.description ?? '',
+    applyEndDate: cardNews.applyEndDate,
+    cardCount: 4,
+  }));
+};
+
+export const toCardNewsDetail = (response) => {
+  const result = unwrapResult(response);
+
+  if (!result) {
+    return null;
+  }
+
+  const cards = (result.cards ?? []).map((card) => ({
+    id: card.cardNewsId,
+    order: Number(card.cardNo),
+    heading: card.title ?? '',
+    tags: card.badges ?? [],
+    body: card.body ?? '',
+  }));
+
+  return {
+    policyId: result.policyId,
+    title: cards[0]?.heading ?? '',
+    subtypeName: result.categoryLabel ?? '',
+    cardCount: cards.length,
+    isAuthenticated: Boolean(result.isAuthenticated),
+    isFavorite: Boolean(result.isFavorite),
+    applyUrl: result.applyUrl,
+    cards,
+  };
+};
+
 export const getPolicies = async (params, { isAuthenticated = false } = {}) => {
   const endpoint = isAuthenticated ? ENDPOINTS.POLICY.MEMBER_LIST : ENDPOINTS.POLICY.LIST;
 
@@ -139,7 +178,14 @@ export const getPolicies = async (params, { isAuthenticated = false } = {}) => {
 export const getPolicyDetail = async (policyId) =>
   toPolicyDetail(await httpClient.get(ENDPOINTS.POLICY.DETAIL(policyId)));
 
-export const getCardNews = () => httpClient.get(ENDPOINTS.POLICY.CARD_NEWS);
+export const getCardNews = async ({ isAuthenticated = false, signal } = {}) => {
+  const endpoint = isAuthenticated ? ENDPOINTS.POLICY.CARD_NEWS : ENDPOINTS.POLICY.GUEST_CARD_NEWS;
+
+  return toCardNewsList(await httpClient.get(endpoint, { signal }));
+};
+
+export const getCardNewsDetail = async (policyId, { signal } = {}) =>
+  toCardNewsDetail(await httpClient.get(ENDPOINTS.POLICY.CARD_NEWS_DETAIL(policyId), { signal }));
 
 /** F-14: 설계서대로 검색어를 body의 query로 보낸다. */
 export const getRecommendations = ({ keyword }) =>

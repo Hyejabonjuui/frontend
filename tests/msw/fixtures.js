@@ -144,7 +144,42 @@ export const buildPolicyList = ({ isAuthenticated }) => ({
 
 export const EMPTY_POLICY_PAGE = { content: [], totalCount: 0, totalPages: 0 };
 
-export const CARD_NEWS = { content: POLICIES.slice(0, 4).map(buildCardNews) };
+export const CARD_NEWS_LIST_RESPONSE = {
+  isSuccess: true,
+  code: 'SUCCESS_001',
+  message: '성공입니다.',
+  result: POLICIES.slice(0, 4).map((policy) => ({
+    policyId: String(policy.id),
+    policyName: policy.title,
+    description: policy.summary,
+    applyEndDate: policy.applyEndDate,
+  })),
+};
+
+export const buildCardNewsDetailResponse = (policy, { isAuthenticated = false } = {}) => {
+  const cardNews = buildCardNews(policy);
+
+  return {
+    isSuccess: true,
+    code: 'SUCCESS_001',
+    message: '성공입니다.',
+    result: {
+      policyId: String(policy.id),
+      categoryLabel: cardNews.subtypeName,
+      dDay: null,
+      isAuthenticated,
+      isFavorite: isAuthenticated && policy.id === POLICY.id,
+      applyUrl: cardNews.applyUrl,
+      cards: cardNews.cards.map((card) => ({
+        cardNewsId: card.order,
+        cardNo: card.order,
+        title: card.heading ?? '',
+        badges: card.tags ?? [],
+        body: card.body ?? '',
+      })),
+    },
+  };
+};
 
 export const RAW_CONDITIONS = [
   { key: 'AGE', label: '나이', value: '만 19~34세' },
