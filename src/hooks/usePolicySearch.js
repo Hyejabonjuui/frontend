@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import * as policyApi from '@/api/policyApi';
 import { RECOMMENDATION_GROUP } from '@/constants/policy';
+import { useAuth } from '@/hooks/useAuth';
 import { getErrorMessage, isCanceledError } from '@/utils/getErrorMessage';
 
 const EMPTY_GROUPS = {
@@ -18,12 +19,23 @@ const INITIAL_STATE = {
   errorMessage: '',
 };
 
+const IDLE_STATE = { ...INITIAL_STATE, isLoading: false };
+
+/** 검색은 로그인이 필요하다. 비로그인이거나 검색어가 비어 있으면 요청하지 않고 isIdle로 알린다. */
 export const usePolicySearch = (params = {}) => {
   const paramsKey = JSON.stringify(params);
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const hasQuery = Boolean(params.query?.trim());
+  const isIdle = !hasQuery || (!isAuthLoading && !isAuthenticated);
+  const canSearch = !isIdle && !isAuthLoading;
   const [reloadToken, setReloadToken] = useState(0);
   const [state, setState] = useState(INITIAL_STATE);
 
   useEffect(() => {
+    if (!canSearch) {
+      return undefined;
+    }
+
     let isActive = true;
 
     const loadSearchResult = async () => {
@@ -53,18 +65,19 @@ export const usePolicySearch = (params = {}) => {
     return () => {
       isActive = false;
     };
-  }, [paramsKey, reloadToken]);
+  }, [paramsKey, reloadToken, canSearch]);
 
   const refetch = useCallback(() => {
     setState((previous) => ({ ...previous, isLoading: true, errorMessage: '' }));
     setReloadToken((previous) => previous + 1);
   }, []);
 
-  const groupCounts = Object.entries(state.groups).reduce(
+  const currentState = isIdle ? IDLE_STATE : state;
+  const groupCounts = Object.entries(currentState.groups).reduce(
     (counts, [group, policies]) => ({ ...counts, [group]: policies.length }),
     {},
   );
   const totalCount = Object.values(groupCounts).reduce((sum, count) => sum + count, 0);
 
-  return { ...state, groupCounts, totalCount, refetch };
+  return { ...currentState, isIdle, groupCounts, totalCount, refetch };
 };

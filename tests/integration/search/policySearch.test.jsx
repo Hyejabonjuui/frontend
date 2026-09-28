@@ -5,7 +5,7 @@
  *         응답 형태(approved · underReview · declined)는 백엔드 PolicySearchResponseDTO를 따른다.
  *         DTO가 바뀌면 fixtures.POLICY_SEARCH_RESULT와 policyApi.toPolicySearchResult부터 맞춘다.
  */
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { http } from 'msw';
 import { describe, expect, it } from 'vitest';
 
@@ -13,13 +13,19 @@ import { ENDPOINTS } from '@/api/endpoints';
 import { EMPTY_MESSAGES, ERROR_MESSAGES, TOAST_MESSAGES } from '@/constants/messages';
 import { RECOMMENDATION_GROUP, RECOMMENDATION_GROUP_LABEL } from '@/constants/policy';
 
-import { renderApp, signInAs } from '../../helpers/renderApp';
-import { EMPTY_POLICY_SEARCH_RESULT, POLICY_SEARCH_RESULT, TOKENS } from '../../msw/fixtures';
+import { findHeader, renderApp, signInAs } from '../../helpers/renderApp';
+import {
+  EMPTY_POLICY_SEARCH_RESULT,
+  MEMBER_CREDENTIALS,
+  POLICY_SEARCH_RESULT,
+  TOKENS,
+} from '../../msw/fixtures';
 import { apiUrl, fail, ok } from '../../msw/respond';
 import { server } from '../../msw/server';
 
 const RESULT_PATH = `/search?query=${encodeURIComponent('월세')}`;
 const LOADING_TEXT = 'AI가 내 조건으로 정책을 확인하고 있어요';
+const GUEST_NOTICE = '로그인하면 내 조건으로 판정해드려요';
 
 const SEARCH_RESULT_KEYS = {
   [RECOMMENDATION_GROUP.POSSIBLE]: 'approved',
@@ -175,5 +181,66 @@ describe('추천 결과', () => {
     await user.click(screen.getByRole('button', { name: '다시 시도' }));
 
     expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
+  });
+});
+
+describe('검색 요청 조건', () => {
+  const recordSearchRequests = () => {
+    const requestedQueries = [];
+    server.use(
+      http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), ({ request }) => {
+        requestedQueries.push(new URL(request.url).searchParams.get('query'));
+
+        return ok(POLICY_SEARCH_RESULT);
+      }),
+    );
+
+    return requestedQueries;
+  };
+
+  const expectNoSearchResultState = () => {
+    expect(screen.queryByText(LOADING_TEXT)).not.toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.queryByText(EMPTY_MESSAGES.SEARCH)).not.toBeInTheDocument();
+    expect(screen.queryByText(TOAST_MESSAGES.NO_CANDIDATE)).not.toBeInTheDocument();
+  };
+
+  it('비로그인은 검색어가 있어도 요청하지 않고 로그인 안내만 보여 준다', async () => {
+    const requestedQueries = recordSearchRequests();
+    renderApp(RESULT_PATH);
+
+    expect(await screen.findByText(GUEST_NOTICE)).toBeInTheDocument();
+    expectNoSearchResultState();
+    expect(requestedQueries).toEqual([]);
+  });
+
+  it('로그인해도 검색어가 없으면 요청하지 않는다', async () => {
+    const requestedQueries = recordSearchRequests();
+    signInAs(TOKENS.MEMBER);
+    renderApp('/search');
+
+    const searchInput = await screen.findByRole('textbox', { name: '정책 검색' });
+    await waitFor(() => expect(searchInput).not.toHaveAttribute('readonly'));
+
+    expectNoSearchResultState();
+    expect(screen.queryByText(GUEST_NOTICE)).not.toBeInTheDocument();
+    expect(requestedQueries).toEqual([]);
+  });
+
+  it('검색 화면에서 로그인하면 주소의 검색어로 바로 검색한다', async () => {
+    const requestedQueries = recordSearchRequests();
+    const { user } = renderApp(RESULT_PATH);
+
+    expect(await screen.findByText(GUEST_NOTICE)).toBeInTheDocument();
+
+    const header = await findHeader();
+    await user.click(header.getByRole('button', { name: '로그인' }));
+    const dialog = await screen.findByRole('dialog');
+    await user.type(within(dialog).getByLabelText('이메일'), MEMBER_CREDENTIALS.email);
+    await user.type(within(dialog).getByLabelText('비밀번호'), MEMBER_CREDENTIALS.password);
+    await user.click(within(dialog).getByRole('button', { name: '로그인' }));
+
+    expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
+    expect(requestedQueries).toEqual(['월세']);
   });
 });

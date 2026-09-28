@@ -35,16 +35,25 @@ function PolicySearchPage() {
   const { openLoginNotice } = useLoginDialog();
   const { showInfo, showSuccess } = useToast();
   const [searchKeyword, setSearchKeyword] = useState(searchQuery);
-  const { groups, groupCounts, totalCount, query, isAiFailed, isLoading, errorMessage, refetch } =
-    usePolicySearch({ query: searchQuery });
+  const {
+    groups,
+    groupCounts,
+    totalCount,
+    query,
+    isAiFailed,
+    isIdle,
+    isLoading,
+    errorMessage,
+    refetch,
+  } = usePolicySearch({ query: searchQuery });
   const { isFavorite, toggleFavorite } = useFavorites();
 
   // 설계서 S-05: 후보가 없으면 안내 toast를 함께 띄운다.
   useEffect(() => {
-    if (!isLoading && !errorMessage && totalCount === 0) {
+    if (!isIdle && !isLoading && !errorMessage && totalCount === 0) {
       showInfo(TOAST_MESSAGES.NO_CANDIDATE);
     }
-  }, [isLoading, errorMessage, totalCount, showInfo]);
+  }, [isIdle, isLoading, errorMessage, totalCount, showInfo]);
 
   const handleSearch = (nextKeyword) => {
     const nextQuery = nextKeyword.trim();
@@ -82,7 +91,13 @@ function PolicySearchPage() {
 
       {!isLoading && errorMessage && <ErrorState message={errorMessage} onRetry={refetch} />}
 
-      {!isLoading && !errorMessage && (
+      {isIdle && !isAuthenticated && (
+        <Typography variant="body1" color="text.secondary">
+          로그인하면 내 조건으로 판정해드려요
+        </Typography>
+      )}
+
+      {!isIdle && !isLoading && !errorMessage && (
         <>
           <Stack component="section" spacing={1.5}>
             <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
@@ -99,11 +114,6 @@ function PolicySearchPage() {
                   <Link component={RouterLink} to={buildMyPagePath(MY_PAGE_TABS.CONDITION)}>
                     조건 수정
                   </Link>
-                </Typography>
-              )}
-              {!isAuthenticated && (
-                <Typography variant="body1" color="text.secondary">
-                  로그인하면 내 조건으로 판정해드려요
                 </Typography>
               )}
             </Stack>
