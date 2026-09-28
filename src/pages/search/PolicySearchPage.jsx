@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useSearchParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Link from '@mui/material/Link';
@@ -18,13 +18,13 @@ import {
   RECOMMENDATION_GROUP,
   RECOMMENDATION_GROUP_LABEL,
 } from '@/constants/policy';
+import { buildMyPagePath, MY_PAGE_TABS } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavoriteToggle } from '@/hooks/useFavoriteToggle';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { useMyConditions } from '@/hooks/useMyConditions';
 import { usePolicySearch } from '@/hooks/usePolicySearch';
 import { useToast } from '@/hooks/useToast';
-import ConditionEditDialog from '@/pages/search/ConditionEditDialog';
 import { withDirectionParticle } from '@/utils/koreanParticle';
 
 const GROUP_ORDER = [
@@ -49,7 +49,6 @@ function PolicySearchPage() {
   const { showInfo, showSuccess } = useToast();
   const [searchKeyword, setSearchKeyword] = useState(searchQuery);
   const [syncedQuery, setSyncedQuery] = useState(searchQuery);
-  const [isConditionDialogOpen, setIsConditionDialogOpen] = useState(false);
   const searchInputRef = useRef(null);
   const {
     groups,
@@ -63,11 +62,7 @@ function PolicySearchPage() {
   } = usePolicySearch({ query: searchQuery }, { historyKey: location.key });
   const { isFavorite, toggleFavorite } = useFavoriteToggle();
   // 검색 API는 서버에 저장된 내 조건으로 판정한다. 요약·칩·조건 수정 기본값 모두 이 한 곳을 본다.
-  const {
-    conditions,
-    appliedConditions,
-    refetch: refetchConditions,
-  } = useMyConditions({ redirectOnMissingProfile: false });
+  const { conditions, appliedConditions } = useMyConditions({ redirectOnMissingProfile: false });
 
   // 뒤로·앞으로 가기로 주소의 검색어가 바뀌면 검색창도 그 검색어로 맞춘다.
   if (syncedQuery !== searchQuery) {
@@ -113,18 +108,9 @@ function PolicySearchPage() {
     setSearchParams({ query: nextQuery });
   };
 
-  const openConditionDialog = () => setIsConditionDialogOpen(true);
-
   const focusSearchInput = () => {
     searchInputRef.current?.focus();
     searchInputRef.current?.select();
-  };
-
-  /** 바뀐 내 조건으로 같은 검색어를 다시 묻는다. 이전 조건으로 저장해 둔 결과는 조건 저장 때 이미 지웠다. */
-  const handleConditionSaved = () => {
-    setIsConditionDialogOpen(false);
-    refetchConditions();
-    refetch();
   };
 
   const searchedHashtag = findSearchedHashtag(searchQuery);
@@ -150,12 +136,11 @@ function PolicySearchPage() {
             action={
               canEditConditions && (
                 <Link
-                  component="button"
-                  type="button"
+                  component={RouterLink}
+                  to={buildMyPagePath(MY_PAGE_TABS.CONDITION)}
                   variant="body2"
                   color="text.primary"
                   underline="always"
-                  onClick={openConditionDialog}
                 >
                   조건 수정
                 </Link>
@@ -227,9 +212,10 @@ function PolicySearchPage() {
               )}
 
               <Button
+                component={RouterLink}
+                to={buildMyPagePath(MY_PAGE_TABS.CONDITION)}
                 variant="outlined"
                 disabled={!canEditConditions}
-                onClick={openConditionDialog}
               >
                 내 조건 수정
               </Button>
@@ -254,13 +240,6 @@ function PolicySearchPage() {
             }
           />
         ))}
-
-      <ConditionEditDialog
-        isOpen={isConditionDialogOpen}
-        conditions={conditions}
-        onClose={() => setIsConditionDialogOpen(false)}
-        onSaved={handleConditionSaved}
-      />
     </Stack>
   );
 }
