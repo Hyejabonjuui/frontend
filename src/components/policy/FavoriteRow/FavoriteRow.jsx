@@ -25,10 +25,14 @@ function FavoriteRow({ favorite, onRemove }) {
       component={RouterLink}
       to={buildPolicyDetailPath(policy.id)}
       sx={{
-        display: 'flex',
-        alignItems: { xs: 'flex-start', sm: 'center' },
-        flexWrap: { xs: 'wrap', sm: 'nowrap' },
-        gap: 2,
+        display: 'grid',
+        gridTemplateColumns: {
+          xs: '80px minmax(0, 1fr) auto',
+          sm: '96px minmax(0, 1fr) 200px 110px',
+        },
+        alignItems: 'center',
+        columnGap: { xs: 1, sm: 2 },
+        rowGap: 1,
         px: 2,
         py: 1.5,
         borderBottom: '1px solid',
@@ -40,15 +44,18 @@ function FavoriteRow({ favorite, onRemove }) {
         '&:hover': { backgroundColor: 'grey.100' },
       }}
     >
-      <Chip label={policy.subtypeName} variant="outlined" size="small" sx={{ flexShrink: 0 }} />
+      <Chip
+        label={policy.subtypeName}
+        variant="outlined"
+        size="small"
+        sx={{ width: '100%', minWidth: 0, justifySelf: 'center' }}
+      />
 
       <Typography
         variant="body2"
         color={isClosed ? 'text.disabled' : 'text.primary'}
         sx={{
-          flexGrow: 1,
           minWidth: 0,
-          width: { xs: 'calc(100% - 110px)', sm: 'auto' },
           wordBreak: 'keep-all',
           overflowWrap: 'break-word',
         }}
@@ -64,7 +71,12 @@ function FavoriteRow({ favorite, onRemove }) {
       <Typography
         variant="body1"
         color="text.secondary"
-        sx={{ display: { xs: 'none', sm: 'block' }, width: 100, textAlign: 'right' }}
+        sx={{
+          gridColumn: { xs: '1 / 3', sm: 'auto' },
+          width: '100%',
+          textAlign: { xs: 'left', sm: 'right' },
+          overflowWrap: 'anywhere',
+        }}
       >
         {policy.regionName}
       </Typography>
@@ -74,8 +86,7 @@ function FavoriteRow({ favorite, onRemove }) {
         spacing={1}
         sx={{
           alignItems: 'center',
-          width: { xs: 'auto', sm: 110 },
-          ml: { xs: 'auto', sm: 0 },
+          width: '100%',
           justifyContent: 'flex-end',
         }}
       >

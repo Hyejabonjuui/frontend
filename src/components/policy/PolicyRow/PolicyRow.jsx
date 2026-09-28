@@ -45,10 +45,14 @@ function PolicyRow({ policy, isFavorite = false, onToggleFavorite, memberRegionC
       component={RouterLink}
       to={buildPolicyDetailPath(policy.id)}
       sx={{
-        display: 'flex',
-        alignItems: { xs: 'flex-start', sm: 'center' },
-        flexWrap: { xs: 'wrap', sm: 'nowrap' },
-        gap: 2,
+        display: 'grid',
+        gridTemplateColumns: {
+          xs: '80px minmax(0, 1fr) auto',
+          sm: '96px minmax(0, 1fr) 200px 110px',
+        },
+        alignItems: 'center',
+        columnGap: { xs: 1, sm: 2 },
+        rowGap: 1,
         px: 2,
         py: 1.5,
         borderBottom: '1px solid',
@@ -58,14 +62,17 @@ function PolicyRow({ policy, isFavorite = false, onToggleFavorite, memberRegionC
         '&:hover': { backgroundColor: 'grey.100' },
       }}
     >
-      <Chip label={policy.subtypeName} variant="outlined" size="small" sx={{ flexShrink: 0 }} />
+      <Chip
+        label={policy.subtypeName}
+        variant="outlined"
+        size="small"
+        sx={{ width: '100%', minWidth: 0, justifySelf: 'center' }}
+      />
 
       <Typography
         variant="body2"
         sx={{
-          flexGrow: 1,
           minWidth: 0,
-          width: { xs: 'calc(100% - 110px)', sm: 'auto' },
           overflowWrap: 'anywhere',
         }}
       >
@@ -87,10 +94,9 @@ function PolicyRow({ policy, isFavorite = false, onToggleFavorite, memberRegionC
           noWrap
           tabIndex={isRegionTruncated ? 0 : undefined}
           sx={{
-            flexShrink: 0,
-            width: { xs: 'calc(100% - 126px)', sm: 200 },
+            gridColumn: { xs: '1 / 3', sm: 'auto' },
+            width: '100%',
             textAlign: { xs: 'left', sm: 'right' },
-            ml: { xs: 0, sm: 'auto' },
           }}
         >
           {regionSummary.label}
@@ -107,8 +113,7 @@ function PolicyRow({ policy, isFavorite = false, onToggleFavorite, memberRegionC
         spacing={1}
         sx={{
           alignItems: 'center',
-          width: { xs: 'auto', sm: 110 },
-          ml: { xs: 'auto', sm: 0 },
+          width: '100%',
           justifyContent: 'flex-end',
         }}
       >

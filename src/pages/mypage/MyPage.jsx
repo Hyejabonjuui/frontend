@@ -72,11 +72,22 @@ function AccountTab() {
       <Card variant="outlined">
         <Stack divider={<Divider />}>
           {rows.map((row) => (
-            <Stack key={row.label} direction="row" spacing={2} sx={{ px: 2, py: 1.5 }}>
-              <Typography variant="body1" color="text.secondary" sx={{ width: 96 }}>
+            <Stack
+              key={row.label}
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={{ xs: 0.5, sm: 2 }}
+              sx={{ px: 2, py: 1.5 }}
+            >
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                sx={{ width: { xs: 'auto', sm: 96 }, flexShrink: 0 }}
+              >
                 {row.label}
               </Typography>
-              <Typography variant="body2">{row.value}</Typography>
+              <Typography variant="body2" sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+                {row.value}
+              </Typography>
             </Stack>
           ))}
         </Stack>
@@ -128,7 +139,11 @@ function NotificationTab() {
 
   return (
     <Stack spacing={1.5}>
-      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+      <Stack
+        direction="row"
+        useFlexGap
+        sx={{ alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}
+      >
         <Typography variant="body1" color="text.secondary">
           [마감 7일 이하] 알림 / 안 읽음 ({unreadCount})
         </Typography>
@@ -190,6 +205,9 @@ function MyPage() {
       <Tabs
         value={currentTab}
         onChange={(event, value) => setSearchParams({ tab: value })}
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
         sx={{ borderBottom: '1px solid', borderColor: 'divider' }}
       >
         {tabItems.map((tab) => (

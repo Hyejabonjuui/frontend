@@ -26,20 +26,26 @@ function SearchResultCard({ policy, group, isFavorite = false, onToggleFavorite 
         backgroundColor: isImpossible ? 'grey.100' : 'background.paper',
       }}
     >
-      <Stack
-        direction="row"
-        spacing={1}
-        useFlexGap
-        sx={{ alignItems: 'flex-start', flexWrap: 'wrap' }}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '80px minmax(0, 1fr)', sm: '96px minmax(0, 1fr) auto' },
+          alignItems: 'center',
+          columnGap: 1,
+          rowGap: 1,
+        }}
       >
-        <Chip label={policy.subtypeName} variant="outlined" size="small" sx={{ flexShrink: 0 }} />
+        <Chip
+          label={policy.subtypeName}
+          variant="outlined"
+          size="small"
+          sx={{ width: '100%', minWidth: 0, justifySelf: 'center' }}
+        />
 
         <Typography
           variant="body2"
           sx={{
-            flexGrow: 1,
             minWidth: 0,
-            width: { xs: 'calc(100% - 110px)', sm: 'auto' },
             overflowWrap: 'anywhere',
           }}
         >
@@ -49,7 +55,11 @@ function SearchResultCard({ policy, group, isFavorite = false, onToggleFavorite 
         <Stack
           direction="row"
           spacing={1}
-          sx={{ alignItems: 'center', flexShrink: 0, ml: { xs: 'auto', sm: 0 } }}
+          sx={{
+            gridColumn: { xs: '1 / -1', sm: 'auto' },
+            alignItems: 'center',
+            justifySelf: 'end',
+          }}
         >
           <DdayBadge applyPeriodType={policy.applyPeriodType} applyEndDate={policy.applyEndDate} />
           <IconButton
@@ -61,9 +71,13 @@ function SearchResultCard({ policy, group, isFavorite = false, onToggleFavorite 
             <AppIcon name={isFavorite ? 'heart' : 'heart-outline'} size={20} />
           </IconButton>
         </Stack>
-      </Stack>
+      </Box>
 
-      <Stack direction="row" spacing={1} sx={{ alignItems: 'baseline', mt: 1.5 }}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={{ xs: 0.5, sm: 1 }}
+        sx={{ alignItems: { xs: 'flex-start', sm: 'baseline' }, mt: 1.5 }}
+      >
         <Typography variant="body2" sx={{ flexShrink: 0 }}>
           {reasonLabel}
         </Typography>

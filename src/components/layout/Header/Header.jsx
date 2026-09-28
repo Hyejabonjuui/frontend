@@ -132,9 +132,25 @@ function Header() {
                 variant="text"
                 onClick={(event) => setAccountAnchorEl(event.currentTarget)}
                 endIcon={<AppIcon name="chevron-down" size={20} />}
-                sx={{ color: 'text.primary', maxWidth: { xs: 132, sm: 180 }, overflow: 'hidden' }}
+                sx={{
+                  color: 'text.primary',
+                  maxWidth: { xs: 116, sm: 180 },
+                  minWidth: 0,
+                  '& .MuiButton-startIcon, & .MuiButton-endIcon': { flexShrink: 0 },
+                  '& .MuiButton-endIcon + *': { minWidth: 0 },
+                  '& .MuiButton-label': {
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  },
+                }}
               >
-                {user.nickname}
+                <Box
+                  component="span"
+                  sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                >
+                  {user.nickname}
+                </Box>
               </Button>
             </>
           ) : (

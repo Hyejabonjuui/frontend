@@ -51,6 +51,7 @@ function RadioField({ label, isRequired, field, options, value, error, helperTex
         row
         value={String(value ?? '')}
         onChange={(event) => onChange(field, options.parse(event.target.value))}
+        sx={{ columnGap: 0.5, rowGap: 0.25, flexWrap: 'wrap' }}
       >
         {items.map((option) => (
           <FormControlLabel
