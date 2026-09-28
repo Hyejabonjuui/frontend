@@ -6,7 +6,7 @@ export const ROUTES = {
   FIND_EMAIL: '/find-email',
   RESET_PASSWORD: '/reset-password',
   CONDITION_SETUP: '/conditions',
-  RECOMMENDATION: '/recommendations',
+  SEARCH: '/search',
   POLICY_DETAIL: '/policies/:policyId',
   MY_PAGE: '/mypage',
   NOTIFICATION: '/notifications',

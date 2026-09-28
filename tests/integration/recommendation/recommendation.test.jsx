@@ -18,7 +18,7 @@ import { EMPTY_RECOMMENDATIONS, RECOMMENDATIONS, TOKENS } from '../../msw/fixtur
 import { apiUrl, fail, ok } from '../../msw/respond';
 import { server } from '../../msw/server';
 
-const RESULT_PATH = `/recommendations?keyword=${encodeURIComponent('월세')}`;
+const RESULT_PATH = `/search?query=${encodeURIComponent('월세')}`;
 const LOADING_TEXT = 'AI가 내 조건으로 정책을 확인하고 있어요';
 
 const SEARCH_RESULT_KEYS = {

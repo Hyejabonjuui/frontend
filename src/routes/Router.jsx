@@ -31,7 +31,7 @@ function Router() {
           <Route path={ROUTES.LANDING} element={<LandingPage />} />
           <Route path={ROUTES.HOME} element={<HomePage />} />
           <Route path={ROUTES.POLICY_DETAIL} element={<PolicyDetailPage />} />
-          <Route path={ROUTES.RECOMMENDATION} element={<PolicySearchPage />} />
+          <Route path={ROUTES.SEARCH} element={<PolicySearchPage />} />
 
           <Route element={<PublicOnlyRoute />}>
             <Route path={ROUTES.SIGNUP} element={<SignupPage />} />

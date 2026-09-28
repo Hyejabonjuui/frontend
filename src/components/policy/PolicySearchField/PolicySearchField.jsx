@@ -42,7 +42,7 @@ function PolicySearchField() {
       return;
     }
 
-    navigate(`${ROUTES.RECOMMENDATION}?keyword=${encodeURIComponent(keyword.trim())}`);
+    navigate(`${ROUTES.SEARCH}?query=${encodeURIComponent(keyword.trim())}`);
   };
 
   return (

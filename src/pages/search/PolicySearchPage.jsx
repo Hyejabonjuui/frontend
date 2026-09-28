@@ -29,13 +29,13 @@ const GROUP_ORDER = [
 
 function PolicySearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const keyword = searchParams.get('keyword') ?? '';
+  const searchQuery = searchParams.get('query') ?? '';
   const { isAuthenticated } = useAuth();
   const { openLoginNotice } = useLoginDialog();
   const { showInfo } = useToast();
-  const [searchKeyword, setSearchKeyword] = useState(keyword);
+  const [searchKeyword, setSearchKeyword] = useState(searchQuery);
   const { groups, groupCounts, totalCount, query, isAiFailed, isLoading, errorMessage, refetch } =
-    usePolicySearch({ query: keyword });
+    usePolicySearch({ query: searchQuery });
   const { isFavorite, toggleFavorite } = useFavorites();
 
   // 설계서 S-05: 후보가 없으면 안내 toast를 함께 띄운다.
@@ -50,7 +50,7 @@ function PolicySearchPage() {
       return;
     }
 
-    setSearchParams({ keyword: nextKeyword.trim() });
+    setSearchParams({ query: nextKeyword.trim() });
   };
 
   return (
