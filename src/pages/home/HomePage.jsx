@@ -91,7 +91,16 @@ function HomePage() {
   return (
     <Stack spacing={{ xs: 4, sm: 5, md: 6 }}>
       <Stack component="section" spacing={2} sx={{ alignItems: 'center' }}>
-        <Typography variant="h1" sx={{ textAlign: 'center' }}>
+        <Typography
+          variant="h1"
+          sx={{
+            maxWidth: '100%',
+            fontSize: { xs: 'clamp(15px, 4.8vw, 22px)', sm: 24, md: 26 },
+            letterSpacing: { xs: '-0.04em', sm: '-0.02em' },
+            textAlign: 'center',
+            whiteSpace: 'nowrap',
+          }}
+        >
           받을 수 있는 주거 혜택, 한 번에 찾아요
         </Typography>
 
