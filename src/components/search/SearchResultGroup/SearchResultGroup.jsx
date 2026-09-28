@@ -17,13 +17,15 @@ function SearchResultGroup({ group, policies = [], isFavorite, onToggleFavorite 
         direction="row"
         spacing={1}
         useFlexGap
-        sx={{ alignItems: 'center', flexWrap: 'wrap', mb: 1 }}
+        sx={{ alignItems: 'center', flexWrap: 'wrap', columnGap: 1.5, mb: 1.5 }}
       >
-        <JudgeIcon result={JUDGE_RESULT_BY_GROUP[group]} size={20} />
-        <Typography variant="h2">
-          {RECOMMENDATION_GROUP_LABEL[group]} · {policies.length}건
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+          <JudgeIcon result={JUDGE_RESULT_BY_GROUP[group]} size={20} />
+          <Typography variant="h2">
+            {RECOMMENDATION_GROUP_LABEL[group]} · {policies.length}건
+          </Typography>
+        </Stack>
+        <Typography variant="body1" color="text.secondary" sx={{ wordBreak: 'keep-all' }}>
           {RECOMMENDATION_GROUP_DESCRIPTION[group]}
         </Typography>
       </Stack>
@@ -33,7 +35,7 @@ function SearchResultGroup({ group, policies = [], isFavorite, onToggleFavorite 
           해당하는 정책이 없어요
         </Typography>
       ) : (
-        <Stack spacing={1}>
+        <Stack spacing={1.5}>
           {policies.map((policy) => (
             <SearchResultCard
               key={policy.id}

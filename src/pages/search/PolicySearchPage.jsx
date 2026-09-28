@@ -25,7 +25,6 @@ import { useMyConditions } from '@/hooks/useMyConditions';
 import { usePolicySearch } from '@/hooks/usePolicySearch';
 import { useToast } from '@/hooks/useToast';
 import ConditionEditDialog from '@/pages/search/ConditionEditDialog';
-import { LAYOUT } from '@/styles/theme';
 import { withDirectionParticle } from '@/utils/koreanParticle';
 
 const GROUP_ORDER = [
@@ -116,28 +115,28 @@ function PolicySearchPage() {
   const canEditConditions = Boolean(conditions);
 
   return (
-    <Stack spacing={3} sx={{ width: '100%', maxWidth: LAYOUT.searchColumnWidth, mx: 'auto' }}>
-      <Stack component="section" spacing={1}>
+    <Stack spacing={4.5}>
+      <Stack component="section" spacing={1.5}>
         <PolicySearchBar
           keyword={searchKeyword}
           onKeywordChange={setSearchKeyword}
           onSubmit={handleSearch}
           onRequestLogin={isAuthenticated ? undefined : () => openLoginNotice(LOGIN_NOTICE.SEARCH)}
-          isCompact
+          isResultPage
         />
 
         {!isIdle && !errorMessage && (
           <SearchCriteriaSummary
-            typeLabel={searchedHashtag ? `${searchedHashtag} 유형으로 찾았어요` : ''}
+            typeLabel={searchedHashtag ? `‘${searchedHashtag}’ 유형으로 찾았어요` : ''}
             conditions={appliedConditions}
             action={
-              hasResult &&
-              totalCount > 0 &&
               canEditConditions && (
                 <Link
                   component="button"
                   type="button"
-                  variant="caption"
+                  variant="body2"
+                  color="text.primary"
+                  underline="always"
                   onClick={openConditionDialog}
                 >
                   조건 수정
@@ -145,6 +144,19 @@ function PolicySearchPage() {
               )
             }
           />
+        )}
+
+        {hasResult && totalCount > 0 && (
+          <Stack direction="row" useFlexGap sx={{ flexWrap: 'wrap', columnGap: 3, pt: 1 }}>
+            {GROUP_ORDER.map((group) => (
+              <Stack key={group} direction="row" spacing={0.75} sx={{ alignItems: 'baseline' }}>
+                <Typography variant="body2">{RECOMMENDATION_GROUP_LABEL[group]}</Typography>
+                <Typography variant="body1" color="text.secondary">
+                  {groupCounts[group] ?? 0}건
+                </Typography>
+              </Stack>
+            ))}
+          </Stack>
         )}
       </Stack>
 
@@ -185,7 +197,7 @@ function PolicySearchPage() {
                 disabled={!canEditConditions}
                 onClick={openConditionDialog}
               >
-                조건 수정
+                내 조건 수정
               </Button>
               <Typography variant="caption" color="text.secondary">
                 수정한 조건은 내 정보에도 반영돼요.
@@ -195,32 +207,19 @@ function PolicySearchPage() {
         />
       )}
 
-      {hasResult && totalCount > 0 && (
-        <>
-          <Stack direction="row" spacing={3} useFlexGap sx={{ flexWrap: 'wrap' }}>
-            {GROUP_ORDER.map((group) => (
-              <Typography key={group} variant="body2">
-                {RECOMMENDATION_GROUP_LABEL[group]}{' '}
-                <Typography component="span" variant="body1" color="text.secondary">
-                  {groupCounts[group] ?? 0}건
-                </Typography>
-              </Typography>
-            ))}
-          </Stack>
-
-          {GROUP_ORDER.map((group) => (
-            <SearchResultGroup
-              key={group}
-              group={group}
-              policies={groups[group]}
-              isFavorite={isSearchedPolicyFavorite}
-              onToggleFavorite={(policyId) =>
-                toggleFavorite(policyId, isSearchedPolicyFavorite(policyId))
-              }
-            />
-          ))}
-        </>
-      )}
+      {hasResult &&
+        totalCount > 0 &&
+        GROUP_ORDER.map((group) => (
+          <SearchResultGroup
+            key={group}
+            group={group}
+            policies={groups[group]}
+            isFavorite={isSearchedPolicyFavorite}
+            onToggleFavorite={(policyId) =>
+              toggleFavorite(policyId, isSearchedPolicyFavorite(policyId))
+            }
+          />
+        ))}
 
       <ConditionEditDialog
         isOpen={isConditionDialogOpen}

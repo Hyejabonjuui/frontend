@@ -126,7 +126,7 @@ describe('추천 결과', () => {
     renderApp(`/search?query=${encodeURIComponent('#월세')}`);
 
     expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
-    expect(screen.getByText('월세 유형으로 찾았어요')).toBeInTheDocument();
+    expect(screen.getByText('‘월세’ 유형으로 찾았어요')).toBeInTheDocument();
     expect(
       await screen.findByText(`${APPLIED_CONDITIONS.join(' · ')}`, { exact: false }),
     ).toBeInTheDocument();
@@ -428,7 +428,7 @@ describe('0건일 때 조건 수정', () => {
   };
 
   const openConditionDialog = async (user) => {
-    const editButton = await screen.findByRole('button', { name: '조건 수정' });
+    const editButton = await screen.findByRole('button', { name: '내 조건 수정' });
     await waitFor(() => expect(editButton).toBeEnabled());
     await user.click(editButton);
 
@@ -447,6 +447,8 @@ describe('0건일 때 조건 수정', () => {
     APPLIED_CONDITIONS.forEach((condition) => {
       expect(within(conditionChips).getByText(condition)).toBeInTheDocument();
     });
+    expect(screen.getByRole('button', { name: '내 조건 수정' })).toBeInTheDocument();
+    // 검색창 아래 적용된 조건 줄에서도 같은 조건 수정 창을 열 수 있다.
     expect(screen.getByRole('button', { name: '조건 수정' })).toBeInTheDocument();
     expect(screen.getByText('수정한 조건은 내 정보에도 반영돼요.')).toBeInTheDocument();
     // 모두 0건인 그룹별 건수 줄과 다시 시도 버튼은 두지 않는다.

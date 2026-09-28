@@ -11,9 +11,9 @@ import { POLICY_SEARCH_HASHTAGS, SEARCH_KEYWORD_MAX_LENGTH } from '@/constants/p
 import { LAYOUT } from '@/styles/theme';
 
 /**
+ * 설계서 Search/Main: 600 × 52 · 테두리 1.5 · 글자 16/24 · 오른쪽 끝 44px 원형 검색 버튼.
  * onRequestLogin을 받으면 검색은 잠긴 상태다. 입력도 막고 로그인 안내 창만 띄운다.
- * isCompact는 추천 결과(S-05)처럼 결과 바로 위에 두는 작은 검색창이다.
- * 높이를 줄이고, 오류 문구 자리와 해시태그 바로가기를 두지 않는다.
+ * isResultPage는 추천 결과(S-05) 맨 위 검색창이다. 왼쪽에 붙이고, 해시태그 바로가기와 오류 문구 자리를 두지 않는다.
  */
 function PolicySearchBar({
   keyword,
@@ -21,10 +21,9 @@ function PolicySearchBar({
   onSubmit,
   errorMessage,
   onRequestLogin,
-  isCompact = false,
+  isResultPage = false,
 }) {
   const isLocked = Boolean(onRequestLogin);
-  const emptyHelperText = isCompact ? undefined : ' ';
 
   const requestSearch = (searchKeyword) => {
     if (isLocked) {
@@ -62,12 +61,14 @@ function PolicySearchBar({
       }
     : undefined;
 
+  const emptyHelperText = isResultPage ? undefined : ' ';
+
   return (
     <Stack
       component="form"
       spacing={1.5}
       onSubmit={handleSubmit}
-      sx={{ alignItems: 'center', width: '100%' }}
+      sx={{ alignItems: isResultPage ? 'flex-start' : 'center', width: '100%' }}
     >
       <TextField
         value={keyword}
@@ -78,11 +79,18 @@ function PolicySearchBar({
         placeholder="예: 월세 지원 알려줘"
         error={Boolean(errorMessage)}
         helperText={errorMessage ? <FieldError>{errorMessage}</FieldError> : emptyHelperText}
-        size={isCompact ? 'small' : 'medium'}
         fullWidth
         sx={{
-          maxWidth: LAYOUT.searchColumnWidth,
-          '& .MuiOutlinedInput-root': { borderRadius: 999, pr: 0.5 },
+          maxWidth: LAYOUT.searchBarWidth,
+          '& .MuiOutlinedInput-root': {
+            height: 52,
+            borderRadius: '26px',
+            pl: '22px',
+            pr: '6px',
+          },
+          '& .MuiOutlinedInput-notchedOutline': { borderWidth: 1.5, borderColor: 'grey.500' },
+          '& .MuiOutlinedInput-input': { p: 0, height: 24, fontSize: 16, lineHeight: '24px' },
+          '& .MuiInputAdornment-root': { height: 'auto', maxHeight: 'none', ml: '10px' },
           '& .MuiInputAdornment-root .MuiTypography-root': { display: { xs: 'none', sm: 'block' } },
         }}
         slotProps={{
@@ -94,17 +102,22 @@ function PolicySearchBar({
           input: {
             endAdornment: (
               <InputAdornment position="end">
-                <Typography variant="caption" color="text.disabled" sx={{ mr: 1 }}>
+                <Typography variant="caption" color="text.disabled" sx={{ mr: '10px' }}>
                   {keyword.length} / {SEARCH_KEYWORD_MAX_LENGTH}
                 </Typography>
                 <IconButton
                   type="submit"
-                  color="primary"
-                  size={isCompact ? 'small' : 'medium'}
                   aria-label="검색"
-                  sx={{ bgcolor: 'primary.main' }}
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    color: 'primary.contrastText',
+                    bgcolor: 'primary.main',
+                    // 설계서 공통 규칙: 호버·클릭은 같은 색을 진하게 보여 준다.
+                    '&:hover': { bgcolor: 'primary.main', opacity: 0.88 },
+                  }}
                 >
-                  <AppIcon name="search" size={isCompact ? 18 : 20} sx={{ color: '#0b1626' }} />
+                  <AppIcon name="search" size={20} />
                 </IconButton>
               </InputAdornment>
             ),
@@ -112,7 +125,7 @@ function PolicySearchBar({
         }}
       />
 
-      {!isCompact && (
+      {!isResultPage && (
         <Stack
           direction="row"
           spacing={1}

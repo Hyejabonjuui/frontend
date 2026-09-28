@@ -3,27 +3,22 @@ import Chip from '@mui/material/Chip';
 import JudgeIcon from '@/components/common/JudgeIcon';
 import { JUDGE_RESULT_COLOR, JUDGE_RESULT_LABEL } from '@/constants/policy';
 
-const SIZE_STYLES = {
-  medium: { height: 28, iconSize: 20 },
-  // 추천 결과 카드처럼 조건 다섯 개를 한 줄에 놓는 곳
-  small: { height: 24, iconSize: 16 },
-};
-
-function JudgeChip({ result, label, size = 'medium' }) {
-  const { height, iconSize } = SIZE_STYLES[size];
-
+/** 설계서 Chip/Judge: 높이 28 · 왼쪽 4 · 오른쪽 10 · 아이콘 20과 글자 사이 6 */
+function JudgeChip({ result, label }) {
   return (
     <Chip
       variant="outlined"
-      icon={<JudgeIcon result={result} size={iconSize} />}
+      icon={<JudgeIcon result={result} size={20} />}
       label={label ?? JUDGE_RESULT_LABEL[result]}
       sx={{
-        height,
+        height: 28,
         pl: 0.5,
         borderColor: JUDGE_RESULT_COLOR[result],
+        color: 'text.primary',
         fontSize: 12,
         fontWeight: 700,
-        '& .MuiChip-icon': { ml: 0, mr: size === 'small' ? 0.5 : 0.75 },
+        '& .MuiChip-icon': { mx: 0 },
+        '& .MuiChip-label': { pl: 0.75, pr: 1.25 },
       }}
     />
   );
