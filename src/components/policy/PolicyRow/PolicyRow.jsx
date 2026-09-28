@@ -80,8 +80,8 @@ function PolicyRow({
         color="text.secondary"
         noWrap
         sx={{
-          flex: { xs: '1 1 0', sm: '0 0 200px' },
-          minWidth: 0,
+          flexShrink: 0,
+          width: { xs: 'calc(100% - 126px)', sm: 200 },
           textAlign: { xs: 'left', sm: 'right' },
           ml: { xs: 0, sm: 'auto' },
         }}
