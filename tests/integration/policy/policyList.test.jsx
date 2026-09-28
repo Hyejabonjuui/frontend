@@ -13,6 +13,7 @@ import { EMPTY_MESSAGES, ERROR_MESSAGES } from '@/constants/messages';
 import { renderApp, signInAs } from '../../helpers/renderApp';
 import {
   EMPTY_POLICY_PAGE,
+  MEMBER_CONDITION_SUMMARY,
   POLICY,
   POLICY_PAGE,
   TOKENS,
@@ -22,6 +23,19 @@ import { apiUrl, fail, ok } from '../../msw/respond';
 import { server } from '../../msw/server';
 
 describe('홈 정책 목록', () => {
+  it('로그인 회원에게 내 조건 조회 결과로 만든 조건 요약을 보여 준다', async () => {
+    signInAs(TOKENS.MEMBER);
+    renderApp('/home');
+
+    expect(
+      await screen.findByText(
+        `${MEMBER_CONDITION_SUMMARY} 기준으로 찾아요`,
+        { exact: false },
+        { timeout: 5000 },
+      ),
+    ).toBeInTheDocument();
+  });
+
   it('비로그인 목록 API에 명세 파라미터만 전달하고 정책과 건수를 보여 준다', async () => {
     let requestInfo;
 

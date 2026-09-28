@@ -47,32 +47,69 @@ const toPublicUser = (user) => ({
   nickname: user.nickname,
   role: user.role,
   joinedAt: user.joinedAt,
-  conditionSummary: buildConditionSummary(user.profile),
 });
 
+/** 백엔드처럼 "서울특별시 마포구" 형태로 만든다. 시·도 전체 코드(끝 000)는 시·도 이름만 쓴다. */
 const findRegionName = (regionCode) => {
   const sido = CODE_GROUPS.regions.find((region) =>
     region.sigungu.some((sigungu) => sigungu.code === regionCode),
   );
 
-  return sido?.sigungu.find((sigungu) => sigungu.code === regionCode)?.name ?? '';
+  if (!sido) {
+    return null;
+  }
+  if (regionCode.endsWith('000')) {
+    return sido.sidoName;
+  }
+
+  return `${sido.sidoName} ${sido.sigungu.find((sigungu) => sigungu.code === regionCode).name}`;
 };
 
-function buildConditionSummary(profile) {
-  if (!profile?.birthDate) {
-    return '';
-  }
+const toInternationalAge = (birthDate) => {
+  const birth = new Date(birthDate);
+  const today = new Date();
+  const hasHadBirthday =
+    today.getMonth() > birth.getMonth() ||
+    (today.getMonth() === birth.getMonth() && today.getDate() >= birth.getDate());
 
-  const birthYear = Number(profile.birthDate.slice(0, 4));
-  const age = new Date().getFullYear() - birthYear;
-  const parts = [`만 ${age}세`, findRegionName(profile.regionCode)];
+  return today.getFullYear() - birth.getFullYear() - (hasHadBirthday ? 0 : 1);
+};
 
-  if (profile.houseless) {
-    parts.push('무주택');
-  }
+const emptyToNull = (value) => (value === '' || value === undefined ? null : value);
 
-  return parts.filter(Boolean).join(' · ');
-}
+/** 목 저장소의 조건(화면 폼 모양)을 백엔드 ProfileResponseDTO 모양으로 바꾼다. */
+const toApiProfile = (profile) => ({
+  birth: profile.birthDate,
+  age: toInternationalAge(profile.birthDate),
+  regionCode: profile.regionCode,
+  regionName: findRegionName(profile.regionCode),
+  employmentCode: profile.employmentCode,
+  houselessYn: profile.houseless,
+  marriageCode: emptyToNull(profile.marriageCode),
+  incomeRangeCode: emptyToNull(profile.incomeRange),
+  educationCode: emptyToNull(profile.educationCode),
+  housingType: emptyToNull(profile.housingType),
+});
+
+/** 백엔드 조건 요청 본문(가입의 profile, 조건 수정)을 목 저장소의 조건 모양으로 바꾼다. */
+const fromProfileRequest = (request) => ({
+  birthDate: request.birth,
+  sidoCode: request.regionCode.slice(0, 2),
+  regionCode: request.regionCode,
+  employmentCode: request.employmentCode,
+  houseless: request.houselessYn,
+  marriageCode: request.marriageCode ?? '',
+  incomeRange: request.incomeRangeCode ?? '',
+  educationCode: request.educationCode ?? '',
+  housingType: request.housingType ?? '',
+});
+
+const toProfileResponse = (profile) => ({
+  isSuccess: true,
+  code: 'SUCCESS_001',
+  message: '성공입니다.',
+  result: toApiProfile(profile),
+});
 
 const remainingDays = (policy) => {
   if (policy.applyPeriodType === APPLY_PERIOD_TYPE.ALWAYS) {
@@ -451,17 +488,7 @@ export const HANDLERS = [
           nickname: body.nickname,
           role: 'USER',
           joinedAt: new Date().toISOString().slice(0, 10),
-          profile: {
-            birthDate: body.profile.birth,
-            sidoCode: body.profile.regionCode.slice(0, 2),
-            regionCode: body.profile.regionCode,
-            employmentCode: body.profile.employmentCode,
-            houseless: body.profile.houselessYn,
-            marriageCode: body.profile.marriageCode ?? '',
-            incomeRange: body.profile.incomeRangeCode ?? '',
-            educationCode: body.profile.educationCode ?? '',
-            housingType: body.profile.housingType ?? '',
-          },
+          profile: fromProfileRequest(body.profile),
         };
 
         state.users.push(user);
@@ -608,7 +635,7 @@ export const HANDLERS = [
   {
     method: 'get',
     match: (url) => url === '/api/members/me/profile',
-    handle: ({ user }) => requireUser(user) ?? ok(user.profile ?? {}),
+    handle: ({ user }) => requireUser(user) ?? ok(toProfileResponse(user.profile)),
   },
   {
     method: 'patch',
@@ -619,14 +646,14 @@ export const HANDLERS = [
         return denied;
       }
 
-      mockStore.update((state) => {
+      const updated = mockStore.update((state) => {
         const target = state.users.find((item) => item.id === user.id);
-        target.profile = { ...target.profile, ...body };
+        target.profile = fromProfileRequest(body);
 
         return state;
       });
 
-      return ok(body);
+      return ok(toProfileResponse(updated.users.find((item) => item.id === user.id).profile));
     },
   },
   {

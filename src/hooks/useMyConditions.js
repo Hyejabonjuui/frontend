@@ -15,6 +15,7 @@ export const useMyConditions = ({ redirectOnMissingProfile = true } = {}) => {
   const [state, setState] = useState({
     memberId: null,
     conditions: null,
+    summary: '',
     isLoading: isAuthenticated,
     errorMessage: '',
   });
@@ -28,10 +29,10 @@ export const useMyConditions = ({ redirectOnMissingProfile = true } = {}) => {
 
     const loadConditions = async () => {
       try {
-        const data = await userApi.getMyConditions();
+        const { conditions, summary } = await userApi.getMyConditions();
 
         if (isActive) {
-          setState({ memberId, conditions: data, isLoading: false, errorMessage: '' });
+          setState({ memberId, conditions, summary, isLoading: false, errorMessage: '' });
         }
       } catch (error) {
         if (redirectOnMissingProfile && error?.response?.data?.code === 'PROFILE_001') {
@@ -43,6 +44,7 @@ export const useMyConditions = ({ redirectOnMissingProfile = true } = {}) => {
           setState({
             memberId,
             conditions: null,
+            summary: '',
             isLoading: false,
             errorMessage: getErrorMessage(error),
           });
@@ -66,6 +68,7 @@ export const useMyConditions = ({ redirectOnMissingProfile = true } = {}) => {
 
   return {
     conditions: isCurrentMember ? state.conditions : null,
+    summary: isCurrentMember ? state.summary : '',
     isLoading: isAuthenticated && (!isCurrentMember || state.isLoading),
     errorMessage: isCurrentMember ? state.errorMessage : '',
     refetch,

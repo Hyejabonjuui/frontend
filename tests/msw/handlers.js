@@ -18,7 +18,7 @@ import {
   CARD_NEWS_LIST_RESPONSE,
   FAVORITES,
   FIND_EMAIL_RESULT,
-  MEMBER_PROFILE,
+  MEMBER_PROFILE_RESPONSE,
   MEMBER_USER,
   NOTIFICATION_LIST,
   REGION_LIST_RESPONSE,
@@ -103,7 +103,7 @@ export const handlers = [
   ),
   http.get(
     apiUrl(ENDPOINTS.USER.PROFILE),
-    withUser(() => ok(MEMBER_PROFILE)),
+    withUser(() => ok(MEMBER_PROFILE_RESPONSE)),
   ),
   http.patch(
     apiUrl(ENDPOINTS.USER.PROFILE),

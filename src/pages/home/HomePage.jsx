@@ -26,7 +26,7 @@ import { useToast } from '@/hooks/useToast';
 
 function HomePage() {
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { openLoginDialog, openLoginNotice } = useLoginDialog();
   const { showError } = useToast();
   const [keyword, setKeyword] = useState('');
@@ -47,7 +47,9 @@ function HomePage() {
     size: POLICY_PAGE_SIZE,
   });
   const { isFavorite, isLoading: isFavoritesLoading, toggleFavorite } = useFavorites();
-  const { conditions } = useMyConditions({ redirectOnMissingProfile: false });
+  const { conditions, summary: conditionSummary } = useMyConditions({
+    redirectOnMissingProfile: false,
+  });
 
   const isPolicyFavorite = (policyId) => {
     const policy = policies.find((item) => String(item.id) === String(policyId));
@@ -118,9 +120,9 @@ function HomePage() {
         />
 
         {isAuthenticated ? (
-          user.conditionSummary && (
+          conditionSummary && (
             <Typography variant="caption" color="text.secondary">
-              {user.conditionSummary} 기준으로 찾아요{' '}
+              {conditionSummary} 기준으로 찾아요{' '}
               <Link component={RouterLink} to={buildMyPagePath(MY_PAGE_TABS.CONDITION)}>
                 조건 수정
               </Link>

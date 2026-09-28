@@ -32,25 +32,43 @@ export const toPolicySummary = (policy) => ({
   viewCount: policy.viewCount,
 });
 
-const toPublicUser = (user, conditionSummary) => ({
+const toPublicUser = (user) => ({
   id: user.id,
   email: user.email,
   nickname: user.nickname,
   role: user.role,
   joinedAt: user.joinedAt,
-  conditionSummary,
 });
 
 const [MEMBER, ADMIN] = USERS;
 
-export const MEMBER_USER = toPublicUser(MEMBER, '만 27세 · 마포구 · 무주택');
-export const ADMIN_USER = toPublicUser(ADMIN, '만 31세 · 서울 전체');
+export const MEMBER_USER = toPublicUser(MEMBER);
+export const ADMIN_USER = toPublicUser(ADMIN);
 /** 가입 직후처럼 조건을 아직 등록하지 않은 회원 */
-export const NEW_USER = { ...toPublicUser(MEMBER, ''), id: 3, email: 'new@hyeja.kr' };
+export const NEW_USER = { ...toPublicUser(MEMBER), id: 3, email: 'new@hyeja.kr' };
 
 export const MEMBER_CREDENTIALS = { email: MEMBER.email, password: MEMBER.password };
 
-export const MEMBER_PROFILE = { ...MEMBER.profile };
+/** 백엔드 GET /api/members/me/profile 응답. 나이·지역 이름은 서버가 계산해서 준다. */
+export const MEMBER_PROFILE_RESPONSE = {
+  isSuccess: true,
+  code: 'SUCCESS_001',
+  message: '성공입니다.',
+  result: {
+    birth: MEMBER.profile.birthDate,
+    age: 27,
+    regionCode: MEMBER.profile.regionCode,
+    regionName: '서울특별시 마포구',
+    employmentCode: MEMBER.profile.employmentCode,
+    houselessYn: MEMBER.profile.houseless,
+    marriageCode: MEMBER.profile.marriageCode,
+    incomeRangeCode: null,
+    educationCode: MEMBER.profile.educationCode,
+    housingType: MEMBER.profile.housingType,
+  },
+};
+
+export const MEMBER_CONDITION_SUMMARY = '만 27세 · 서울특별시 마포구 · 무주택';
 
 export const buildMemberAccountResponse = (member) => ({
   isSuccess: true,

@@ -5,7 +5,7 @@
  * notice: 정책 지역은 백엔드 PolicySyncItemService처럼 시·도 코드를 시군구 전체로 풀어 둔 모양을 가정한다.
  *         지역 이름은 목 코드표(src/mocks/data/codes.js)에서 가져와 서울이 4개 구뿐이다.
  *         백엔드 목록 응답의 지역 모양이 바뀌면 REGIONS 값을 명세에 맞춘다.
- * notice: 회원 거주지는 목 회원 조건(MEMBER_PROFILE.regionCode = 11440 마포구)을 쓴다.
+ * notice: 회원 거주지는 목 회원 조건(MEMBER_PROFILE_RESPONSE.result.regionCode = 11440 마포구)을 쓴다.
  */
 import { screen, waitFor, within } from '@testing-library/react';
 import { HttpResponse, http } from 'msw';
