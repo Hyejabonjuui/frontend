@@ -19,7 +19,6 @@ function PolicyList({
   onToggleFavorite,
   onRetry,
   memberRegionCode = null,
-  sidoRegions = [],
 }) {
   if (isLoading) {
     return <LoadingSpinner />;
@@ -42,7 +41,6 @@ function PolicyList({
           isFavorite={isFavorite?.(policy.id) ?? false}
           onToggleFavorite={onToggleFavorite}
           memberRegionCode={memberRegionCode}
-          sidoRegions={sidoRegions}
         />
       ))}
 

@@ -23,18 +23,11 @@ const VISUALLY_HIDDEN_SX = {
   whiteSpace: 'nowrap',
 };
 
-function PolicyRow({
-  policy,
-  isFavorite = false,
-  onToggleFavorite,
-  memberRegionCode = null,
-  sidoRegions = [],
-}) {
+function PolicyRow({ policy, isFavorite = false, onToggleFavorite, memberRegionCode = null }) {
   const regionSummary = summarizePolicyRegions({
     regions: policy.regions,
     nationwide: policy.nationwide,
     memberRegionCode,
-    sidoRegions,
   });
   const isRegionSummarized = regionSummary.regionLabels.length > 1;
 

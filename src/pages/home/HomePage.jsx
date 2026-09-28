@@ -19,7 +19,6 @@ import { POLICY_PAGE_SIZE, POLICY_SORT_OPTIONS, POLICY_SUBTYPES } from '@/consta
 import { buildMyPagePath, MY_PAGE_TABS, ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
 import { useCardNews, useCardNewsDetail, usePolicies } from '@/hooks/usePolicies';
-import { useCodes } from '@/hooks/useCodes';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { useMyConditions } from '@/hooks/useMyConditions';
@@ -48,7 +47,6 @@ function HomePage() {
     size: POLICY_PAGE_SIZE,
   });
   const { isFavorite, isLoading: isFavoritesLoading, toggleFavorite } = useFavorites();
-  const { codes } = useCodes();
   const { conditions } = useMyConditions({ redirectOnMissingProfile: false });
 
   const isPolicyFavorite = (policyId) => {
@@ -214,7 +212,6 @@ function HomePage() {
           onToggleFavorite={handlePolicyFavoriteToggle}
           onRetry={refetch}
           memberRegionCode={conditions?.regionCode || null}
-          sidoRegions={codes.regions}
         />
       </Box>
 

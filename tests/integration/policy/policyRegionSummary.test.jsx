@@ -1,10 +1,10 @@
 /**
  * 홈 정책 목록의 지역 요약 표시 (S-01)
  *
- * notice: 실제 백엔드 없이 MSW가 정책 목록·시군구 목록(/api/regions)·내 조건(/api/members/me/profile)에 응답한다.
+ * notice: 실제 백엔드 없이 MSW가 정책 목록·내 조건(/api/members/me/profile)에 응답한다.
  * notice: 정책 지역은 백엔드 PolicySyncItemService처럼 시·도 코드를 시군구 전체로 풀어 둔 모양을 가정한다.
- *         시·도 코드표는 목 코드표(src/mocks/data/codes.js)라 서울이 4개 구뿐이다.
- *         백엔드가 시·도 단위로 내려주도록 바뀌면 REGIONS 값과 시·도 이름 기대값을 명세에 맞춘다.
+ *         지역 이름은 목 코드표(src/mocks/data/codes.js)에서 가져와 서울이 4개 구뿐이다.
+ *         백엔드 목록 응답의 지역 모양이 바뀌면 REGIONS 값을 명세에 맞춘다.
  * notice: 회원 거주지는 목 회원 조건(MEMBER_PROFILE.regionCode = 11440 마포구)을 쓴다.
  */
 import { screen, waitFor, within } from '@testing-library/react';
@@ -74,7 +74,7 @@ const useMemberList = () =>
   server.use(http.get(apiUrl(ENDPOINTS.POLICY.MEMBER_LIST), () => ok(POLICY_LIST_RESPONSE)));
 
 describe('홈 정책 목록 지역 요약', () => {
-  it('비회원은 지역 코드 순서로 요약하고, 시·도 전체와 전국을 한 단위로 보여 준다', async () => {
+  it('비회원은 지역 코드 순서의 첫 지역으로 요약하고, 전국 정책은 "전국"으로 보여 준다', async () => {
     useGuestList();
     renderApp('/home');
 
@@ -84,18 +84,23 @@ describe('홈 정책 목록 지역 요약', () => {
     expect(
       await within(threeDistrictsRow).findByText('서울특별시 성동구 외 2개'),
     ).toBeInTheDocument();
-    expect(await within(wholeSeoulRow).findByText('서울특별시')).toBeInTheDocument();
+    expect(within(wholeSeoulRow).getByText('서울특별시 성동구 외 3개')).toBeInTheDocument();
     expect(within(await findPolicyRow('전국 월세 지원')).getByText('전국')).toBeInTheDocument();
   });
 
-  it('로그인 회원은 거주지를 포함한 단위를 첫 단위로 보여 준다', async () => {
+  it('로그인 회원은 거주지를 첫 지역으로 보여 주고, 전국 정책은 거주지와 관계없이 "전국"으로 보여 준다', async () => {
     useMemberList();
     signInAs(TOKENS.MEMBER);
     renderApp('/home');
 
-    const row = await findPolicyRow('세 구 공통 월세 지원');
+    const threeDistrictsRow = await findPolicyRow('세 구 공통 월세 지원');
+    const wholeSeoulRow = await findPolicyRow('서울 전역 월세 지원');
 
-    expect(await within(row).findByText('서울특별시 마포구 외 2개')).toBeInTheDocument();
+    expect(
+      await within(threeDistrictsRow).findByText('서울특별시 마포구 외 2개'),
+    ).toBeInTheDocument();
+    expect(within(wholeSeoulRow).getByText('서울특별시 마포구 외 3개')).toBeInTheDocument();
+    expect(within(await findPolicyRow('전국 월세 지원')).getByText('전국')).toBeInTheDocument();
   });
 
   it('요약된 지역은 키보드 포커스로 전체 목록 툴팁을 열고, 링크 이름에도 전체 목록이 들어간다', async () => {
@@ -121,12 +126,9 @@ describe('홈 정책 목록 지역 요약', () => {
     await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
   });
 
-  it('시군구 목록과 내 조건을 못 불러와도 목록은 개수 요약으로 보여 준다', async () => {
+  it('내 조건을 못 불러와도 목록은 비회원 순서로 요약해 보여 준다', async () => {
     useMemberList();
-    server.use(
-      http.get(apiUrl(ENDPOINTS.CODE.REGIONS), () => fail(500)),
-      http.get(apiUrl(ENDPOINTS.USER.PROFILE), () => fail(500)),
-    );
+    server.use(http.get(apiUrl(ENDPOINTS.USER.PROFILE), () => fail(500)));
     signInAs(TOKENS.MEMBER);
     renderApp('/home');
 
