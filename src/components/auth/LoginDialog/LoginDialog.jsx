@@ -23,7 +23,6 @@ const INITIAL_FORM = { email: '', password: '' };
 
 const FOOTER_LINKS = [
   { label: '이메일 찾기', to: ROUTES.FIND_EMAIL },
-  { label: '비밀번호 재발급', to: ROUTES.RESET_PASSWORD },
   { label: '회원가입', to: ROUTES.SIGNUP },
 ];
 

@@ -88,5 +88,3 @@ export const findEmail = async (form) => {
 
   return unwrapResult(response);
 };
-
-export const resetPassword = (form) => httpClient.post(ENDPOINTS.AUTH.RESET_PASSWORD, form);

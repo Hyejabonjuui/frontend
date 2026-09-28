@@ -549,11 +549,6 @@ export const HANDLERS = [
     },
   },
   {
-    method: 'post',
-    match: (url) => url === '/api/auth/reset-password',
-    handle: () => ok({ message: '임시 비밀번호를 이메일로 보냈어요' }),
-  },
-  {
     method: 'get',
     match: (url) => url === '/api/members/me',
     handle: ({ user }) =>
