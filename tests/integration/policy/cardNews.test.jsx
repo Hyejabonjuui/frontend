@@ -1,3 +1,11 @@
+/**
+ * 홈 카드뉴스 목록과 팝업 (S-01)
+ *
+ * notice: 실제 백엔드 없이 MSW가 카드뉴스 목록·상세(/api/policies/card-detail/{policyId})에 응답한다.
+ * notice: 상세 응답의 dDay는 백엔드 CardNewsDetailResponseDTO(record)의 Integer dDay가
+ *         어노테이션 없이 그대로 직렬화된 키를 따른다. 키가 바뀌면 fixtures.buildCardNewsDetailResponse와
+ *         policyApi.toCardNewsDetail부터 맞춘다.
+ */
 import { screen, within } from '@testing-library/react';
 import { http } from 'msw';
 import { describe, expect, it } from 'vitest';
@@ -84,5 +92,21 @@ describe('홈 카드뉴스', () => {
       await screen.findByRole('heading', { name: POLICY.title, level: 1 }),
     ).toBeInTheDocument();
     expect(authorization).toBe(`Bearer ${TOKENS.MEMBER}`);
+  });
+
+  it('상세 응답의 dDay가 숫자면 팝업 윗줄에 D-day 배지를 보여 준다', async () => {
+    const detailResponse = buildCardNewsDetailResponse(POLICY);
+
+    server.use(
+      http.get(apiUrl(ENDPOINTS.POLICY.CARD_NEWS_DETAIL(':policyId')), () =>
+        ok({ ...detailResponse, result: { ...detailResponse.result, dDay: 5 } }),
+      ),
+    );
+    const { user } = renderApp('/home');
+
+    await user.click(await screen.findByRole('heading', { name: POLICY.title, level: 1 }));
+
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('D-5')).toBeInTheDocument();
   });
 });
