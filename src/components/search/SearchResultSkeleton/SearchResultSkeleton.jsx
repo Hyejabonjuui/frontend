@@ -53,7 +53,7 @@ function CardSkeleton() {
 }
 
 /** 설계서 S-05 로딩: AI 판정이 오는 동안 결과와 같은 뼈대를 먼저 보여 준다. */
-function RecommendationSkeleton() {
+function SearchResultSkeleton() {
   return (
     <Stack spacing={4} aria-busy="true" aria-live="polite">
       <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center' }}>
@@ -96,4 +96,4 @@ function RecommendationSkeleton() {
   );
 }
 
-export default RecommendationSkeleton;
+export default SearchResultSkeleton;

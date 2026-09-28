@@ -10,15 +10,15 @@ import Typography from '@mui/material/Typography';
 import EmptyState from '@/components/common/EmptyState';
 import ErrorState from '@/components/common/ErrorState';
 import PolicySearchBar from '@/components/policy/PolicySearchBar';
-import RecommendationGroup from '@/components/recommendation/RecommendationGroup';
-import RecommendationSkeleton from '@/components/recommendation/RecommendationSkeleton';
+import SearchResultGroup from '@/components/search/SearchResultGroup';
+import SearchResultSkeleton from '@/components/search/SearchResultSkeleton';
 import { EMPTY_MESSAGES, LOGIN_NOTICE, TOAST_MESSAGES } from '@/constants/messages';
 import { RECOMMENDATION_GROUP, RECOMMENDATION_GROUP_LABEL } from '@/constants/policy';
 import { buildMyPagePath, MY_PAGE_TABS, ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
-import { useRecommendations } from '@/hooks/useRecommendations';
+import { usePolicySearch } from '@/hooks/usePolicySearch';
 import { useToast } from '@/hooks/useToast';
 
 const GROUP_ORDER = [
@@ -27,7 +27,7 @@ const GROUP_ORDER = [
   RECOMMENDATION_GROUP.IMPOSSIBLE,
 ];
 
-function RecommendationPage() {
+function PolicySearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const keyword = searchParams.get('keyword') ?? '';
   const { isAuthenticated } = useAuth();
@@ -35,7 +35,7 @@ function RecommendationPage() {
   const { showInfo } = useToast();
   const [searchKeyword, setSearchKeyword] = useState(keyword);
   const { groups, groupCounts, totalCount, query, isAiFailed, isLoading, errorMessage, refetch } =
-    useRecommendations({ query: keyword });
+    usePolicySearch({ query: keyword });
   const { isFavorite, toggleFavorite } = useFavorites();
 
   // 설계서 S-05: 후보가 없으면 안내 toast를 함께 띄운다.
@@ -65,7 +65,7 @@ function RecommendationPage() {
       </Stack>
 
       {/* 설계서 S-05 로딩: AI 응답을 기다리는 동안 결과와 같은 뼈대를 보여 준다. */}
-      {isLoading && <RecommendationSkeleton />}
+      {isLoading && <SearchResultSkeleton />}
 
       {!isLoading && errorMessage && <ErrorState message={errorMessage} onRetry={refetch} />}
 
@@ -112,9 +112,9 @@ function RecommendationPage() {
           {totalCount === 0 ? (
             <EmptyState
               isFramed
-              title={EMPTY_MESSAGES.RECOMMENDATION}
-              description={EMPTY_MESSAGES.RECOMMENDATION_DESCRIPTION}
-              caption={EMPTY_MESSAGES.RECOMMENDATION_CAPTION}
+              title={EMPTY_MESSAGES.SEARCH}
+              description={EMPTY_MESSAGES.SEARCH_DESCRIPTION}
+              caption={EMPTY_MESSAGES.SEARCH_CAPTION}
               action={
                 <Stack direction="row" spacing={1} sx={{ justifyContent: 'center' }}>
                   <Button
@@ -132,7 +132,7 @@ function RecommendationPage() {
             />
           ) : (
             GROUP_ORDER.map((group) => (
-              <RecommendationGroup
+              <SearchResultGroup
                 key={group}
                 group={group}
                 policies={groups[group]}
@@ -147,4 +147,4 @@ function RecommendationPage() {
   );
 }
 
-export default RecommendationPage;
+export default PolicySearchPage;

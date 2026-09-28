@@ -18,7 +18,7 @@ const INITIAL_STATE = {
   errorMessage: '',
 };
 
-export const useRecommendations = (params = {}) => {
+export const usePolicySearch = (params = {}) => {
   const paramsKey = JSON.stringify(params);
   const [reloadToken, setReloadToken] = useState(0);
   const [state, setState] = useState(INITIAL_STATE);
@@ -26,7 +26,7 @@ export const useRecommendations = (params = {}) => {
   useEffect(() => {
     let isActive = true;
 
-    const loadRecommendations = async () => {
+    const loadSearchResult = async () => {
       try {
         const data = await policyApi.searchPolicies(JSON.parse(paramsKey));
 
@@ -46,7 +46,7 @@ export const useRecommendations = (params = {}) => {
       }
     };
 
-    loadRecommendations();
+    loadSearchResult();
 
     return () => {
       isActive = false;

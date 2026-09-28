@@ -3,7 +3,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import JudgeIcon from '@/components/common/JudgeIcon';
-import RecommendationCard from '@/components/recommendation/RecommendationCard';
+import SearchResultCard from '@/components/search/SearchResultCard';
 import {
   JUDGE_RESULT,
   RECOMMENDATION_GROUP,
@@ -17,7 +17,7 @@ const JUDGE_RESULT_BY_GROUP = {
   [RECOMMENDATION_GROUP.IMPOSSIBLE]: JUDGE_RESULT.NOT_MET,
 };
 
-function RecommendationGroup({ group, policies = [], isFavorite, onToggleFavorite }) {
+function SearchResultGroup({ group, policies = [], isFavorite, onToggleFavorite }) {
   return (
     <Box component="section">
       <Stack
@@ -42,7 +42,7 @@ function RecommendationGroup({ group, policies = [], isFavorite, onToggleFavorit
       ) : (
         <Stack spacing={1.5}>
           {policies.map((policy) => (
-            <RecommendationCard
+            <SearchResultCard
               key={policy.id}
               policy={policy}
               group={group}
@@ -56,4 +56,4 @@ function RecommendationGroup({ group, policies = [], isFavorite, onToggleFavorit
   );
 }
 
-export default RecommendationGroup;
+export default SearchResultGroup;

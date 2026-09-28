@@ -58,7 +58,7 @@ describe('추천 결과', () => {
     signInAs(TOKENS.MEMBER);
     renderApp(RESULT_PATH);
 
-    expect(await screen.findByText(EMPTY_MESSAGES.RECOMMENDATION)).toBeInTheDocument();
+    expect(await screen.findByText(EMPTY_MESSAGES.SEARCH)).toBeInTheDocument();
     expect(screen.getByText(TOAST_MESSAGES.NO_CANDIDATE)).toBeInTheDocument();
   });
 
