@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 
 import DdayBadge from '@/components/common/DdayBadge';
 import { buildPolicyDetailPath } from '@/constants/routes';
+import { useIsTextTruncated } from '@/hooks/useIsTextTruncated';
 import { summarizePolicyRegions } from '@/utils/summarizePolicyRegions';
 
 const VISUALLY_HIDDEN_SX = {
@@ -30,6 +31,9 @@ function PolicyRow({ policy, isFavorite = false, onToggleFavorite, memberRegionC
     memberRegionCode,
   });
   const isRegionSummarized = regionSummary.regionLabels.length > 1;
+  const { elementRef: regionRef, isTruncated: isRegionTruncated } = useIsTextTruncated(
+    regionSummary.label,
+  );
 
   const handleFavoriteClick = (event) => {
     event.preventDefault();
@@ -68,37 +72,35 @@ function PolicyRow({ policy, isFavorite = false, onToggleFavorite, memberRegionC
         {policy.title}
       </Typography>
 
-      <Typography
-        variant="body1"
-        color="text.secondary"
-        noWrap
-        sx={{
-          flexShrink: 0,
-          width: { xs: 'calc(100% - 126px)', sm: 200 },
-          textAlign: { xs: 'left', sm: 'right' },
-          ml: { xs: 0, sm: 'auto' },
-        }}
+      <Tooltip
+        arrow
+        describeChild
+        title={regionSummary.label}
+        disableHoverListener={!isRegionTruncated}
+        disableFocusListener={!isRegionTruncated}
+        disableTouchListener={!isRegionTruncated}
       >
-        {isRegionSummarized ? (
-          <>
-            <Tooltip
-              arrow
-              describeChild
-              title={regionSummary.regionLabels.join('\n')}
-              slotProps={{ tooltip: { sx: { whiteSpace: 'pre-line' } } }}
-            >
-              <Box component="span" tabIndex={0}>
-                {regionSummary.label}
-              </Box>
-            </Tooltip>
+        <Typography
+          ref={regionRef}
+          variant="body1"
+          color="text.secondary"
+          noWrap
+          tabIndex={isRegionTruncated ? 0 : undefined}
+          sx={{
+            flexShrink: 0,
+            width: { xs: 'calc(100% - 126px)', sm: 200 },
+            textAlign: { xs: 'left', sm: 'right' },
+            ml: { xs: 0, sm: 'auto' },
+          }}
+        >
+          {regionSummary.label}
+          {isRegionSummarized && (
             <Box component="span" sx={VISUALLY_HIDDEN_SX}>
               대상 지역 전체: {regionSummary.regionLabels.join(', ')}
             </Box>
-          </>
-        ) : (
-          regionSummary.label
-        )}
-      </Typography>
+          )}
+        </Typography>
+      </Tooltip>
 
       <Stack
         direction="row"

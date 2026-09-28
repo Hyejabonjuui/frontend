@@ -9,7 +9,7 @@
  */
 import { screen, waitFor, within } from '@testing-library/react';
 import { HttpResponse, http } from 'msw';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ENDPOINTS } from '@/api/endpoints';
 import { ROUTES } from '@/constants/routes';
@@ -64,6 +64,22 @@ const POLICY_LIST_RESPONSE = {
   },
 };
 
+/** jsdom에는 레이아웃과 ResizeObserver가 없어서, 관찰을 시작하면 바로 한 번 알려 주는 가짜로 둔다. */
+class ImmediateResizeObserver {
+  constructor(callback) {
+    this.callback = callback;
+  }
+
+  observe() {
+    this.callback([]);
+  }
+
+  disconnect() {}
+}
+
+/** MUI Tooltip은 호버 후 100ms(enterDelay) 뒤에 열리므로, "안 열린다"는 그보다 넉넉히 기다린 뒤 확인한다. */
+const TOOLTIP_ENTER_WAIT_MS = 300;
+
 const findPolicyRow = async (policyName) =>
   (await screen.findByText(policyName, undefined, { timeout: 5000 })).closest('a');
 
@@ -74,6 +90,10 @@ const useMemberList = () =>
   server.use(http.get(apiUrl(ENDPOINTS.POLICY.MEMBER_LIST), () => ok(POLICY_LIST_RESPONSE)));
 
 describe('홈 정책 목록 지역 요약', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it('비회원은 지역 코드 순서의 첫 지역으로 요약하고, 전국 정책은 "전국"으로 보여 준다', async () => {
     useGuestList();
     renderApp('/home');
@@ -103,27 +123,50 @@ describe('홈 정책 목록 지역 요약', () => {
     expect(within(await findPolicyRow('전국 월세 지원')).getByText('전국')).toBeInTheDocument();
   });
 
-  it('요약된 지역은 키보드 포커스로 전체 목록 툴팁을 열고, 링크 이름에도 전체 목록이 들어간다', async () => {
+  it('지역 문구가 말줄임으로 잘렸을 때만 호버와 포커스로 잘린 문구 전체를 보여 준다', async () => {
+    vi.stubGlobal('ResizeObserver', ImmediateResizeObserver);
+    vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(320);
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(200);
     useGuestList();
     const { user } = renderApp('/home');
 
-    const summary = await screen.findByText('서울특별시 성동구 외 2곳', undefined, {
+    const region = await screen.findByText('서울특별시 성동구 외 2곳', undefined, {
       timeout: 5000,
     });
-    summary.focus();
+    await waitFor(() => expect(region).toHaveAttribute('tabindex', '0'));
 
-    const tooltip = await screen.findByRole('tooltip');
-    expect(tooltip).toHaveTextContent('서울특별시 성동구');
-    expect(tooltip).toHaveTextContent('서울특별시 마포구');
-    expect(tooltip).toHaveTextContent('서울특별시 강남구');
+    region.focus();
+    expect(await screen.findByRole('tooltip', undefined, { timeout: 3000 })).toHaveTextContent(
+      /^서울특별시 성동구 외 2곳$/,
+    );
+
+    region.blur();
+    await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
+
+    await user.hover(region);
+
+    const tooltip = await screen.findByRole('tooltip', undefined, { timeout: 3000 });
+    expect(tooltip).toHaveTextContent(/^서울특별시 성동구 외 2곳$/);
+    expect(tooltip).not.toHaveTextContent('서울특별시 강남구');
+  });
+
+  it('지역 문구가 잘리지 않으면 툴팁과 포커스 없이 보여 주고, 링크 이름에는 전체 지역이 들어간다', async () => {
+    useGuestList();
+    const { user } = renderApp('/home');
+
+    const region = await screen.findByText('서울특별시 성동구 외 2곳', undefined, {
+      timeout: 5000,
+    });
+    await user.hover(region);
+    await new Promise((resolve) => setTimeout(resolve, TOOLTIP_ENTER_WAIT_MS));
+
+    expect(region).not.toHaveAttribute('tabindex');
+    expect(screen.queryByRole('tooltip', { hidden: true })).not.toBeInTheDocument();
     expect(
       screen.getByRole('link', {
         name: /대상 지역 전체: 서울특별시 성동구, 서울특별시 마포구, 서울특별시 강남구/,
       }),
     ).toBeInTheDocument();
-
-    await user.keyboard('{Escape}');
-    await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
   });
 
   it('내 조건을 못 불러와도 목록은 비회원 순서로 요약해 보여 준다', async () => {
