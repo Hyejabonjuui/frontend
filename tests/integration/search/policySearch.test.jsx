@@ -16,11 +16,13 @@ import { describe, expect, it } from 'vitest';
 import { ENDPOINTS } from '@/api/endpoints';
 import { EMPTY_MESSAGES, ERROR_MESSAGES, TOAST_MESSAGES } from '@/constants/messages';
 import { RECOMMENDATION_GROUP, RECOMMENDATION_GROUP_LABEL } from '@/constants/policy';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 import { findHeader, renderApp, signInAs } from '../../helpers/renderApp';
 import {
   EMPTY_POLICY_SEARCH_RESULT,
   MEMBER_CREDENTIALS,
+  MEMBER_USER,
   NO_CANDIDATE_POLICY_SEARCH_RESPONSE,
   POLICY_SEARCH_RESULT,
   TOKENS,
@@ -259,5 +261,103 @@ describe('검색 요청 조건', () => {
 
     expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
     expect(requestedQueries).toEqual(['월세']);
+  });
+});
+
+/**
+ * notice: 검색 API는 요청마다 서버가 OpenAI를 부른다. 그래서 뒤로·앞으로 가기로 돌아온 검색은
+ *         브라우저(sessionStorage)에 남겨 둔 결과를 쓰고 다시 요청하지 않는다(utils/searchResultCache).
+ */
+describe('뒤로 가기로 돌아온 검색', () => {
+  const recordSearchRequests = () => {
+    const requestedQueries = [];
+    server.use(
+      http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), ({ request }) => {
+        requestedQueries.push(new URL(request.url).searchParams.get('query'));
+
+        return ok(POLICY_SEARCH_RESULT);
+      }),
+    );
+
+    return requestedQueries;
+  };
+
+  const [approvedPolicy] = POLICY_SEARCH_RESULT.result.approved;
+
+  const openApprovedPolicyDetail = async (user) => {
+    await user.click(screen.getAllByRole('link', { name: /상세 보기/ })[0]);
+
+    return screen.findByRole('heading', { level: 1, name: approvedPolicy.policyName });
+  };
+
+  it('정책 상세에 갔다가 뒤로 가면 다시 요청하지 않고 같은 결과를 보여 준다', async () => {
+    const requestedQueries = recordSearchRequests();
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp(RESULT_PATH);
+
+    expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
+    expect(await openApprovedPolicyDetail(user)).toBeInTheDocument();
+
+    window.history.back();
+
+    expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
+    expect(screen.getByText(approvedPolicy.aiReason)).toBeInTheDocument();
+    expect(screen.queryByText(LOADING_TEXT)).not.toBeInTheDocument();
+    expect(requestedQueries).toEqual(['월세']);
+  });
+
+  it('같은 검색어라도 홈에서 새로 검색하면 다시 요청한다', async () => {
+    const requestedQueries = recordSearchRequests();
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp('/home');
+
+    const searchFromHome = async () => {
+      const homeSearchInput = await screen.findByRole('textbox', { name: '정책 검색' });
+      await waitFor(() => expect(homeSearchInput).not.toHaveAttribute('readonly'));
+      await user.type(homeSearchInput, '월세');
+      await user.click(screen.getByRole('button', { name: '검색', exact: true }));
+      expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
+    };
+
+    await searchFromHome();
+    window.history.back();
+    await screen.findByRole('heading', { name: '받을 수 있는 주거 혜택, 한 번에 찾아요' });
+    await searchFromHome();
+
+    expect(requestedQueries).toEqual(['월세', '월세']);
+  });
+
+  it('상세에서 관심을 저장하고 돌아오면 결과의 하트도 저장된 상태로 보인다', async () => {
+    recordSearchRequests();
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp(RESULT_PATH);
+
+    expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
+    expect(await openApprovedPolicyDetail(user)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '관심 저장' }));
+    expect(await screen.findByRole('button', { name: '관심 해제' })).toBeInTheDocument();
+
+    window.history.back();
+
+    const approvedGroup = (await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).closest('section');
+    expect(
+      within(approvedGroup).getByRole('button', { name: '관심 정책 해제' }),
+    ).toBeInTheDocument();
+  });
+
+  it('로그아웃하면 브라우저에 남겨 둔 검색 결과를 지운다', async () => {
+    recordSearchRequests();
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp(RESULT_PATH);
+
+    expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
+    expect(sessionStorage.getItem(STORAGE_KEYS.POLICY_SEARCH_CACHE)).not.toBeNull();
+
+    const header = await findHeader();
+    await user.click(header.getByRole('button', { name: MEMBER_USER.nickname }));
+    await user.click(await screen.findByRole('menuitem', { name: '로그아웃' }));
+
+    expect(await header.findByRole('button', { name: '로그인' })).toBeInTheDocument();
+    expect(sessionStorage.getItem(STORAGE_KEYS.POLICY_SEARCH_CACHE)).toBeNull();
   });
 });

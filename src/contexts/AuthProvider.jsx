@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as authApi from '@/api/authApi';
 import * as userApi from '@/api/userApi';
 import { AuthContext } from '@/contexts/AuthContext';
+import { searchResultCache } from '@/utils/searchResultCache';
 import { tokenStorage } from '@/utils/tokenStorage';
 
 function AuthProvider({ children }) {
@@ -32,7 +33,11 @@ function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    const handleUnauthorized = () => setUser(null);
+    // 내 조건으로 판정한 검색 결과는 로그인이 끝나면 브라우저에 남기지 않는다.
+    const handleUnauthorized = () => {
+      searchResultCache.clear();
+      setUser(null);
+    };
 
     window.addEventListener('hyeja:unauthorized', handleUnauthorized);
 
@@ -75,6 +80,7 @@ function AuthProvider({ children }) {
       await authApi.logout();
     } finally {
       tokenStorage.clear();
+      searchResultCache.clear();
       setUser(null);
     }
   }, []);
@@ -82,6 +88,7 @@ function AuthProvider({ children }) {
   const withdraw = useCallback(async () => {
     await userApi.deleteAccount();
     tokenStorage.clear();
+    searchResultCache.clear();
     setUser(null);
   }, []);
 

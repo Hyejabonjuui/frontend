@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/useToast';
 import ConditionForm from '@/pages/onboarding/ConditionForm';
 import { conditionDraft } from '@/utils/conditionDraft';
 import { getErrorMessage } from '@/utils/getErrorMessage';
+import { searchResultCache } from '@/utils/searchResultCache';
 
 function ConditionEditor({ initialConditions, draft, submitLabel, onSaved }) {
   const { showSuccess, showError, showInfo } = useToast();
@@ -45,6 +46,8 @@ function ConditionEditor({ initialConditions, draft, submitLabel, onSaved }) {
     try {
       await userApi.updateMyConditions(form);
       conditionDraft.clear();
+      // 추천 판정은 내 조건으로 하므로, 이전 조건으로 받은 검색 결과는 더 쓰지 않는다.
+      searchResultCache.clear();
       await refreshUser();
       showSuccess(TOAST_MESSAGES.CONDITION_SAVED);
       onSaved?.();

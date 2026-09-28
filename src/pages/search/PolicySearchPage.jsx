@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link as RouterLink, useSearchParams } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useSearchParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -26,6 +26,7 @@ const GROUP_ORDER = [
 ];
 
 function PolicySearchPage() {
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('query') ?? '';
   const { isAuthenticated } = useAuth();
@@ -33,7 +34,7 @@ function PolicySearchPage() {
   const { showInfo, showSuccess } = useToast();
   const [searchKeyword, setSearchKeyword] = useState(searchQuery);
   const { groups, groupCounts, totalCount, isIdle, isLoading, errorMessage, refetch } =
-    usePolicySearch({ query: searchQuery });
+    usePolicySearch({ query: searchQuery }, { historyKey: location.key });
   const { isFavorite, toggleFavorite } = useFavoriteToggle();
 
   const isSearchedPolicyFavorite = (policyId) =>

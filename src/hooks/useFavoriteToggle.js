@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { useToast } from '@/hooks/useToast';
 import { getErrorMessage } from '@/utils/getErrorMessage';
+import { searchResultCache } from '@/utils/searchResultCache';
 
 const FAVORITE_ALREADY_SAVED_CODE = 'FAVORITE_001';
 const FAVORITE_NOT_SAVED_CODE = 'FAVORITE_002';
@@ -30,6 +31,7 @@ export const useFavoriteToggle = () => {
   }
 
   const applySaved = useCallback((policyId, isSaved) => {
+    searchResultCache.updateFavorite(policyId, isSaved);
     setOverrides((previous) => ({
       ...previous,
       savedByPolicyId: { ...previous.savedByPolicyId, [String(policyId)]: isSaved },
