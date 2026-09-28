@@ -82,9 +82,9 @@ describe('홈 정책 목록 지역 요약', () => {
     const wholeSeoulRow = await findPolicyRow('서울 전역 월세 지원');
 
     expect(
-      await within(threeDistrictsRow).findByText('서울특별시 성동구 외 2개'),
+      await within(threeDistrictsRow).findByText('서울특별시 성동구 외 2곳'),
     ).toBeInTheDocument();
-    expect(within(wholeSeoulRow).getByText('서울특별시 성동구 외 3개')).toBeInTheDocument();
+    expect(within(wholeSeoulRow).getByText('서울특별시 성동구 외 3곳')).toBeInTheDocument();
     expect(within(await findPolicyRow('전국 월세 지원')).getByText('전국')).toBeInTheDocument();
   });
 
@@ -97,9 +97,9 @@ describe('홈 정책 목록 지역 요약', () => {
     const wholeSeoulRow = await findPolicyRow('서울 전역 월세 지원');
 
     expect(
-      await within(threeDistrictsRow).findByText('서울특별시 마포구 외 2개'),
+      await within(threeDistrictsRow).findByText('서울특별시 마포구 외 2곳'),
     ).toBeInTheDocument();
-    expect(within(wholeSeoulRow).getByText('서울특별시 마포구 외 3개')).toBeInTheDocument();
+    expect(within(wholeSeoulRow).getByText('서울특별시 마포구 외 3곳')).toBeInTheDocument();
     expect(within(await findPolicyRow('전국 월세 지원')).getByText('전국')).toBeInTheDocument();
   });
 
@@ -107,7 +107,7 @@ describe('홈 정책 목록 지역 요약', () => {
     useGuestList();
     const { user } = renderApp('/home');
 
-    const summary = await screen.findByText('서울특별시 성동구 외 2개', undefined, {
+    const summary = await screen.findByText('서울특별시 성동구 외 2곳', undefined, {
       timeout: 5000,
     });
     summary.focus();
@@ -135,8 +135,8 @@ describe('홈 정책 목록 지역 요약', () => {
     const threeDistrictsRow = await findPolicyRow('세 구 공통 월세 지원');
     const wholeSeoulRow = await findPolicyRow('서울 전역 월세 지원');
 
-    expect(within(threeDistrictsRow).getByText('서울특별시 성동구 외 2개')).toBeInTheDocument();
-    expect(within(wholeSeoulRow).getByText('서울특별시 성동구 외 3개')).toBeInTheDocument();
+    expect(within(threeDistrictsRow).getByText('서울특별시 성동구 외 2곳')).toBeInTheDocument();
+    expect(within(wholeSeoulRow).getByText('서울특별시 성동구 외 3곳')).toBeInTheDocument();
   });
 
   it('조건을 등록하지 않은 회원도 홈에 머물고 비회원 순서로 요약한다', async () => {
@@ -164,7 +164,7 @@ describe('홈 정책 목록 지역 요약', () => {
     await waitFor(() => expect(isProfileRequested).toBe(true));
     const row = await findPolicyRow('세 구 공통 월세 지원');
 
-    expect(within(row).getByText('서울특별시 성동구 외 2개')).toBeInTheDocument();
+    expect(within(row).getByText('서울특별시 성동구 외 2곳')).toBeInTheDocument();
     expect(window.location.pathname).not.toBe(ROUTES.CONDITION_SETUP);
   });
 });

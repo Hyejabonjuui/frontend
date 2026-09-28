@@ -52,17 +52,17 @@ describe('summarizePolicyRegions', () => {
   describe('회원이 서울특별시 강남구에 살 때', () => {
     it('회원 거주지를 포함하면 거주지를 첫 지역으로 둔다', () => {
       expect(summarize([seoul('서초구'), seoul('강남구'), seoul('송파구')])).toBe(
-        '서울특별시 강남구 외 2개',
+        '서울특별시 강남구 외 2곳',
       );
     });
 
     it('회원 거주지가 없는 정책은 지역 코드 순서의 첫 지역을 쓴다', () => {
-      expect(summarize([seoul('송파구'), seoul('서초구')])).toBe('서울특별시 서초구 외 1개');
+      expect(summarize([seoul('송파구'), seoul('서초구')])).toBe('서울특별시 서초구 외 1곳');
     });
 
     it('시·도의 시군구를 전부 포함해도 묶지 않고 거주지 기준으로 센다', () => {
-      expect(summarize(ALL_SEOUL)).toBe('서울특별시 강남구 외 24개');
-      expect(summarize([...ALL_SEOUL, BUNDANG])).toBe('서울특별시 강남구 외 25개');
+      expect(summarize(ALL_SEOUL)).toBe('서울특별시 강남구 외 24곳');
+      expect(summarize([...ALL_SEOUL, BUNDANG])).toBe('서울특별시 강남구 외 25곳');
     });
 
     it('nationwide면 거주지 포함 여부와 관계없이 "전국"으로 보여 준다', () => {
@@ -79,8 +79,8 @@ describe('summarizePolicyRegions', () => {
   it('비회원은 지역 코드 순서의 첫 지역을 쓴다', () => {
     expect(
       summarize([seoul('송파구'), seoul('강남구'), seoul('서초구')], { memberRegionCode: null }),
-    ).toBe('서울특별시 서초구 외 2개');
-    expect(summarize(ALL_SEOUL, { memberRegionCode: null })).toBe('서울특별시 종로구 외 24개');
+    ).toBe('서울특별시 서초구 외 2곳');
+    expect(summarize(ALL_SEOUL, { memberRegionCode: null })).toBe('서울특별시 종로구 외 24곳');
   });
 
   it('지역이 1개면 그대로 보여 준다', () => {
