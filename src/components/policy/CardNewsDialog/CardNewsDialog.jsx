@@ -16,6 +16,20 @@ import { buildPolicyDetailPath } from '@/constants/routes';
 import { useToast } from '@/hooks/useToast';
 import { RADIUS } from '@/styles/theme';
 
+const getTagTypography = (tag) => {
+  const length = Array.from(tag).length;
+
+  if (length >= 15) {
+    return { fontSize: { xs: 15, sm: 16 }, letterSpacing: '-0.04em' };
+  }
+
+  if (length >= 9) {
+    return { fontSize: { xs: 16, sm: 18 }, letterSpacing: '-0.03em' };
+  }
+
+  return { fontSize: { xs: 18, sm: 20 }, letterSpacing: '-0.02em' };
+};
+
 function CardNewsPanel({ card, cardCount, children }) {
   const headingParts = card.heading?.split(/(\([^)]*\))/) ?? [];
 
@@ -62,12 +76,30 @@ function CardNewsPanel({ card, cardCount, children }) {
             {card.tags.map((tag) => (
               <Chip
                 key={tag}
-                label={<Typography variant="h2">{tag}</Typography>}
+                label={
+                  <Typography
+                    component="span"
+                    sx={{
+                      ...getTagTypography(tag),
+                      lineHeight: 1.35,
+                      fontWeight: 700,
+                      wordBreak: 'keep-all',
+                      overflowWrap: 'break-word',
+                    }}
+                  >
+                    {tag}
+                  </Typography>
+                }
                 variant="outlined"
                 sx={{
                   height: 'auto',
                   maxWidth: '100%',
-                  '& .MuiChip-label': { py: 0.5, whiteSpace: 'normal' },
+                  '& .MuiChip-label': {
+                    display: 'block',
+                    py: 0.75,
+                    px: 1.5,
+                    whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                  },
                 }}
               />
             ))}

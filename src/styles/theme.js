@@ -46,6 +46,7 @@ export const RADIUS = {
 };
 
 const fontFamily = "'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif";
+const mobileText = '@media (max-width:767.98px)';
 // Match the full tablet interval up to the desktop breakpoint, including fractional viewport widths.
 const tabletText = '@media (min-width:768px) and (max-width:1439.98px)';
 
@@ -87,17 +88,21 @@ const theme = createTheme({
       fontSize: 26,
       lineHeight: '35px',
       fontWeight: 700,
+      letterSpacing: '-0.02em',
+      [mobileText]: { fontSize: 22, lineHeight: '30px' },
       [tabletText]: { fontSize: 24, lineHeight: '33px' },
     },
     h2: {
       fontSize: 20,
       lineHeight: '28px',
       fontWeight: 700,
+      letterSpacing: '-0.015em',
+      [mobileText]: { fontSize: 18, lineHeight: '26px' },
       [tabletText]: { fontSize: 19, lineHeight: '26px' },
     },
-    body1: { fontSize: 14, lineHeight: '20px', fontWeight: 400, [tabletText]: { fontSize: 13 } },
-    body2: { fontSize: 14, lineHeight: '20px', fontWeight: 500, [tabletText]: { fontSize: 13 } },
-    caption: { fontSize: 12, lineHeight: '16px', fontWeight: 400, [tabletText]: { fontSize: 11 } },
+    body1: { fontSize: 14, lineHeight: '21px', fontWeight: 400 },
+    body2: { fontSize: 14, lineHeight: '21px', fontWeight: 500 },
+    caption: { fontSize: 12, lineHeight: '17px', fontWeight: 400 },
     button: {
       fontSize: 14,
       lineHeight: '20px',
@@ -131,8 +136,8 @@ const theme = createTheme({
     MuiButton: {
       defaultProps: { disableElevation: true },
       styleOverrides: {
-        root: { height: 36, paddingInline: 14, borderRadius: RADIUS.control },
-        sizeSmall: { height: 30, paddingInline: 10, fontSize: 12, fontWeight: 700 },
+        root: { minHeight: 36, paddingInline: 14, borderRadius: RADIUS.control },
+        sizeSmall: { minHeight: 32, paddingInline: 10, fontSize: 12, fontWeight: 700 },
         // 설계서에서 파란색은 채움 버튼만 쓴다. 보조 버튼은 회색 테두리에 검은 글자다.
         outlined: {
           color: designTokens.text,
