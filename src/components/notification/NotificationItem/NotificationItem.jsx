@@ -26,7 +26,8 @@ function NotificationItem({ notification, onRead, onDelete }) {
       direction="row"
       spacing={1.5}
       sx={{
-        alignItems: 'center',
+        position: 'relative',
+        alignItems: { xs: 'flex-start', sm: 'center' },
         px: 2,
         py: 1.5,
         borderRadius: 1,
@@ -57,9 +58,18 @@ function NotificationItem({ notification, onRead, onDelete }) {
           cursor: 'pointer',
         }}
       >
-        <Typography variant="body2">{notification.title}</Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>
+          {notification.title}
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
           {notification.body}
+        </Typography>
+        <Typography
+          variant="caption"
+          color="text.disabled"
+          sx={{ display: { xs: 'block', sm: 'none' }, mt: 0.5 }}
+        >
+          {formatRelativeTime(notification.createdAt)}
         </Typography>
       </Box>
 
@@ -77,7 +87,12 @@ function NotificationItem({ notification, onRead, onDelete }) {
       </Typography>
 
       {onDelete && (
-        <IconButton size="small" aria-label="알림 삭제" onClick={() => onDelete(notification.id)}>
+        <IconButton
+          size="small"
+          aria-label="알림 삭제"
+          onClick={() => onDelete(notification.id)}
+          sx={{ flexShrink: 0, mt: { xs: -0.5, sm: 0 } }}
+        >
           <AppIcon name="close" size={16} />
         </IconButton>
       )}

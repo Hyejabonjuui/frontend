@@ -88,11 +88,22 @@ function AdminPage() {
           </Typography>
           <Stack divider={<Divider />}>
             {rows.map((row) => (
-              <Stack key={row.label} direction="row" spacing={2} sx={{ px: 2, py: 1.5 }}>
-                <Typography variant="body1" color="text.secondary" sx={{ width: 64 }}>
+              <Stack
+                key={row.label}
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={{ xs: 0.5, sm: 2 }}
+                sx={{ px: 2, py: 1.5 }}
+              >
+                <Typography
+                  variant="body1"
+                  color="text.secondary"
+                  sx={{ width: { xs: 'auto', sm: 64 }, flexShrink: 0 }}
+                >
                   {row.label}
                 </Typography>
-                <Typography variant="body1">{row.value}</Typography>
+                <Typography variant="body1" sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+                  {row.value}
+                </Typography>
               </Stack>
             ))}
           </Stack>

@@ -39,8 +39,13 @@ function NotificationPopover({
       }}
     >
       <Stack
-        direction="row"
-        sx={{ alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1.5 }}
+        direction={{ xs: 'column', sm: 'row' }}
+        sx={{
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          justifyContent: 'space-between',
+          px: 2,
+          py: 1.5,
+        }}
       >
         <Typography variant="body2">[마감 7일 이하] 알림 / 안 읽음 ({unreadCount})</Typography>
         {unreadCount > 0 && (

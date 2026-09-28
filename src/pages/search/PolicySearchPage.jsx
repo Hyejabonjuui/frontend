@@ -139,7 +139,11 @@ function PolicySearchPage() {
               description={EMPTY_MESSAGES.SEARCH_DESCRIPTION}
               caption={EMPTY_MESSAGES.SEARCH_CAPTION}
               action={
-                <Stack direction="row" spacing={1} sx={{ justifyContent: 'center' }}>
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  spacing={1}
+                  sx={{ justifyContent: 'center', alignItems: 'center' }}
+                >
                   <Button
                     component={RouterLink}
                     to={buildMyPagePath(MY_PAGE_TABS.CONDITION)}
