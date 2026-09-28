@@ -8,10 +8,23 @@ import Typography from '@mui/material/Typography';
 
 import SubtypeChip from '@/components/common/SubtypeChip';
 import { POLICY_SEARCH_HASHTAGS, SEARCH_KEYWORD_MAX_LENGTH } from '@/constants/policy';
+import { LAYOUT } from '@/styles/theme';
 
-/** onRequestLogin을 받으면 검색은 잠긴 상태다. 입력도 막고 로그인 안내 창만 띄운다. */
-function PolicySearchBar({ keyword, onKeywordChange, onSubmit, errorMessage, onRequestLogin }) {
+/**
+ * onRequestLogin을 받으면 검색은 잠긴 상태다. 입력도 막고 로그인 안내 창만 띄운다.
+ * isCompact는 추천 결과(S-05)처럼 결과 바로 위에 두는 작은 검색창이다.
+ * 높이를 줄이고, 오류 문구 자리와 해시태그 바로가기를 두지 않는다.
+ */
+function PolicySearchBar({
+  keyword,
+  onKeywordChange,
+  onSubmit,
+  errorMessage,
+  onRequestLogin,
+  isCompact = false,
+}) {
   const isLocked = Boolean(onRequestLogin);
+  const emptyHelperText = isCompact ? undefined : ' ';
 
   const requestSearch = (searchKeyword) => {
     if (isLocked) {
@@ -64,10 +77,11 @@ function PolicySearchBar({ keyword, onKeywordChange, onSubmit, errorMessage, onR
         onMouseDown={handleLockedMouseDown}
         placeholder="예: 월세 지원 알려줘"
         error={Boolean(errorMessage)}
-        helperText={errorMessage ? <FieldError>{errorMessage}</FieldError> : ' '}
+        helperText={errorMessage ? <FieldError>{errorMessage}</FieldError> : emptyHelperText}
+        size={isCompact ? 'small' : 'medium'}
         fullWidth
         sx={{
-          maxWidth: 560,
+          maxWidth: LAYOUT.searchColumnWidth,
           '& .MuiOutlinedInput-root': { borderRadius: 999, pr: 0.5 },
           '& .MuiInputAdornment-root .MuiTypography-root': { display: { xs: 'none', sm: 'block' } },
         }}
@@ -86,10 +100,11 @@ function PolicySearchBar({ keyword, onKeywordChange, onSubmit, errorMessage, onR
                 <IconButton
                   type="submit"
                   color="primary"
+                  size={isCompact ? 'small' : 'medium'}
                   aria-label="검색"
                   sx={{ bgcolor: 'primary.main' }}
                 >
-                  <AppIcon name="search" size={20} sx={{ color: '#0b1626' }} />
+                  <AppIcon name="search" size={isCompact ? 18 : 20} sx={{ color: '#0b1626' }} />
                 </IconButton>
               </InputAdornment>
             ),
@@ -97,20 +112,22 @@ function PolicySearchBar({ keyword, onKeywordChange, onSubmit, errorMessage, onR
         }}
       />
 
-      <Stack
-        direction="row"
-        spacing={1}
-        useFlexGap
-        sx={{ justifyContent: 'center', flexWrap: 'wrap' }}
-      >
-        {POLICY_SEARCH_HASHTAGS.map((hashtag) => (
-          <SubtypeChip
-            key={hashtag}
-            label={`#${hashtag}`}
-            onClick={() => handleHashtagClick(hashtag)}
-          />
-        ))}
-      </Stack>
+      {!isCompact && (
+        <Stack
+          direction="row"
+          spacing={1}
+          useFlexGap
+          sx={{ justifyContent: 'center', flexWrap: 'wrap' }}
+        >
+          {POLICY_SEARCH_HASHTAGS.map((hashtag) => (
+            <SubtypeChip
+              key={hashtag}
+              label={`#${hashtag}`}
+              onClick={() => handleHashtagClick(hashtag)}
+            />
+          ))}
+        </Stack>
+      )}
     </Stack>
   );
 }

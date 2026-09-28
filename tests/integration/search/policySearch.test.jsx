@@ -8,6 +8,9 @@
  *         { isSuccess: false, code: 'POLICY_SEARCH_001', result: null }로 온다고 둔다.
  *         코드나 상태가 바뀌면 fixtures.NO_CANDIDATE_POLICY_SEARCH_RESPONSE와 toPolicySearchResult를 맞춘다.
  * notice: 검색 API는 로그인이 필요하다(백엔드 SecurityConfig). 그래서 비로그인은 요청 자체를 하지 않는다.
+ * notice: 검색창 아래 "적용된 내 조건"은 검색 응답이 아니라 GET /api/members/me/profile(ProfileResponseDTO)의
+ *         이름 필드(regionName·employmentName·housingTypeName 등)로 만든다. 필드가 바뀌면 userApi.toAppliedConditions를 맞춘다.
+ * notice: 검색 유형은 응답에 없어서 "#월세"처럼 해시태그 검색일 때만 보여 준다(백엔드 PolicySearchService.HASHTAG_CATEGORIES).
  */
 import { screen, waitFor, within } from '@testing-library/react';
 import { http } from 'msw';
@@ -33,6 +36,8 @@ import { server } from '../../msw/server';
 const RESULT_PATH = `/search?query=${encodeURIComponent('월세')}`;
 const LOADING_TEXT = 'AI가 내 조건으로 정책을 확인하고 있어요';
 const GUEST_NOTICE = '로그인하면 내 조건으로 판정해드려요';
+// fixtures.MEMBER_PROFILE_RESPONSE(만 27세 · 마포구 · 미취업자 · 무주택 · 월세)를 화면 문구로 옮긴 값
+const APPLIED_CONDITIONS = ['만 27세', '서울특별시 마포구', '미취업자', '무주택', '월세 거주'];
 
 const SEARCH_RESULT_KEYS = {
   [RECOMMENDATION_GROUP.POSSIBLE]: 'approved',
@@ -115,24 +120,26 @@ describe('추천 결과', () => {
     expect(await screen.findByText(TOAST_MESSAGES.NO_CANDIDATE)).toBeInTheDocument();
   });
 
-  it('해시태그를 누르면 검색창과 검색어 모두 #을 붙인 해시태그로 검색한다', async () => {
-    const requestedQueries = [];
-    server.use(
-      http.get(apiUrl(ENDPOINTS.POLICY.SEARCH), ({ request }) => {
-        requestedQueries.push(new URL(request.url).searchParams.get('query'));
-
-        return ok(POLICY_SEARCH_RESULT);
-      }),
-    );
+  it('해시태그로 검색하면 그 유형으로 찾았다고 알리고, 판정에 쓴 내 조건을 함께 보여 준다', async () => {
     signInAs(TOKENS.MEMBER);
-    const { user } = renderApp(RESULT_PATH);
+    renderApp(`/search?query=${encodeURIComponent('#월세')}`);
 
     expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
+    expect(screen.getByText('월세 유형으로 찾았어요')).toBeInTheDocument();
+    expect(
+      await screen.findByText(`${APPLIED_CONDITIONS.join(' · ')}`, { exact: false }),
+    ).toBeInTheDocument();
+  });
 
-    await user.click(screen.getByRole('button', { name: '#월세' }));
+  it('자유 문장 검색은 AI가 고른 유형을 응답으로 받지 않으므로 유형 없이 내 조건만 보여 준다', async () => {
+    signInAs(TOKENS.MEMBER);
+    renderApp(RESULT_PATH);
 
-    expect(screen.getByRole('textbox', { name: '정책 검색' })).toHaveValue('#월세');
-    await waitFor(() => expect(requestedQueries).toEqual(['월세', '#월세']));
+    expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
+    expect(
+      await screen.findByText(`${APPLIED_CONDITIONS.join(' · ')}`, { exact: false }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/유형으로 찾았어요$/)).not.toBeInTheDocument();
   });
 
   it('홈에서 해시태그를 누르면 #이 빠지지 않은 검색어로 검색 화면에서 검색한다', async () => {
@@ -351,8 +358,11 @@ describe('뒤로 가기로 돌아온 검색', () => {
     const { user } = renderApp(RESULT_PATH);
 
     expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: '#전세' }));
-    await waitFor(() => expect(requestedQueries).toEqual(['월세', '#전세']));
+    const searchInput = screen.getByRole('textbox', { name: '정책 검색' });
+    await user.clear(searchInput);
+    await user.type(searchInput, '전세');
+    await user.click(screen.getByRole('button', { name: '검색', exact: true }));
+    await waitFor(() => expect(requestedQueries).toEqual(['월세', '전세']));
     expect(await groupHeading(RECOMMENDATION_GROUP.POSSIBLE, 1)).toBeInTheDocument();
 
     window.history.back();
@@ -360,7 +370,7 @@ describe('뒤로 가기로 돌아온 검색', () => {
     await waitFor(() =>
       expect(screen.getByRole('textbox', { name: '정책 검색' })).toHaveValue('월세'),
     );
-    expect(requestedQueries).toEqual(['월세', '#전세']);
+    expect(requestedQueries).toEqual(['월세', '전세']);
   });
 
   it('로그아웃하면 브라우저에 남겨 둔 검색 결과를 지운다', async () => {

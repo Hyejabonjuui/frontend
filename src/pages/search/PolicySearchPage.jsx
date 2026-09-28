@@ -7,16 +7,23 @@ import Typography from '@mui/material/Typography';
 import EmptyState from '@/components/common/EmptyState';
 import ErrorState from '@/components/common/ErrorState';
 import PolicySearchBar from '@/components/policy/PolicySearchBar';
+import SearchCriteriaSummary from '@/components/search/SearchCriteriaSummary';
 import SearchResultGroup from '@/components/search/SearchResultGroup';
 import SearchResultSkeleton from '@/components/search/SearchResultSkeleton';
 import { EMPTY_MESSAGES, LOGIN_NOTICE, TOAST_MESSAGES } from '@/constants/messages';
-import { RECOMMENDATION_GROUP, RECOMMENDATION_GROUP_LABEL } from '@/constants/policy';
+import {
+  POLICY_SEARCH_HASHTAGS,
+  RECOMMENDATION_GROUP,
+  RECOMMENDATION_GROUP_LABEL,
+} from '@/constants/policy';
 import { buildMyPagePath, MY_PAGE_TABS, ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavoriteToggle } from '@/hooks/useFavoriteToggle';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
+import { useMyConditions } from '@/hooks/useMyConditions';
 import { usePolicySearch } from '@/hooks/usePolicySearch';
 import { useToast } from '@/hooks/useToast';
+import { LAYOUT } from '@/styles/theme';
 import { withDirectionParticle } from '@/utils/koreanParticle';
 
 const GROUP_ORDER = [
@@ -24,6 +31,13 @@ const GROUP_ORDER = [
   RECOMMENDATION_GROUP.NEED_CHECK,
   RECOMMENDATION_GROUP.IMPOSSIBLE,
 ];
+
+/**
+ * 백엔드는 "#월세"처럼 해시태그 그대로인 검색어만 AI 없이 그 유형으로 찾는다.
+ * 이때만 검색 유형을 확실히 알 수 있다. 자유 문장은 AI가 고른 유형을 응답에 주지 않는다.
+ */
+const findSearchedHashtag = (query) =>
+  POLICY_SEARCH_HASHTAGS.find((hashtag) => query.trim() === `#${hashtag}`);
 
 function PolicySearchPage() {
   const location = useLocation();
@@ -37,6 +51,7 @@ function PolicySearchPage() {
   const { groups, groupCounts, totalCount, isIdle, isLoading, errorMessage, refetch } =
     usePolicySearch({ query: searchQuery }, { historyKey: location.key });
   const { isFavorite, toggleFavorite } = useFavoriteToggle();
+  const { appliedConditions } = useMyConditions({ redirectOnMissingProfile: false });
 
   // 뒤로·앞으로 가기로 주소의 검색어가 바뀌면 검색창도 그 검색어로 맞춘다.
   if (syncedQuery !== searchQuery) {
@@ -79,15 +94,25 @@ function PolicySearchPage() {
     setSearchParams({ query: nextQuery });
   };
 
+  const searchedHashtag = findSearchedHashtag(searchQuery);
+
   return (
-    <Stack spacing={4}>
-      <Stack component="section" spacing={2} sx={{ alignItems: 'center' }}>
+    <Stack spacing={3} sx={{ width: '100%', maxWidth: LAYOUT.searchColumnWidth, mx: 'auto' }}>
+      <Stack component="section" spacing={1}>
         <PolicySearchBar
           keyword={searchKeyword}
           onKeywordChange={setSearchKeyword}
           onSubmit={handleSearch}
           onRequestLogin={isAuthenticated ? undefined : () => openLoginNotice(LOGIN_NOTICE.SEARCH)}
+          isCompact
         />
+
+        {!isIdle && !errorMessage && (
+          <SearchCriteriaSummary
+            typeLabel={searchedHashtag ? `${searchedHashtag} 유형으로 찾았어요` : ''}
+            conditions={appliedConditions}
+          />
+        )}
       </Stack>
 
       {/* 설계서 S-05 로딩: AI 응답을 기다리는 동안 결과와 같은 뼈대를 보여 준다. */}
@@ -103,17 +128,15 @@ function PolicySearchPage() {
 
       {!isIdle && !isLoading && !errorMessage && (
         <>
-          <Stack component="section" spacing={1.5}>
-            <Stack direction="row" spacing={3} useFlexGap sx={{ flexWrap: 'wrap' }}>
-              {GROUP_ORDER.map((group) => (
-                <Typography key={group} variant="body2">
-                  {RECOMMENDATION_GROUP_LABEL[group]}{' '}
-                  <Typography component="span" variant="body1" color="text.secondary">
-                    {groupCounts[group] ?? 0}건
-                  </Typography>
+          <Stack direction="row" spacing={3} useFlexGap sx={{ flexWrap: 'wrap' }}>
+            {GROUP_ORDER.map((group) => (
+              <Typography key={group} variant="body2">
+                {RECOMMENDATION_GROUP_LABEL[group]}{' '}
+                <Typography component="span" variant="body1" color="text.secondary">
+                  {groupCounts[group] ?? 0}건
                 </Typography>
-              ))}
-            </Stack>
+              </Typography>
+            ))}
           </Stack>
 
           {totalCount === 0 ? (

@@ -24,23 +24,23 @@ function SearchResultGroup({ group, policies = [], isFavorite, onToggleFavorite 
         direction="row"
         spacing={1}
         useFlexGap
-        sx={{ alignItems: 'center', flexWrap: 'wrap', mb: 1.5 }}
+        sx={{ alignItems: 'center', flexWrap: 'wrap', mb: 1 }}
       >
         <JudgeIcon result={JUDGE_RESULT_BY_GROUP[group]} size={20} />
         <Typography variant="h2">
           {RECOMMENDATION_GROUP_LABEL[group]} · {policies.length}건
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant="caption" color="text.secondary">
           {RECOMMENDATION_GROUP_DESCRIPTION[group]}
         </Typography>
       </Stack>
 
       {policies.length === 0 ? (
-        <Typography variant="body1" color="text.disabled" sx={{ py: 2 }}>
+        <Typography variant="body1" color="text.disabled" sx={{ py: 1 }}>
           해당하는 정책이 없어요
         </Typography>
       ) : (
-        <Stack spacing={1.5}>
+        <Stack spacing={1}>
           {policies.map((policy) => (
             <SearchResultCard
               key={policy.id}

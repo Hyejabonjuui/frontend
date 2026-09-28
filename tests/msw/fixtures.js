@@ -49,7 +49,12 @@ export const NEW_USER = { ...toPublicUser(MEMBER), id: 3, email: 'new@hyeja.kr' 
 
 export const MEMBER_CREDENTIALS = { email: MEMBER.email, password: MEMBER.password };
 
-/** 백엔드 GET /api/members/me/profile 응답. 나이·지역 이름은 서버가 계산해서 준다. */
+const findCodeName = (codes, code) => codes.find((item) => item.code === code)?.name ?? null;
+
+/**
+ * 백엔드 GET /api/members/me/profile 응답(ProfileResponseDTO). 나이·지역 이름은 서버가 계산해서 주고,
+ * 선택지는 코드와 이름을 같이 준다. 등록하지 않은 선택 항목은 코드·이름 모두 null이다.
+ */
 export const MEMBER_PROFILE_RESPONSE = {
   isSuccess: true,
   code: 'SUCCESS_001',
@@ -60,11 +65,16 @@ export const MEMBER_PROFILE_RESPONSE = {
     regionCode: MEMBER.profile.regionCode,
     regionName: '서울특별시 마포구',
     employmentCode: MEMBER.profile.employmentCode,
+    employmentName: findCodeName(CODE_GROUPS.employments, MEMBER.profile.employmentCode),
     houselessYn: MEMBER.profile.houseless,
     marriageCode: MEMBER.profile.marriageCode,
+    marriageName: findCodeName(CODE_GROUPS.marriages, MEMBER.profile.marriageCode),
     incomeRangeCode: null,
+    incomeRangeName: null,
     educationCode: MEMBER.profile.educationCode,
+    educationName: findCodeName(CODE_GROUPS.educations, MEMBER.profile.educationCode),
     housingType: MEMBER.profile.housingType,
+    housingTypeName: findCodeName(CODE_GROUPS.housingTypes, MEMBER.profile.housingType),
   },
 };
 

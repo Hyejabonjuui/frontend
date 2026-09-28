@@ -35,6 +35,8 @@ export const LAYOUT = {
   contentWidth: 1120,
   headerHeight: 64,
   pageGutter: { xs: 2, sm: 3, md: 4 },
+  // 큰 검색창 폭. 추천 결과(S-05)는 검색창·조건 요약·결과를 이 폭 한 줄 기둥에 맞춘다.
+  searchColumnWidth: 560,
 };
 
 export const RADIUS = {
@@ -42,6 +44,8 @@ export const RADIUS = {
   dday: 12,
   chip: 16,
   card: 12,
+  // 추천 결과(S-05)처럼 여러 장이 이어지는 작은 카드
+  compactCard: 8,
   toast: 8,
 };
 

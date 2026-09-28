@@ -12,6 +12,7 @@ import DdayBadge from '@/components/common/DdayBadge';
 import JudgeChip from '@/components/common/JudgeChip';
 import { RECOMMENDATION_GROUP } from '@/constants/policy';
 import { buildPolicyDetailPath } from '@/constants/routes';
+import { RADIUS } from '@/styles/theme';
 
 /** 설계서 S-05: 정책마다 "왜?" 한 문장과 조건별 판정을 함께 보여준다. */
 function SearchResultCard({ policy, group, isFavorite = false, onToggleFavorite }) {
@@ -22,45 +23,19 @@ function SearchResultCard({ policy, group, isFavorite = false, onToggleFavorite 
     <Card
       variant="outlined"
       sx={{
-        p: 2,
+        p: 1.5,
+        borderRadius: `${RADIUS.compactCard}px`,
         backgroundColor: isImpossible ? 'grey.100' : 'background.paper',
       }}
     >
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '80px minmax(0, 1fr)', sm: '96px minmax(0, 1fr) auto' },
-          alignItems: 'center',
-          columnGap: 1,
-          rowGap: 1,
-        }}
-      >
-        <Chip
-          label={policy.subtypeName}
-          variant="outlined"
-          size="small"
-          sx={{ width: '100%', minWidth: 0, justifySelf: 'center' }}
-        />
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+        <Chip label={policy.subtypeName} variant="outlined" size="small" sx={{ flexShrink: 0 }} />
 
-        <Typography
-          variant="body2"
-          sx={{
-            minWidth: 0,
-            overflowWrap: 'anywhere',
-          }}
-        >
+        <Typography variant="body2" sx={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>
           {policy.title}
         </Typography>
 
-        <Stack
-          direction="row"
-          spacing={1}
-          sx={{
-            gridColumn: { xs: '1 / -1', sm: 'auto' },
-            alignItems: 'center',
-            justifySelf: 'end',
-          }}
-        >
+        <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', flexShrink: 0 }}>
           <DdayBadge applyPeriodType={policy.applyPeriodType} applyEndDate={policy.applyEndDate} />
           <IconButton
             size="small"
@@ -71,12 +46,12 @@ function SearchResultCard({ policy, group, isFavorite = false, onToggleFavorite 
             <AppIcon name={isFavorite ? 'heart' : 'heart-outline'} size={20} />
           </IconButton>
         </Stack>
-      </Box>
+      </Stack>
 
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
-        spacing={{ xs: 0.5, sm: 1 }}
-        sx={{ alignItems: { xs: 'flex-start', sm: 'baseline' }, mt: 1.5 }}
+        spacing={{ xs: 0.25, sm: 1 }}
+        sx={{ alignItems: { xs: 'flex-start', sm: 'baseline' }, mt: 1 }}
       >
         <Typography variant="body2" sx={{ flexShrink: 0 }}>
           {reasonLabel}
@@ -88,15 +63,16 @@ function SearchResultCard({ policy, group, isFavorite = false, onToggleFavorite 
 
       <Stack
         direction="row"
-        spacing={1}
+        spacing={0.5}
         useFlexGap
-        sx={{ flexWrap: 'wrap', alignItems: 'center', mt: 1.5 }}
+        sx={{ flexWrap: 'wrap', alignItems: 'center', mt: 1 }}
       >
         {(policy.judgements ?? []).map((judgement) => (
           <JudgeChip
             key={judgement.conditionKey}
             result={judgement.result}
             label={judgement.conditionName}
+            size="small"
           />
         ))}
 

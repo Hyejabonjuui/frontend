@@ -15,7 +15,7 @@ const GROUP_SHAPES = [
 
 function CardSkeleton() {
   return (
-    <Card variant="outlined" sx={{ p: 2 }}>
+    <Card variant="outlined" sx={{ p: 1.5, borderRadius: `${RADIUS.compactCard}px` }}>
       <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
         <Skeleton
           variant="rounded"
@@ -33,14 +33,14 @@ function CardSkeleton() {
         <Skeleton variant="circular" width={24} height={24} />
       </Stack>
 
-      <Skeleton variant="text" sx={{ mt: 1.5, maxWidth: 520 }} />
+      <Skeleton variant="text" sx={{ mt: 1, maxWidth: 520 }} />
 
-      <Stack direction="row" spacing={1} sx={{ mt: 1.5, alignItems: 'center' }}>
+      <Stack direction="row" spacing={0.5} sx={{ mt: 1, alignItems: 'center' }}>
         {['나이', '지역', '소득', '취업', '무주택'].map((condition) => (
           <Skeleton
             key={condition}
             variant="rounded"
-            width={62}
+            width={56}
             height={24}
             sx={{ borderRadius: `${RADIUS.chip}px` }}
           />
@@ -55,37 +55,25 @@ function CardSkeleton() {
 /** 설계서 S-05 로딩: AI 판정이 오는 동안 결과와 같은 뼈대를 먼저 보여 준다. */
 function SearchResultSkeleton() {
   return (
-    <Stack spacing={4} aria-busy="true" aria-live="polite">
+    <Stack spacing={3} aria-busy="true" aria-live="polite">
       <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center' }}>
         AI가 내 조건으로 정책을 확인하고 있어요
       </Typography>
 
-      <Stack component="section" spacing={1.5}>
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-          <Skeleton
-            variant="rounded"
-            width={150}
-            height={24}
-            sx={{ borderRadius: `${RADIUS.chip}px` }}
-          />
-          <Skeleton variant="text" width={320} />
-        </Stack>
-
-        <Stack direction="row" spacing={3}>
-          {GROUP_SHAPES.map((group) => (
-            <Skeleton key={group.key} variant="text" width={110} />
-          ))}
-        </Stack>
+      <Stack direction="row" spacing={3}>
+        {GROUP_SHAPES.map((group) => (
+          <Skeleton key={group.key} variant="text" width={110} />
+        ))}
       </Stack>
 
       {GROUP_SHAPES.map((group) => (
         <Box key={group.key} component="section">
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1.5 }}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
             <Skeleton variant="circular" width={20} height={20} />
             <Skeleton variant="text" width={group.titleWidth} height={28} />
           </Stack>
 
-          <Stack spacing={1.5}>
+          <Stack spacing={1}>
             {Array.from({ length: group.cardCount }, (unused, index) => (
               <CardSkeleton key={`${group.key}-${index}`} />
             ))}

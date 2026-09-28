@@ -72,18 +72,25 @@ const toInternationalAge = (birthDate) => {
 
 const emptyToNull = (value) => (value === '' || value === undefined ? null : value);
 
-/** 목 저장소의 조건(화면 폼 모양)을 백엔드 ProfileResponseDTO 모양으로 바꾼다. */
+const findCodeName = (codes, code) => codes.find((item) => item.code === code)?.name ?? null;
+
+/** 목 저장소의 조건(화면 폼 모양)을 백엔드 ProfileResponseDTO 모양으로 바꾼다. 코드와 이름을 같이 준다. */
 const toApiProfile = (profile) => ({
   birth: profile.birthDate,
   age: toInternationalAge(profile.birthDate),
   regionCode: profile.regionCode,
   regionName: findRegionName(profile.regionCode),
   employmentCode: profile.employmentCode,
+  employmentName: findCodeName(CODE_GROUPS.employments, profile.employmentCode),
   houselessYn: profile.houseless,
   marriageCode: emptyToNull(profile.marriageCode),
+  marriageName: findCodeName(CODE_GROUPS.marriages, profile.marriageCode),
   incomeRangeCode: emptyToNull(profile.incomeRange),
+  incomeRangeName: findCodeName(CODE_GROUPS.incomeRanges, profile.incomeRange),
   educationCode: emptyToNull(profile.educationCode),
+  educationName: findCodeName(CODE_GROUPS.educations, profile.educationCode),
   housingType: emptyToNull(profile.housingType),
+  housingTypeName: findCodeName(CODE_GROUPS.housingTypes, profile.housingType),
 });
 
 /** 백엔드 조건 요청 본문(가입의 profile, 조건 수정)을 목 저장소의 조건 모양으로 바꾼다. */
