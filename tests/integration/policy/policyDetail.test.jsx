@@ -24,19 +24,23 @@ import { apiUrl, ok } from '../../msw/respond';
 import { server } from '../../msw/server';
 
 const DETAIL_PATH = `/policies/${POLICY.id}`;
+const GUEST_CARD_TITLE = '신청 조건 (공고 원문)';
 const GUEST_CARD_GUIDE = '로그인하면 내 조건과 비교한 신청 가능 여부를 확인할 수 있어요.';
 const JUDGEMENT_CARD_TITLE = '내 조건으로 확인해 봤어요';
 
 const findPolicyTitle = () => screen.findByRole('heading', { name: POLICY.title });
 
 describe('정책 상세 분기', () => {
-  it('비로그인이면 신청 조건 자리에 로그인 안내를 보여 주고 판정 아이콘은 없다', async () => {
+  it('비로그인이면 조건 표 없이 로그인 안내만 보여 주고 판정 아이콘은 없다', async () => {
     renderApp(DETAIL_PATH);
     await findPolicyTitle();
 
-    expect(screen.getByText('신청 조건')).toBeInTheDocument();
+    expect(screen.getByText(GUEST_CARD_TITLE)).toBeInTheDocument();
     expect(screen.getByText(GUEST_CARD_GUIDE)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '로그인하고 확인하기' })).toBeInTheDocument();
+    ['나이', '지역', '소득', '취업'].forEach((conditionName) => {
+      expect(screen.queryByText(conditionName)).not.toBeInTheDocument();
+    });
     expect(screen.queryByText(JUDGEMENT_CARD_TITLE)).not.toBeInTheDocument();
     expect(screen.queryByRole('img', { name: JUDGE_RESULT_LABEL.MET })).not.toBeInTheDocument();
   });

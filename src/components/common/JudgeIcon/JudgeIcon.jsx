@@ -3,27 +3,20 @@ import Box from '@mui/material/Box';
 import AppIcon from '@/components/common/AppIcon';
 import { JUDGE_RESULT, JUDGE_RESULT_COLOR, JUDGE_RESULT_LABEL } from '@/constants/policy';
 
-const ICON_STYLE_BY_RESULT = {
-  [JUDGE_RESULT.MET]: {
-    icon: 'check',
-    sx: { backgroundColor: JUDGE_RESULT_COLOR[JUDGE_RESULT.MET], color: 'common.white' },
-  },
-  [JUDGE_RESULT.NOT_MET]: {
-    icon: 'cross',
-    sx: { backgroundColor: JUDGE_RESULT_COLOR[JUDGE_RESULT.NOT_MET], color: 'common.white' },
-  },
-  [JUDGE_RESULT.NEED_CHECK]: {
-    icon: 'question',
-    sx: { backgroundColor: JUDGE_RESULT_COLOR[JUDGE_RESULT.NEED_CHECK], color: 'common.white' },
-  },
+const ICON_NAME_BY_RESULT = {
+  [JUDGE_RESULT.MET]: 'check',
+  [JUDGE_RESULT.NOT_MET]: 'cross',
+  [JUDGE_RESULT.NEED_CHECK]: 'question',
 };
 
 function JudgeIcon({ result, size = 24 }) {
-  const iconStyle = ICON_STYLE_BY_RESULT[result];
+  const iconName = ICON_NAME_BY_RESULT[result];
 
-  if (!iconStyle) {
+  if (!iconName) {
     return null;
   }
+
+  const color = JUDGE_RESULT_COLOR[result];
 
   return (
     <Box
@@ -39,10 +32,11 @@ function JudgeIcon({ result, size = 24 }) {
         // 옆 글이 길어져도 가로 배치에서 줄어들어 타원이 되지 않게 한다.
         flexShrink: 0,
         borderRadius: '50%',
-        ...iconStyle.sx,
+        backgroundColor: color.fill,
+        color: color.glyph,
       }}
     >
-      <AppIcon name={iconStyle.icon} size={size * 0.6} />
+      <AppIcon name={iconName} size={size * 0.6} />
     </Box>
   );
 }

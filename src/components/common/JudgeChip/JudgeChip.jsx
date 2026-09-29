@@ -13,7 +13,7 @@ function JudgeChip({ result, label }) {
       sx={{
         height: 28,
         pl: 0.5,
-        borderColor: JUDGE_RESULT_COLOR[result],
+        borderColor: JUDGE_RESULT_COLOR[result]?.border,
         color: 'text.primary',
         fontSize: 12,
         fontWeight: 700,

@@ -31,10 +31,23 @@ export const JUDGE_RESULT = {
   NEED_CHECK: 'NEED_CHECK',
 };
 
+/** 판정별 색은 theme.js의 palette.judge 경로로만 가리킨다. */
 export const JUDGE_RESULT_COLOR = {
-  [JUDGE_RESULT.MET]: '#00D55A',
-  [JUDGE_RESULT.NOT_MET]: '#FF1C1C',
-  [JUDGE_RESULT.NEED_CHECK]: '#FFE449',
+  [JUDGE_RESULT.MET]: {
+    fill: 'judge.met.fill',
+    glyph: 'judge.met.glyph',
+    border: 'judge.met.border',
+  },
+  [JUDGE_RESULT.NOT_MET]: {
+    fill: 'judge.notMet.fill',
+    glyph: 'judge.notMet.glyph',
+    border: 'judge.notMet.border',
+  },
+  [JUDGE_RESULT.NEED_CHECK]: {
+    fill: 'judge.needCheck.fill',
+    glyph: 'judge.needCheck.glyph',
+    border: 'judge.needCheck.border',
+  },
 };
 
 /** 백엔드가 회원 조건과 비교해 판정하는 조건(EligibilityConditionType). 화면에도 이 순서로 보여 준다. */
