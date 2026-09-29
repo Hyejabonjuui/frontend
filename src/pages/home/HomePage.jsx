@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -9,6 +9,7 @@ import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 
+import Illustration from '@/components/common/Illustration';
 import CardHeroSection from '@/components/policy/CardHeroSection';
 import CardNewsDialog from '@/components/policy/CardNewsDialog';
 import PolicyFilterTabs from '@/components/policy/PolicyFilterTabs';
@@ -23,6 +24,7 @@ import { useFavoriteToggle } from '@/hooks/useFavoriteToggle';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { useMyConditions } from '@/hooks/useMyConditions';
 import { useToast } from '@/hooks/useToast';
+import { COLORS, GRADIENTS } from '@/styles/theme';
 
 function HomePage() {
   const navigate = useNavigate();
@@ -52,6 +54,21 @@ function HomePage() {
   });
 
   const selectedCardNews = cardNewsDetailState.cardNews;
+  const listAreaRef = useRef(null);
+  const listAreaMaxHeightRef = useRef(0);
+
+  // 지금까지 가장 컸던 목록 높이를 최소 높이로 잡는다. 창 크기를 크게 바꾸면 여백이 남을 수 있다.
+  useLayoutEffect(() => {
+    const listArea = listAreaRef.current;
+
+    if (!listArea) {
+      return;
+    }
+
+    listArea.style.minHeight = '';
+    listAreaMaxHeightRef.current = Math.max(listAreaMaxHeightRef.current, listArea.offsetHeight);
+    listArea.style.minHeight = `${listAreaMaxHeightRef.current}px`;
+  }, [policies, isLoading, errorMessage]);
 
   const isPolicyFavorite = (policyId) =>
     isFavorite(
@@ -91,51 +108,119 @@ function HomePage() {
 
   return (
     <Stack spacing={{ xs: 4, sm: 5, md: 6 }}>
-      <Stack component="section" spacing={2} sx={{ alignItems: 'center' }}>
-        <Typography
-          variant="h1"
+      <Box
+        component="section"
+        sx={{
+          position: 'relative',
+          overflow: 'hidden',
+          mx: { xs: -0.5, sm: 0 },
+          px: { xs: 2, sm: 4 },
+          pt: { xs: 4, sm: 5.5 },
+          pb: { xs: 3, sm: 4.5 },
+          borderRadius: { xs: '24px', sm: '32px' },
+          background: GRADIENTS.hero,
+          border: `1px solid ${COLORS.accentLine}`,
+        }}
+      >
+        <Box
+          aria-hidden="true"
           sx={{
-            maxWidth: '100%',
-            fontSize: { xs: 'clamp(15px, 4.8vw, 22px)', sm: 24, md: 26 },
-            letterSpacing: { xs: '-0.04em', sm: '-0.02em' },
-            textAlign: 'center',
-            whiteSpace: 'nowrap',
+            position: 'absolute',
+            top: -90,
+            left: -70,
+            width: 240,
+            height: 240,
+            borderRadius: '50%',
+            bgcolor: 'rgba(111, 93, 230, 0.07)',
           }}
-        >
-          받을 수 있는 주거 혜택, 한 번에 찾아요
-        </Typography>
-
-        <PolicySearchBar
-          keyword={keyword}
-          onKeywordChange={(value) => {
-            setKeyword(value);
-            if (searchError) {
-              setSearchError('');
-            }
+        />
+        <Illustration
+          name="home-hero"
+          sx={{
+            display: 'none',
+            // 가운데 검색창과 겹치지 않을 만큼 넓을 때만 오른쪽에 그림을 둔다.
+            '@media (min-width:1100px)': { display: 'block' },
+            position: 'absolute',
+            right: 12,
+            bottom: 6,
+            width: 220,
           }}
-          onSubmit={handleSearch}
-          errorMessage={searchError}
-          onRequestLogin={isAuthenticated ? undefined : () => openLoginNotice(LOGIN_NOTICE.SEARCH)}
         />
 
-        {isAuthenticated ? (
-          conditionSummary && (
-            <Typography variant="caption" color="text.secondary">
-              {conditionSummary} 기준으로 찾아요{' '}
-              <Link component={RouterLink} to={buildMyPagePath(MY_PAGE_TABS.CONDITION)}>
-                조건 수정
+        <Stack spacing={2} sx={{ position: 'relative', alignItems: 'center' }}>
+          <Stack
+            direction="row"
+            spacing={0.75}
+            sx={{
+              alignItems: 'center',
+              px: 1.4,
+              py: 0.6,
+              borderRadius: 99,
+              bgcolor: 'rgba(255, 255, 255, 0.8)',
+              border: `1px solid ${COLORS.accentLine}`,
+              color: 'primary.main',
+            }}
+          >
+            <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: 'primary.main' }} />
+            <Typography sx={{ fontSize: 12, fontWeight: 800 }}>
+              필요한 것만 말하면 혜자가 찾아요
+            </Typography>
+          </Stack>
+
+          <Typography
+            variant="h1"
+            aria-label="받을 수 있는 주거 혜택, 한 번에 찾아요"
+            sx={{
+              fontSize: { xs: 28, sm: 36, md: 40 },
+              lineHeight: 1.22,
+              letterSpacing: '-0.045em',
+              textAlign: 'center',
+              wordBreak: 'keep-all',
+            }}
+          >
+            받을 수 있는 주거 혜택,{' '}
+            <Box
+              component="span"
+              sx={{ display: { xs: 'block', sm: 'inline' }, color: 'primary.main' }}
+            >
+              한 번에 찾아요
+            </Box>
+          </Typography>
+
+          <PolicySearchBar
+            keyword={keyword}
+            onKeywordChange={(value) => {
+              setKeyword(value);
+              if (searchError) {
+                setSearchError('');
+              }
+            }}
+            onSubmit={handleSearch}
+            errorMessage={searchError}
+            onRequestLogin={
+              isAuthenticated ? undefined : () => openLoginNotice(LOGIN_NOTICE.SEARCH)
+            }
+          />
+
+          {isAuthenticated ? (
+            conditionSummary && (
+              <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
+                {conditionSummary} 기준으로 찾아요{' '}
+                <Link component={RouterLink} to={buildMyPagePath(MY_PAGE_TABS.CONDITION)}>
+                  조건 수정
+                </Link>
+              </Typography>
+            )
+          ) : (
+            <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
+              로그인하면 내 조건으로 판정해드려요{' '}
+              <Link component="button" type="button" onClick={() => openLoginDialog()}>
+                로그인
               </Link>
             </Typography>
-          )
-        ) : (
-          <Typography variant="caption" color="text.secondary">
-            로그인하면 내 조건으로 판정해드려요{' '}
-            <Link component="button" type="button" onClick={() => openLoginDialog()}>
-              로그인
-            </Link>
-          </Typography>
-        )}
-      </Stack>
+          )}
+        </Stack>
+      </Box>
 
       <Box component="section">
         <Stack
@@ -154,6 +239,7 @@ function HomePage() {
           isLoading={cardNewsState.isLoading}
           errorMessage={cardNewsState.errorMessage}
           onSelect={(cardNews) => setSelectedCardNewsId(cardNews.policyId)}
+          isPaused={selectedCardNewsId !== null}
         />
       </Box>
 
@@ -219,18 +305,21 @@ function HomePage() {
           )}
         </Stack>
 
-        <PolicyList
-          policies={policies}
-          isLoading={isLoading}
-          errorMessage={errorMessage}
-          page={page}
-          totalPages={totalPages}
-          onPageChange={setPage}
-          isFavorite={isPolicyFavorite}
-          onToggleFavorite={(policyId) => toggleFavorite(policyId, isPolicyFavorite(policyId))}
-          onRetry={refetch}
-          memberRegionCode={conditions?.regionCode || null}
-        />
+        {/* 분류·페이지를 바꿔 목록이 짧아져도 문서 높이가 줄지 않게 해, 보던 위치가 위로 튀지 않는다. */}
+        <Box ref={listAreaRef}>
+          <PolicyList
+            policies={policies}
+            isLoading={isLoading}
+            errorMessage={errorMessage}
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            isFavorite={isPolicyFavorite}
+            onToggleFavorite={(policyId) => toggleFavorite(policyId, isPolicyFavorite(policyId))}
+            onRetry={refetch}
+            memberRegionCode={conditions?.regionCode || null}
+          />
+        </Box>
       </Box>
 
       <CardNewsDialog

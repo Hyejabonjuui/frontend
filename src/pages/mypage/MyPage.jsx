@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import Dialog from '@mui/material/Dialog';
@@ -16,6 +15,7 @@ import Typography from '@mui/material/Typography';
 import ErrorState from '@/components/common/ErrorState';
 import ListPagination from '@/components/common/ListPagination';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import PageHero from '@/components/common/PageHero';
 import NotificationList from '@/components/notification/NotificationList';
 import { TOAST_MESSAGES } from '@/constants/messages';
 import { MY_PAGE_TABS, ROUTES } from '@/constants/routes';
@@ -25,13 +25,21 @@ import { useNotificationPage } from '@/hooks/useNotificationPage';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useToast } from '@/hooks/useToast';
 import ConditionEditor from '@/pages/onboarding/ConditionEditor';
+import { COLORS, SHADOWS, TONES } from '@/styles/theme';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
  * 설계서 S-08 내용 카드 폭. 제목·탭·내용을 이 폭 한 기둥으로 묶어 화면 가운데 둔다.
  * 넓은 화면에서 내용이 한쪽으로 쏠리지 않고, 탭을 옮겨도 폭이 같다.
  */
-const MY_PAGE_WIDTH = 720;
+const MY_PAGE_WIDTH = 800;
+
+/** 탭마다 머리 영역에 두는 그림 */
+const TAB_ILLUSTRATION = {
+  [MY_PAGE_TABS.CONDITION]: 'profile',
+  [MY_PAGE_TABS.ACCOUNT]: 'profile',
+  [MY_PAGE_TABS.NOTIFICATION]: 'notifications',
+};
 
 function ConditionTab() {
   const { conditions, isLoading, errorMessage, refetch } = useMyConditions();
@@ -97,7 +105,10 @@ function AccountTab() {
         </Stack>
       </Card>
 
-      <Card variant="outlined" sx={{ p: 2, backgroundColor: 'grey.100' }}>
+      <Card
+        variant="outlined"
+        sx={{ p: 2.5, backgroundColor: TONES.rose.bg, borderColor: 'transparent' }}
+      >
         <Stack spacing={1.5} sx={{ alignItems: 'flex-start' }}>
           <Typography variant="body2">회원 탈퇴</Typography>
           <Typography variant="body1" color="text.secondary">
@@ -187,29 +198,48 @@ function MyPage() {
 
   return (
     <Stack spacing={3} sx={{ width: '100%', maxWidth: MY_PAGE_WIDTH, mx: 'auto' }}>
-      <Stack spacing={0.5}>
-        <Typography variant="h1">마이페이지</Typography>
-        <Typography variant="body1" color="text.secondary">
-          {user.nickname} · {user.email}
-        </Typography>
-      </Stack>
+      <PageHero
+        title="마이페이지"
+        description={`${user.nickname} · ${user.email}`}
+        illustration={TAB_ILLUSTRATION[currentTab]}
+      />
 
+      {/* 밑줄 탭 대신 알약 모양 묶음으로 지금 탭을 채워 보여 준다. */}
       <Tabs
         value={currentTab}
         onChange={(event, value) => setSearchParams({ tab: value })}
         variant="scrollable"
         scrollButtons="auto"
         allowScrollButtonsMobile
-        sx={{ borderBottom: '1px solid', borderColor: 'divider' }}
+        sx={{
+          alignSelf: 'flex-start',
+          maxWidth: '100%',
+          minHeight: 0,
+          p: 0.5,
+          borderRadius: 99,
+          bgcolor: COLORS.fill,
+          '& .MuiTabs-indicator': { display: 'none' },
+        }}
       >
         {tabItems.map((tab) => (
-          <Tab key={tab.value} value={tab.value} label={tab.label} />
+          <Tab
+            key={tab.value}
+            value={tab.value}
+            label={tab.label}
+            sx={{
+              minHeight: 38,
+              px: 2.25,
+              borderRadius: 99,
+              color: 'text.secondary',
+              '&.Mui-selected': { bgcolor: 'common.white', boxShadow: SHADOWS.soft },
+            }}
+          />
         ))}
       </Tabs>
 
-      <Box>
+      <Card variant="outlined" sx={{ p: { xs: 2, sm: 3.5 } }}>
         <TabContent />
-      </Box>
+      </Card>
     </Stack>
   );
 }

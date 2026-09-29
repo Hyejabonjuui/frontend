@@ -14,7 +14,7 @@ import DdayBadge from '@/components/common/DdayBadge';
 import { TOAST_MESSAGES } from '@/constants/messages';
 import { buildPolicyDetailPath } from '@/constants/routes';
 import { useToast } from '@/hooks/useToast';
-import { RADIUS } from '@/styles/theme';
+import { getSubtypeTone, GRADIENTS, RADIUS, TONES } from '@/styles/theme';
 
 const getTagTypography = (tag) => {
   const length = Array.from(tag).length;
@@ -30,30 +30,85 @@ const getTagTypography = (tag) => {
   return { fontSize: { xs: 18, sm: 20 }, letterSpacing: '-0.02em' };
 };
 
+/** 장마다 다른 파스텔 색과 그림을 써서 4장이 한 장씩 넘기는 카드뉴스처럼 보이게 한다. 첫 장은 보라 그라데이션이다. */
+const PANEL_STYLES = [
+  { background: GRADIENTS.accent, fg: '#ffffff', sub: 'rgba(255, 255, 255, 0.82)', icon: 'home' },
+  { background: TONES.sky.bg, fg: TONES.sky.fg, icon: 'account-outline' },
+  { background: TONES.mint.bg, fg: TONES.mint.fg, icon: 'check-circle' },
+  { background: TONES.peach.bg, fg: TONES.peach.fg, icon: 'bell-outline' },
+];
+
 function CardNewsPanel({ card, cardCount, children }) {
   const headingParts = card.heading?.split(/(\([^)]*\))/) ?? [];
+  const panelStyle = PANEL_STYLES[(card.order - 1) % PANEL_STYLES.length];
+  const isInverted = card.order === 1;
 
   return (
     <Stack
       sx={{
-        p: { xs: 2, sm: 2.5, md: 2 },
-        minHeight: { xs: 0, sm: 260, md: 0 },
+        position: 'relative',
+        overflow: 'hidden',
+        p: { xs: 2.5, sm: 3 },
+        minHeight: { xs: 0, sm: 280, md: 0 },
         minWidth: 0,
         borderRadius: `${RADIUS.card}px`,
-        backgroundColor: 'grey.100',
+        background: panelStyle.background,
+        color: isInverted ? panelStyle.fg : 'text.primary',
+        // 첫 장(보라)에서는 본문·칩도 흰색 계열로 맞춘다.
+        ...(isInverted && {
+          '& .MuiTypography-root': { color: 'inherit' },
+          '& .card-news-body': { color: panelStyle.sub },
+        }),
       }}
     >
+      <Box
+        aria-hidden="true"
+        sx={{
+          position: 'absolute',
+          right: -18,
+          bottom: -18,
+          color: panelStyle.fg,
+          opacity: isInverted ? 0.16 : 0.12,
+        }}
+      >
+        <AppIcon name={panelStyle.icon} size={132} />
+      </Box>
+
       {/* 본문이 남은 높이를 모두 차지해, 액션은 카드 맨 아래에 붙는다. */}
-      <Stack spacing={1.5} sx={{ flexGrow: 1 }}>
-        <Typography variant="caption" color="text.secondary">
-          {card.order} / {cardCount}
-          {card.label && ` · ${card.label}`}
-        </Typography>
+      <Stack spacing={1.5} sx={{ position: 'relative', flexGrow: 1 }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+          <Typography
+            aria-hidden="true"
+            sx={{ fontSize: 30, lineHeight: 1, fontWeight: 800, color: panelStyle.fg }}
+          >
+            {String(card.order).padStart(2, '0')}
+          </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              px: 1.1,
+              py: 0.4,
+              borderRadius: 99,
+              fontWeight: 700,
+              color: isInverted ? 'inherit' : panelStyle.fg,
+              bgcolor: isInverted ? 'rgba(255, 255, 255, 0.16)' : 'rgba(255, 255, 255, 0.7)',
+            }}
+          >
+            {card.order} / {cardCount}
+            {card.label && ` · ${card.label}`}
+          </Typography>
+        </Stack>
 
         {card.heading && (
           <Typography
             variant="h2"
-            sx={{ wordBreak: 'keep-all', overflowWrap: 'break-word', textWrap: 'balance' }}
+            sx={{
+              fontSize: { xs: 20, sm: 22 },
+              lineHeight: 1.35,
+              wordBreak: 'keep-all',
+              overflowWrap: 'break-word',
+              textWrap: 'balance',
+            }}
           >
             {headingParts.map((part) =>
               part.startsWith('(') ? (
@@ -90,10 +145,11 @@ function CardNewsPanel({ card, cardCount, children }) {
                     {tag}
                   </Typography>
                 }
-                variant="outlined"
                 sx={{
                   height: 'auto',
                   maxWidth: '100%',
+                  bgcolor: 'common.white',
+                  color: panelStyle.fg,
                   '& .MuiChip-label': {
                     display: 'block',
                     py: 0.75,
@@ -110,7 +166,10 @@ function CardNewsPanel({ card, cardCount, children }) {
           <Typography
             variant="body1"
             color="text.secondary"
+            className="card-news-body"
             sx={{
+              fontSize: 15,
+              lineHeight: 1.65,
               whiteSpace: 'pre-line',
               wordBreak: 'keep-all',
               overflowWrap: 'break-word',
@@ -122,7 +181,7 @@ function CardNewsPanel({ card, cardCount, children }) {
         )}
       </Stack>
 
-      {children && <Box sx={{ pt: 3 }}>{children}</Box>}
+      {children && <Box sx={{ position: 'relative', pt: 3 }}>{children}</Box>}
     </Stack>
   );
 }
@@ -200,7 +259,7 @@ function CardNewsDialog({
               md: 'min(1440px, calc(100vw - 48px))',
             },
             maxHeight: { xs: 'calc(100dvh - 24px)', sm: 'calc(100dvh - 48px)' },
-            minHeight: { xs: 0, md: 'min(680px, calc(100dvh - 48px))' },
+            minHeight: { xs: 0, md: 'min(520px, calc(100dvh - 48px))' },
             m: { xs: 1.5, sm: 3 },
           },
         },
@@ -220,9 +279,13 @@ function CardNewsDialog({
         >
           <Chip
             label={cardNews.subtypeName}
-            variant="outlined"
             size="small"
-            sx={{ flexShrink: 0 }}
+            sx={{
+              flexShrink: 0,
+              fontWeight: 700,
+              bgcolor: getSubtypeTone(cardNews.subtypeName).bg,
+              color: getSubtypeTone(cardNews.subtypeName).fg,
+            }}
           />
 
           <Typography variant="h2" sx={{ flexGrow: 1, minWidth: 0, overflowWrap: 'anywhere' }}>

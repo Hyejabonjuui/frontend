@@ -10,6 +10,7 @@ import EmptyState from '@/components/common/EmptyState';
 import ErrorState from '@/components/common/ErrorState';
 import ListPagination from '@/components/common/ListPagination';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import PageHero from '@/components/common/PageHero';
 import FavoriteRow from '@/components/policy/FavoriteRow';
 import PolicySearchField from '@/components/policy/PolicySearchField';
 import { EMPTY_MESSAGES } from '@/constants/messages';
@@ -17,6 +18,7 @@ import { POLICY_PAGE_SIZE } from '@/constants/policy';
 import { ROUTES } from '@/constants/routes';
 import { useFavoriteToggle } from '@/hooks/useFavoriteToggle';
 import { useFavorites } from '@/hooks/useFavorites';
+import { RADIUS } from '@/styles/theme';
 
 function FavoritePage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -68,22 +70,23 @@ function FavoritePage() {
   };
 
   return (
-    <Stack spacing={2}>
-      <Stack spacing={0.75}>
-        <Typography variant="h1">관심 정책</Typography>
-        <Typography variant="body1" color="text.secondary">
-          <AppIcon name="heart-outline" size={14} /> 저장한 정책을 모아 두는 곳이에요.
-        </Typography>
-      </Stack>
-
-      <Stack sx={{ alignItems: 'flex-end' }}>
+    <Stack spacing={3}>
+      <PageHero
+        title="관심 정책"
+        illustration="favorites"
+        description={
+          <>
+            <AppIcon name="heart-outline" size={14} /> 저장한 정책을 모아 두는 곳이에요.
+          </>
+        }
+      >
         <PolicySearchField
           key={keyword}
           placeholder="관심 정책 검색"
           initialKeyword={keyword}
           onSearch={handleSearch}
         />
-      </Stack>
+      </PageHero>
 
       {isLoading && <LoadingSpinner />}
 
@@ -92,6 +95,7 @@ function FavoritePage() {
       {!isLoading && !errorMessage && favorites.length === 0 && keyword && (
         <EmptyState
           isFramed
+          illustration="empty"
           title={EMPTY_MESSAGES.FAVORITE_SEARCH}
           description={EMPTY_MESSAGES.FAVORITE_SEARCH_DESCRIPTION}
         />
@@ -100,6 +104,7 @@ function FavoritePage() {
       {!isLoading && !errorMessage && favorites.length === 0 && !keyword && (
         <EmptyState
           isFramed
+          illustration="favorites"
           title={EMPTY_MESSAGES.FAVORITE}
           description={
             <>
@@ -133,7 +138,14 @@ function FavoritePage() {
             </Typography>
           </Stack>
 
-          <Box sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
+          <Box
+            sx={{
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: `${RADIUS.card}px`,
+              overflow: 'hidden',
+            }}
+          >
             {favorites.map((favorite) => (
               <FavoriteRow key={favorite.policyId} favorite={favorite} onRemove={handleRemove} />
             ))}

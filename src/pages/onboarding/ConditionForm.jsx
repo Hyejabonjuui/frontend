@@ -84,7 +84,18 @@ function ConditionForm({ form, fieldErrors, codes, onChange }) {
     <Stack spacing={3}>
       <Stack spacing={2}>
         <Divider textAlign="center">
-          <Typography variant="body2">필수 조건</Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              px: 1.5,
+              py: 0.5,
+              borderRadius: 99,
+              bgcolor: 'primary.main',
+              color: 'common.white',
+            }}
+          >
+            필수 조건
+          </Typography>
         </Divider>
 
         <TextField
@@ -181,7 +192,18 @@ function ConditionForm({ form, fieldErrors, codes, onChange }) {
 
       <Stack spacing={2}>
         <Divider textAlign="center">
-          <Typography variant="body2">선택 조건</Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              px: 1.5,
+              py: 0.5,
+              borderRadius: 99,
+              bgcolor: 'primary.main',
+              color: 'common.white',
+            }}
+          >
+            선택 조건
+          </Typography>
         </Divider>
 
         <RadioField

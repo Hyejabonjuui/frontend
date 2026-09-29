@@ -32,8 +32,14 @@ function PolicySearchField({ onSearch, placeholder = '주거 정책 검색', ini
         sx={{
           width: FIELD_WIDTH,
           maxWidth: '100%',
-          '& .MuiOutlinedInput-root': { height: 36, borderRadius: '18px', pl: '14px', pr: '4px' },
-          '& .MuiOutlinedInput-notchedOutline': { borderColor: 'grey.500' },
+          '& .MuiOutlinedInput-root': {
+            height: 40,
+            borderRadius: '20px',
+            pl: '16px',
+            pr: '6px',
+            bgcolor: 'common.white',
+          },
+          '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(101, 88, 211, 0.22)' },
           '& .MuiOutlinedInput-input': { p: 0, typography: 'caption', height: 16 },
         }}
         slotProps={{

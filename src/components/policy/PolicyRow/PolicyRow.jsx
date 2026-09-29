@@ -10,6 +10,7 @@ import Typography from '@mui/material/Typography';
 import DdayBadge from '@/components/common/DdayBadge';
 import { buildPolicyDetailPath } from '@/constants/routes';
 import { useIsTextTruncated } from '@/hooks/useIsTextTruncated';
+import { COLORS, getSubtypeTone } from '@/styles/theme';
 import { summarizePolicyRegions } from '@/utils/summarizePolicyRegions';
 
 const VISUALLY_HIDDEN_SX = {
@@ -35,6 +36,8 @@ function PolicyRow({ policy, isFavorite = false, onToggleFavorite, memberRegionC
     regionSummary.label,
   );
 
+  const tone = getSubtypeTone(policy.subtypeName);
+
   const handleFavoriteClick = (event) => {
     event.preventDefault();
     onToggleFavorite?.(policy.id);
@@ -46,34 +49,53 @@ function PolicyRow({ policy, isFavorite = false, onToggleFavorite, memberRegionC
       to={buildPolicyDetailPath(policy.id)}
       sx={{
         display: 'grid',
+        // 좁은 화면에서는 유형 칩을 제목 위로 올려 제목이 한 줄 폭을 다 쓰게 한다.
         gridTemplateColumns: {
-          xs: '80px minmax(0, 1fr) auto',
+          xs: 'minmax(0, 1fr) auto',
           sm: '96px minmax(0, 1fr) 200px 110px',
+        },
+        gridTemplateAreas: {
+          xs: '"chip actions" "title actions" "region region"',
+          sm: '"chip title region actions"',
         },
         alignItems: 'center',
         columnGap: { xs: 1, sm: 2 },
-        rowGap: 1,
-        px: 2,
-        py: 1.5,
+        rowGap: { xs: 0.75, sm: 1 },
+        px: { xs: 2, sm: 2.5 },
+        py: { xs: 1.75, sm: 1.75 },
         borderBottom: '1px solid',
         borderColor: 'divider',
         color: 'inherit',
         textDecoration: 'none',
-        '&:hover': { backgroundColor: 'grey.100' },
+        transition: 'background-color 150ms ease',
+        '&:last-of-type': { borderBottom: 0 },
+        '&:hover': { backgroundColor: COLORS.accentTint },
+        '&:hover .policy-row-title': { color: 'primary.main' },
       }}
     >
       <Chip
         label={policy.subtypeName}
-        variant="outlined"
         size="small"
-        sx={{ width: '100%', minWidth: 0, justifySelf: 'center' }}
+        sx={{
+          gridArea: 'chip',
+          width: { xs: 'auto', sm: '100%' },
+          minWidth: 0,
+          justifySelf: { xs: 'start', sm: 'center' },
+          bgcolor: tone.bg,
+          color: tone.fg,
+          fontWeight: 700,
+        }}
       />
 
       <Typography
-        variant="body2"
+        variant="subtitle1"
+        className="policy-row-title"
         sx={{
+          gridArea: 'title',
           minWidth: 0,
           overflowWrap: 'anywhere',
+          wordBreak: 'keep-all',
+          transition: 'color 150ms ease',
         }}
       >
         {policy.title}
@@ -94,7 +116,7 @@ function PolicyRow({ policy, isFavorite = false, onToggleFavorite, memberRegionC
           noWrap
           tabIndex={isRegionTruncated ? 0 : undefined}
           sx={{
-            gridColumn: { xs: '1 / 3', sm: 'auto' },
+            gridArea: 'region',
             width: '100%',
             textAlign: { xs: 'left', sm: 'right' },
           }}
@@ -112,6 +134,7 @@ function PolicyRow({ policy, isFavorite = false, onToggleFavorite, memberRegionC
         direction="row"
         spacing={1}
         sx={{
+          gridArea: 'actions',
           alignItems: 'center',
           width: '100%',
           justifyContent: 'flex-end',

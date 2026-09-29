@@ -27,8 +27,9 @@ function SearchCriteriaSummary({ typeLabel, conditions, action }) {
           sx={{
             height: 24,
             borderRadius: `${RADIUS.dday}px`,
-            backgroundColor: 'grey.100',
-            color: 'text.primary',
+            backgroundColor: 'common.white',
+            borderColor: 'rgba(101, 88, 211, 0.22)',
+            color: 'primary.main',
             fontWeight: 700,
             '& .MuiChip-label': { px: 1.25 },
           }}
