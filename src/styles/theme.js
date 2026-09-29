@@ -13,22 +13,33 @@ const PageFirst = (props) => createElement(AppIcon, { ...props, name: 'first-pag
 const PageLast = (props) => createElement(AppIcon, { ...props, name: 'last-page', size: 20 });
 const AlertClose = (props) => createElement(AppIcon, { ...props, name: 'close', size: 20 });
 
+/**
+ * 브랜드 색은 퍼플(2026-09-29 확정 개선안). 퍼플은 버튼·활성 탭·링크·포커스·핵심 문구에만 쓰고,
+ * 화면은 흰색·옅은 라벤더 80% / 글자·선 15% / 퍼플 5% 비율을 지킨다.
+ * 예전 하늘색은 정보 안내(info)용 보조색으로만 남긴다.
+ */
 const designTokens = {
-  accent: '#5cb8ff',
-  accentDark: '#0065ad',
-  accentInk: '#0b1626',
-  text: '#1e2227',
-  text2: '#565d66',
+  accent: '#6558d3',
+  accentDark: '#5648c8',
+  accentSoft: '#efedff',
+  accentInk: '#ffffff',
+  brandDeep: '#231d45',
+  brandDeepText2: '#c9c5df',
+  brandDeepLine: 'rgba(255, 255, 255, 0.14)',
+  info: '#5cb8ff',
+  text: '#27213f',
+  text2: '#686477',
   text3: '#8a9099',
   canvas: '#ffffff',
+  canvasTint: '#fcfbff',
   fill: '#e3e6ea',
-  fill2: '#f4f5f7',
-  line: '#d2d6db',
-  line2: '#a8aeb6',
+  fill2: '#f7f6fc',
+  line: '#e5e1f0',
+  line2: '#c9c3dd',
   stateOk: '#00A845',
   stateWarn: '#A38F20',
   stateErr: '#FF1C1C',
-  favorite: '#e5484d',
+  favorite: '#e05263',
 };
 
 const SPACING_UNIT = 8;
@@ -74,9 +85,18 @@ const theme = createTheme({
   palette: {
     primary: {
       main: designTokens.accent,
+      light: designTokens.accentSoft,
       dark: designTokens.accentDark,
       contrastText: designTokens.accentInk,
     },
+    // 어두운 브랜드 면(랜딩 하단 배너 · 푸터). 그 위에서 읽히는 글자와 선 색을 함께 둔다.
+    brandDeep: {
+      main: designTokens.brandDeep,
+      contrastText: designTokens.canvasTint,
+      textSecondary: designTokens.brandDeepText2,
+      line: designTokens.brandDeepLine,
+    },
+    info: { main: designTokens.info },
     success: { main: designTokens.stateOk },
     warning: { main: designTokens.stateWarn },
     error: { main: designTokens.stateErr },
@@ -87,7 +107,7 @@ const theme = createTheme({
       secondary: designTokens.text2,
       disabled: designTokens.text3,
     },
-    background: { default: designTokens.canvas, paper: designTokens.canvas },
+    background: { default: designTokens.canvasTint, paper: designTokens.canvas },
     divider: designTokens.line,
     grey: {
       100: designTokens.fill2,
@@ -186,13 +206,13 @@ const theme = createTheme({
     },
     MuiLink: {
       styleOverrides: {
-        root: { color: designTokens.accentDark },
+        root: { color: designTokens.accent },
       },
     },
     MuiTab: {
       styleOverrides: {
         root: {
-          '&.Mui-selected': { color: designTokens.accentDark },
+          '&.Mui-selected': { color: designTokens.accent },
         },
       },
     },
@@ -200,6 +220,8 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: RADIUS.control,
+          // 페이지 바탕이 옅은 라벤더라, 입력칸은 흰색으로 띄워 구분한다.
+          backgroundColor: designTokens.canvas,
           // 설계서 공통 규칙 3: 입력 오류는 테두리 2px + 빨강 + 안내 문구로 함께 알린다.
           '&.Mui-error .MuiOutlinedInput-notchedOutline': { borderWidth: 2 },
         },
