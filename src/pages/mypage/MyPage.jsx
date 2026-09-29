@@ -10,14 +10,16 @@ import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 import ErrorState from '@/components/common/ErrorState';
+import FieldError from '@/components/common/FieldError';
 import ListPagination from '@/components/common/ListPagination';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import PageHero from '@/components/common/PageHero';
 import NotificationList from '@/components/notification/NotificationList';
-import { TOAST_MESSAGES } from '@/constants/messages';
+import { TOAST_MESSAGES, VALIDATION_MESSAGES } from '@/constants/messages';
 import { MY_PAGE_TABS, ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyConditions } from '@/hooks/useMyConditions';
@@ -25,7 +27,7 @@ import { useNotificationPage } from '@/hooks/useNotificationPage';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useToast } from '@/hooks/useToast';
 import ConditionEditor from '@/pages/onboarding/ConditionEditor';
-import { COLORS, SHADOWS, TONES } from '@/styles/theme';
+import { COLORS, TONES } from '@/styles/theme';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
@@ -60,16 +62,41 @@ function AccountTab() {
   const { showSuccess, showError } = useToast();
   const navigate = useNavigate();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
 
-  const handleWithdraw = async () => {
+  const closeConfirm = () => {
     setIsConfirmOpen(false);
+    setPassword('');
+    setPasswordError('');
+  };
+
+  // 백엔드는 본인 확인용 비밀번호가 맞을 때만 탈퇴한다. 틀리면 창을 닫지 않고 입력칸 아래에 알린다.
+  const handleWithdraw = async (event) => {
+    event.preventDefault();
+
+    if (!password) {
+      setPasswordError(VALIDATION_MESSAGES.REQUIRED_PASSWORD);
+      return;
+    }
+
+    setIsWithdrawing(true);
 
     try {
-      await withdraw();
+      await withdraw(password);
+      closeConfirm();
       showSuccess(TOAST_MESSAGES.ACCOUNT_DELETED);
       navigate(ROUTES.HOME, { replace: true });
     } catch (error) {
-      showError(getErrorMessage(error));
+      if (error?.response?.data?.code === 'MEMBER_006') {
+        setPasswordError(getErrorMessage(error));
+      } else {
+        closeConfirm();
+        showError(getErrorMessage(error));
+      }
+    } finally {
+      setIsWithdrawing(false);
     }
   };
 
@@ -114,24 +141,55 @@ function AccountTab() {
           <Typography variant="body1" color="text.secondary">
             탈퇴하면 내 조건, 관심 정책, 알림이 모두 지워지고 되돌릴 수 없어요.
           </Typography>
-          <Button variant="outlined" onClick={() => setIsConfirmOpen(true)}>
+          <Button
+            variant="outlined"
+            onClick={() => setIsConfirmOpen(true)}
+            sx={{
+              color: 'error.main',
+              borderColor: 'error.main',
+              '&:hover': { borderColor: 'error.main', backgroundColor: TONES.rose.bg },
+            }}
+          >
             회원 탈퇴
           </Button>
         </Stack>
       </Card>
 
-      <Dialog open={isConfirmOpen} onClose={() => setIsConfirmOpen(false)} maxWidth="xs" fullWidth>
+      <Dialog
+        open={isConfirmOpen}
+        onClose={isWithdrawing ? undefined : closeConfirm}
+        maxWidth="xs"
+        fullWidth
+        slotProps={{ paper: { component: 'form', onSubmit: handleWithdraw, noValidate: true } }}
+      >
         <DialogTitle sx={{ typography: 'h2' }}>정말 탈퇴하시겠어요?</DialogTitle>
         <DialogContent>
-          <Typography variant="body1" color="text.secondary">
-            내 조건, 관심 정책, 알림이 모두 지워지고 되돌릴 수 없어요.
-          </Typography>
+          <Stack spacing={2}>
+            <Typography variant="body1" color="text.secondary" sx={{ wordBreak: 'keep-all' }}>
+              내 조건, 관심 정책, 알림이 모두 지워지고 되돌릴 수 없어요. 본인 확인을 위해 비밀번호를
+              입력해 주세요.
+            </Typography>
+            <TextField
+              label="비밀번호"
+              type="password"
+              autoComplete="current-password"
+              autoFocus
+              fullWidth
+              value={password}
+              onChange={(event) => {
+                setPassword(event.target.value);
+                setPasswordError('');
+              }}
+              error={Boolean(passwordError)}
+              helperText={passwordError ? <FieldError>{passwordError}</FieldError> : ' '}
+            />
+          </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button variant="text" onClick={() => setIsConfirmOpen(false)}>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button variant="text" onClick={closeConfirm} disabled={isWithdrawing}>
             취소
           </Button>
-          <Button variant="contained" color="error" onClick={handleWithdraw}>
+          <Button type="submit" variant="contained" color="error" loading={isWithdrawing}>
             탈퇴할게요
           </Button>
         </DialogActions>
@@ -204,22 +262,14 @@ function MyPage() {
         illustration={TAB_ILLUSTRATION[currentTab]}
       />
 
-      {/* 밑줄 탭 대신 알약 모양 묶음으로 지금 탭을 채워 보여 준다. */}
+      {/* 홈 분류 탭과 같은 알약 모양으로, 지금 탭은 진한 남보라로 채워 보여 준다. */}
       <Tabs
         value={currentTab}
         onChange={(event, value) => setSearchParams({ tab: value })}
         variant="scrollable"
         scrollButtons="auto"
         allowScrollButtonsMobile
-        sx={{
-          alignSelf: 'flex-start',
-          maxWidth: '100%',
-          minHeight: 0,
-          p: 0.5,
-          borderRadius: 99,
-          bgcolor: COLORS.fill,
-          '& .MuiTabs-indicator': { display: 'none' },
-        }}
+        sx={{ minHeight: 40, '& .MuiTabs-indicator': { display: 'none' } }}
       >
         {tabItems.map((tab) => (
           <Tab
@@ -228,10 +278,17 @@ function MyPage() {
             label={tab.label}
             sx={{
               minHeight: 38,
-              px: 2.25,
+              minWidth: 0,
+              mr: 1,
+              px: 2,
               borderRadius: 99,
+              border: `1px solid ${COLORS.line}`,
               color: 'text.secondary',
-              '&.Mui-selected': { bgcolor: 'common.white', boxShadow: SHADOWS.soft },
+              '&.Mui-selected': {
+                color: 'common.white',
+                bgcolor: COLORS.brandDeep,
+                borderColor: COLORS.brandDeep,
+              },
             }}
           />
         ))}

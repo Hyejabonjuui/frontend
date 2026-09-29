@@ -85,8 +85,8 @@ function AuthProvider({ children }) {
     }
   }, []);
 
-  const withdraw = useCallback(async () => {
-    await userApi.deleteAccount();
+  const withdraw = useCallback(async (password) => {
+    await userApi.deleteAccount(password);
     tokenStorage.clear();
     searchResultCache.clear();
     setUser(null);
