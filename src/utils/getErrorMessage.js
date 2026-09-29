@@ -19,7 +19,7 @@ const API_CODE_MESSAGES = {
   VERIFY_002: '인증 코드가 만료됐어요. 다시 받아 주세요',
   VERIFY_003: '이메일 인증을 먼저 완료해 주세요',
   VERIFY_004: '인증 코드는 60초 후 다시 받을 수 있어요',
-  VERIFY_005: '인증 코드 입력 횟수를 초과했어요. 코드를 다시 받아 주세요',
+  VERIFY_005: '인증 코드를 5번 틀려 1시간 동안 인증할 수 없어요. 1시간 뒤에 다시 시도해 주세요',
   MEMBER_002: '이미 가입된 이메일이에요',
   MEMBER_004: '입력한 정보와 일치하는 가입 내역이 없어요',
   MEMBER_006: '비밀번호가 일치하지 않아요',
@@ -32,6 +32,12 @@ export const isCanceledError = (error) => error?.code === 'ERR_CANCELED';
 
 export const getErrorMessage = (error) => {
   const response = error?.response;
+  const remainingAttempts = response?.data?.result?.remainingAttempts;
+
+  // 인증 코드가 틀리면 백엔드가 남은 시도 횟수를 함께 준다. 잠기기 전에 몇 번 남았는지 알려 준다.
+  if (response?.data?.code === 'VERIFY_001' && Number.isInteger(remainingAttempts)) {
+    return `${API_CODE_MESSAGES.VERIFY_001} (남은 기회 ${remainingAttempts}번)`;
+  }
 
   if (response) {
     return (

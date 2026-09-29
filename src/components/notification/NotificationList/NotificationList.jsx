@@ -14,6 +14,7 @@ function NotificationList({
   onRead,
   onDelete,
   onRetry,
+  onSelect,
 }) {
   if (isLoading) {
     return <LoadingSpinner />;
@@ -35,6 +36,7 @@ function NotificationList({
           notification={notification}
           onRead={onRead}
           onDelete={onDelete}
+          onSelect={onSelect}
         />
       ))}
     </Stack>
