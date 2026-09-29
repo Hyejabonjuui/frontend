@@ -76,9 +76,9 @@ function Header() {
         >
           <Box
             component="img"
-            src={`${import.meta.env.BASE_URL}icons/hyeja_header_simple.svg`}
+            src={`${import.meta.env.BASE_URL}icons/hyeja_for_logo_main.svg`}
             alt="혜자"
-            sx={{ display: 'block', width: 'auto', height: { xs: 28, sm: 32 } }}
+            sx={{ display: 'block', width: 'auto', height: { xs: 32, sm: 40 } }}
           />
         </Box>
 
