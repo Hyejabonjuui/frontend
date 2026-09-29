@@ -10,8 +10,11 @@ import { buildPolicyDetailPath } from '@/constants/routes';
 import { COLORS } from '@/styles/theme';
 import { formatRelativeTime } from '@/utils/formatDate';
 
-/** 설계서 S-09: 안 읽은 알림은 점과 배경으로 구분하고, 행을 누르면 정책 상세로 간다. */
-function NotificationItem({ notification, onRead, onDelete }) {
+/**
+ * 설계서 S-09: 안 읽은 알림은 점과 배경으로 구분하고, 행을 누르면 정책 상세로 간다.
+ * onSelect는 행을 눌렀을 때 함께 부른다. 헤더 알림 창은 이걸로 창을 닫는다.
+ */
+function NotificationItem({ notification, onRead, onDelete, onSelect }) {
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -19,6 +22,8 @@ function NotificationItem({ notification, onRead, onDelete }) {
     if (!notification.isRead) {
       onRead?.(notification.id);
     }
+
+    onSelect?.(notification);
 
     if (notification.policyId) {
       navigate(buildPolicyDetailPath(notification.policyId));

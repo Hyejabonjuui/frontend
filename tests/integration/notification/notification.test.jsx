@@ -160,4 +160,16 @@ describe('알림 목록', () => {
     expect(screen.queryByText(POLICY_NAME)).not.toBeInTheDocument();
     expect(pageRequests).toEqual([0, 1]);
   });
+
+  it('헤더 알림 창에서 알림을 누르면 창을 닫고 정책 상세로 이동한다', async () => {
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp(ROUTES.HOME);
+
+    await user.click(await screen.findByRole('button', { name: '알림 열기' }, { timeout: 5000 }));
+    const popover = await screen.findByRole('presentation');
+    await user.click(await within(popover).findByText(CONTENT));
+
+    await waitFor(() => expect(window.location.pathname).toBe(buildPolicyDetailPath(POLICY_ID)));
+    await waitFor(() => expect(screen.queryByText('알림함 전체 보기')).not.toBeInTheDocument());
+  });
 });

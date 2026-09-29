@@ -3,6 +3,7 @@ import { HttpResponse, http } from 'msw';
 import { describe, expect, it } from 'vitest';
 
 import { ENDPOINTS } from '@/api/endpoints';
+import { TOAST_MESSAGES } from '@/constants/messages';
 import { tokenStorage } from '@/utils/tokenStorage';
 
 import { findHeader, renderApp, signInAs } from '../../helpers/renderApp';
@@ -70,5 +71,26 @@ describe('로그아웃', () => {
 
     expect(response.status).toBe(401);
     expect(body.code).toBe('COMMON_002');
+  });
+
+  it('토큰이 만료돼 로그아웃 요청이 401이어도 로그아웃을 마치고 안내한다', async () => {
+    server.use(
+      http.post(apiUrl(ENDPOINTS.AUTH.LOGOUT), () =>
+        HttpResponse.json(
+          { isSuccess: false, code: 'COMMON_002', message: '인증이 필요합니다.', result: null },
+          { status: 401 },
+        ),
+      ),
+    );
+    signInAs(TOKENS.MEMBER);
+    const { user } = renderApp('/');
+    const header = await findHeader();
+
+    await user.click(await header.findByRole('button', { name: MEMBER_USER.nickname }));
+    await user.click(await screen.findByRole('menuitem', { name: '로그아웃' }));
+
+    expect(await screen.findByText(TOAST_MESSAGES.LOGOUT_DONE)).toBeInTheDocument();
+    expect(await header.findByRole('button', { name: '로그인' })).toBeInTheDocument();
+    expect(tokenStorage.getAccessToken()).toBeNull();
   });
 });

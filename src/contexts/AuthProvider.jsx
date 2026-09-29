@@ -78,6 +78,8 @@ function AuthProvider({ children }) {
   const logout = useCallback(async () => {
     try {
       await authApi.logout();
+    } catch {
+      // 토큰이 이미 만료됐거나 서버에 닿지 않아도, 이 기기의 로그아웃은 그대로 마친다.
     } finally {
       tokenStorage.clear();
       searchResultCache.clear();

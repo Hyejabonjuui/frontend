@@ -228,8 +228,13 @@ function SignupPage() {
 
       const message = getErrorMessage(error);
       setVerificationError(message);
-      if (error?.response?.data?.code === 'VERIFY_002') {
+      // 만료됐거나 5번 틀려 잠기면 더 입력해도 소용없으니 남은 시간을 끝내 입력을 막는다.
+      if (['VERIFY_002', 'VERIFY_005'].includes(error?.response?.data?.code)) {
         setRemainingSeconds(0);
+      }
+      // 백엔드가 이 이메일의 인증을 1시간 잠갔다. 만료 안내 대신 잠금 안내만 남긴다.
+      if (error?.response?.data?.code === 'VERIFY_005') {
+        setVerificationStatus('locked');
       }
       showError(message);
     } finally {
@@ -394,7 +399,7 @@ function SignupPage() {
                   setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6));
                   setVerificationError('');
                 }}
-                disabled={verificationStatus === 'verified'}
+                disabled={verificationStatus === 'verified' || verificationStatus === 'locked'}
                 error={Boolean(verificationError)}
                 helperText={verificationError ? <FieldError>{verificationError}</FieldError> : ' '}
                 slotProps={{
@@ -414,16 +419,18 @@ function SignupPage() {
                 인증 코드 확인
               </Button>
             </Stack>
-            <Typography
-              variant="caption"
-              color={verificationStatus === 'verified' ? 'success.main' : 'text.secondary'}
-            >
-              {verificationStatus === 'verified'
-                ? '이메일 인증 완료 · 30분 안에 가입해 주세요'
-                : remainingSeconds > 0
-                  ? `남은 시간 ${formatRemainingTime(remainingSeconds)}`
-                  : VALIDATION_MESSAGES.VERIFICATION_CODE_EXPIRED}
-            </Typography>
+            {verificationStatus !== 'locked' && (
+              <Typography
+                variant="caption"
+                color={verificationStatus === 'verified' ? 'success.main' : 'text.secondary'}
+              >
+                {verificationStatus === 'verified'
+                  ? '이메일 인증 완료 · 30분 안에 가입해 주세요'
+                  : remainingSeconds > 0
+                    ? `남은 시간 ${formatRemainingTime(remainingSeconds)}`
+                    : VALIDATION_MESSAGES.VERIFICATION_CODE_EXPIRED}
+              </Typography>
+            )}
           </Stack>
         )}
         <PasswordField

@@ -16,6 +16,26 @@ import { buildAccessToken, findUserByToken, mockStore } from '@/mocks/store';
 const ok = (data) => ({ status: 200, data });
 const fail = (status, message) => ({ status, data: { message } });
 
+/** 백엔드 EmailVerificationService와 같이 5번 틀리면 1시간 동안 인증을 막는다. */
+const MAX_VERIFICATION_FAILURES = 5;
+const VERIFICATION_LOCK_MS = 60 * 60 * 1000;
+
+const verificationLocked = (email) => {
+  const lockedUntil = mockStore.getState().emailVerificationLocks?.[email];
+
+  return Boolean(lockedUntil && lockedUntil > Date.now());
+};
+
+const verificationLockedResponse = () => ({
+  status: 429,
+  data: {
+    isSuccess: false,
+    code: 'VERIFY_005',
+    message: '인증 시도 횟수를 초과했어요. 1시간 후에 다시 시도해 주세요.',
+    result: null,
+  },
+});
+
 const maskEmail = (email) => {
   const [localPart, domain] = email.split('@');
 
@@ -431,6 +451,10 @@ export const HANDLERS = [
         return fail(409, '이미 가입된 이메일이에요');
       }
 
+      if (verificationLocked(body.email)) {
+        return verificationLockedResponse();
+      }
+
       mockStore.update((state) => {
         state.emailVerifications ??= {};
         state.emailVerifications[body.email] = {
@@ -449,6 +473,10 @@ export const HANDLERS = [
     method: 'post',
     match: (url) => url === '/api/members/email-verifications/confirmation',
     handle: ({ body }) => {
+      if (verificationLocked(body.email)) {
+        return verificationLockedResponse();
+      }
+
       const verification = mockStore.getState().emailVerifications?.[body.email];
 
       if (!verification || verification.expiresAt <= Date.now()) {
@@ -456,7 +484,32 @@ export const HANDLERS = [
       }
 
       if (verification.code !== body.code) {
-        return fail(400, '인증 코드가 올바르지 않아요');
+        const failures = (verification.failures ?? 0) + 1;
+
+        mockStore.update((state) => {
+          state.emailVerifications[body.email].failures = failures;
+
+          if (failures >= MAX_VERIFICATION_FAILURES) {
+            state.emailVerificationLocks ??= {};
+            state.emailVerificationLocks[body.email] = Date.now() + VERIFICATION_LOCK_MS;
+          }
+
+          return state;
+        });
+
+        if (failures >= MAX_VERIFICATION_FAILURES) {
+          return verificationLockedResponse();
+        }
+
+        return {
+          status: 400,
+          data: {
+            isSuccess: false,
+            code: 'VERIFY_001',
+            message: '인증 코드가 일치하지 않아요.',
+            result: { remainingAttempts: MAX_VERIFICATION_FAILURES - failures },
+          },
+        };
       }
 
       mockStore.update((state) => {

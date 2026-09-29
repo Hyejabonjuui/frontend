@@ -53,6 +53,7 @@ function NotificationPopover({
           errorMessage={errorMessage}
           emptyMessage={EMPTY_MESSAGES.NOTIFICATION_UNREAD}
           onRead={onRead}
+          onSelect={onClose}
         />
       </Box>
 

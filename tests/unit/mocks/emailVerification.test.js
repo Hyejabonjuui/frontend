@@ -56,4 +56,27 @@ describe('개발용 목 서버 이메일 인증', () => {
     expect(signup.status).toBe(200);
     expect(mockStore.getState().emailVerifications[email]).toBeUndefined();
   });
+
+  it('틀릴 때마다 남은 시도 횟수를 주고, 5번째에 1시간 잠근 뒤 재발송도 막는다', () => {
+    const email = 'lock-test@hyeja.kr';
+    const confirm = (code) =>
+      handlePost('/api/members/email-verifications/confirmation', { email, code });
+
+    handlePost('/api/members/email-verifications', { email });
+
+    for (const remainingAttempts of [4, 3, 2, 1]) {
+      const response = confirm('000000');
+
+      expect(response.status).toBe(400);
+      expect(response.data.code).toBe('VERIFY_001');
+      expect(response.data.result.remainingAttempts).toBe(remainingAttempts);
+    }
+
+    const locked = confirm('000000');
+    expect(locked.status).toBe(429);
+    expect(locked.data.code).toBe('VERIFY_005');
+
+    expect(confirm('384021').data.code).toBe('VERIFY_005');
+    expect(handlePost('/api/members/email-verifications', { email }).data.code).toBe('VERIFY_005');
+  });
 });
