@@ -18,7 +18,7 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 import CardNewsDialog from '@/components/policy/CardNewsDialog';
 import TermText from '@/components/policy/TermText';
 import { TOAST_MESSAGES } from '@/constants/messages';
-import { ELIGIBILITY_CONDITION_LABELS, JUDGE_RESULT_BY_GROUP } from '@/constants/policy';
+import { JUDGE_RESULT_BY_GROUP } from '@/constants/policy';
 import { buildMyPagePath, MY_PAGE_TABS, ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavoriteToggle } from '@/hooks/useFavoriteToggle';
@@ -36,6 +36,8 @@ const SIDE_BY_SIDE = '@media (min-width:1024px)';
 
 /** 설계서 S-06 오른쪽 카드 공통 틀: 폭 380 · 여백 24 · 회색 바탕 */
 const ASIDE_CARD_SX = { width: '100%', minWidth: 0, p: 3, backgroundColor: 'grey.100' };
+/** 비로그인 카드는 조건 표가 빠져도 조건 다섯 줄이 있던 때의 높이를 유지한다. */
+const GUEST_CARD_MIN_HEIGHT = 469;
 
 /** 설계서 S-06 로그인: 종합 판정과 조건별 판정을 보여 준다. */
 function JudgementCard({ judgements, summary, group }) {
@@ -115,58 +117,67 @@ function JudgementCard({ judgements, summary, group }) {
 }
 
 /**
- * 설계서 S-06 비로그인. 비로그인 상세 응답에는 조건별 원문이 없다(conditions가 빈 목록).
- * 없는 값은 채우지 않고, 로그인하면 판정해 주는 조건만 설계서와 같은 표로 보여 준다.
+ * 설계서 S-06 비로그인. 비로그인 상세 응답에는 조건별 값이 없다(conditions가 빈 목록).
+ * 조건 표 대신 로그인 안내를 제목 아래 남은 공간의 가운데에 크게 둔다.
  */
 function GuestConditionsCard({ onLogin }) {
   return (
-    <Card variant="outlined" sx={ASIDE_CARD_SX}>
-      <Stack spacing={1.5}>
-        <Stack spacing={0.5}>
-          <Typography variant="subtitle1">신청 조건</Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ wordBreak: 'keep-all', overflowWrap: 'break-word' }}
-          >
-            로그인하면 내 조건과 비교한 신청 가능 여부를 확인할 수 있어요.
-          </Typography>
-        </Stack>
+    <Card
+      variant="outlined"
+      sx={{
+        ...ASIDE_CARD_SX,
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: GUEST_CARD_MIN_HEIGHT,
+      }}
+    >
+      <Stack spacing={0.5}>
+        <Typography variant="subtitle1">신청 조건 (공고 원문)</Typography>
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          sx={{ wordBreak: 'keep-all', overflowWrap: 'break-word' }}
+        >
+          로그인하면 내 조건과 비교한 신청 가능 여부를 확인할 수 있어요.
+        </Typography>
+      </Stack>
 
-        {Object.entries(ELIGIBILITY_CONDITION_LABELS).map(([conditionKey, conditionName]) => (
-          <Stack
-            key={conditionKey}
-            direction="row"
-            spacing={1.5}
-            sx={{ py: 1, borderBottom: 1, borderColor: 'divider' }}
-          >
-            <Typography variant="body2" sx={{ width: 72, flexShrink: 0 }}>
-              {conditionName}
-            </Typography>
-            <Typography variant="body1" color="text.disabled">
-              로그인 후 확인
-            </Typography>
-          </Stack>
-        ))}
-
+      <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', pt: 3 }}>
         <Stack
-          spacing={1.25}
+          spacing={2}
           sx={{
-            p: 1.75,
+            width: '100%',
+            alignItems: 'center',
+            px: 3,
+            py: 4,
             border: 1,
             borderColor: 'grey.500',
             borderRadius: `${RADIUS.toast}px`,
             backgroundColor: 'background.paper',
           }}
         >
-          <Typography variant="body2" align="center">
+          <Box
+            aria-hidden="true"
+            sx={{
+              display: 'grid',
+              placeItems: 'center',
+              width: 48,
+              height: 48,
+              borderRadius: '50%',
+              color: 'primary.dark',
+              backgroundColor: 'grey.100',
+            }}
+          >
+            <AppIcon name="lock-outline" size={24} />
+          </Box>
+          <Typography variant="subtitle1" align="center">
             로그인하고 1초만에 확인하기
           </Typography>
-          <Button variant="contained" fullWidth onClick={() => onLogin()}>
+          <Button variant="contained" fullWidth onClick={() => onLogin()} sx={{ minHeight: 44 }}>
             로그인하고 확인하기
           </Button>
         </Stack>
-      </Stack>
+      </Box>
     </Card>
   );
 }
