@@ -40,6 +40,16 @@ const designTokens = {
   stateWarn: '#A38F20',
   stateErr: '#FF1C1C',
   favorite: '#e05263',
+  // 조건 판정: 파스텔 채움 위에 같은 계열 짙은 기호(대비 4.5 이상). 미충족은 관심 하트와 겹치지 않게 코랄 쪽이다.
+  judgeMetFill: '#cffcec',
+  judgeMetGlyph: '#04715a',
+  judgeMetBorder: '#87cfb8',
+  judgeNeedCheckFill: '#fff4c6',
+  judgeNeedCheckGlyph: '#9c6000',
+  judgeNeedCheckBorder: '#f2c86c',
+  judgeNotMetFill: '#ffe9e5',
+  judgeNotMetGlyph: '#9a2a1e',
+  judgeNotMetBorder: '#f2a89b',
 };
 
 const SPACING_UNIT = 8;
@@ -102,6 +112,23 @@ const theme = createTheme({
     error: { main: designTokens.stateErr },
     // 관심(하트)은 채워졌을 때만 빨갛게 보여 준다.
     favorite: { main: designTokens.favorite },
+    judge: {
+      met: {
+        fill: designTokens.judgeMetFill,
+        glyph: designTokens.judgeMetGlyph,
+        border: designTokens.judgeMetBorder,
+      },
+      needCheck: {
+        fill: designTokens.judgeNeedCheckFill,
+        glyph: designTokens.judgeNeedCheckGlyph,
+        border: designTokens.judgeNeedCheckBorder,
+      },
+      notMet: {
+        fill: designTokens.judgeNotMetFill,
+        glyph: designTokens.judgeNotMetGlyph,
+        border: designTokens.judgeNotMetBorder,
+      },
+    },
     text: {
       primary: designTokens.text,
       secondary: designTokens.text2,
