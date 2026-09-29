@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link as RouterLink, NavLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import AppIcon from '@/components/common/AppIcon';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -18,13 +18,17 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useToast } from '@/hooks/useToast';
-import { LAYOUT } from '@/styles/theme';
+import { COLORS, LAYOUT } from '@/styles/theme';
+
+// 검색 결과와 정책 상세도 "주거 정책" 안의 화면이라 같은 메뉴를 켜 둔다.
+const POLICY_PATHS = [ROUTES.HOME, ROUTES.SEARCH, '/policies/'];
 
 function Header() {
   const { isAuthenticated, user, logout } = useAuth();
   const { openLoginDialog } = useLoginDialog();
   const { showSuccess } = useToast();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { unreadNotifications, unreadCount, isLoading, errorMessage, markAsRead } =
     useNotifications();
   const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
@@ -32,10 +36,10 @@ function Header() {
 
   const navItems = isAuthenticated
     ? [
-        { label: '주거 정책', to: ROUTES.HOME },
-        { label: '관심 정책', to: ROUTES.FAVORITE },
+        { label: '주거 정책', to: ROUTES.HOME, paths: POLICY_PATHS },
+        { label: '관심 정책', to: ROUTES.FAVORITE, paths: [ROUTES.FAVORITE] },
       ]
-    : [{ label: '주거 정책', to: ROUTES.HOME }];
+    : [{ label: '주거 정책', to: ROUTES.HOME, paths: POLICY_PATHS }];
 
   const handleLogout = async () => {
     setAccountAnchorEl(null);
@@ -54,7 +58,12 @@ function Header() {
       position="sticky"
       elevation={0}
       color="inherit"
-      sx={{ borderBottom: '1px solid', borderColor: 'divider' }}
+      sx={{
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+        backgroundColor: 'rgba(255, 255, 255, 0.86)',
+        backdropFilter: 'saturate(180%) blur(14px)',
+      }}
     >
       <Toolbar
         sx={{
@@ -87,27 +96,32 @@ function Header() {
           spacing={{ xs: 0, sm: 1, md: 2 }}
           sx={{ flexShrink: 0, order: { xs: 3, sm: 0 }, width: { xs: '100%', sm: 'auto' } }}
         >
-          {navItems.map((item) => (
-            <Button
-              key={item.to}
-              component={NavLink}
-              to={item.to}
-              variant="text"
-              end
-              size="small"
-              sx={{
-                color: 'text.secondary',
-                '&.active': {
-                  color: 'text.primary',
-                  borderBottom: '2px solid',
-                  borderColor: 'primary.main',
-                  borderRadius: 0,
-                },
-              }}
-            >
-              {item.label}
-            </Button>
-          ))}
+          {navItems.map((item) => {
+            const isActive = item.paths.some((path) => pathname.startsWith(path));
+
+            return (
+              <Button
+                key={item.to}
+                component={RouterLink}
+                to={item.to}
+                aria-current={isActive ? 'page' : undefined}
+                variant="text"
+                size="small"
+                sx={{
+                  borderRadius: 99,
+                  px: 1.75,
+                  color: 'text.secondary',
+                  ...(isActive && {
+                    color: 'primary.main',
+                    backgroundColor: COLORS.accentSoft,
+                    '&:hover': { backgroundColor: COLORS.accentSoft },
+                  }),
+                }}
+              >
+                {item.label}
+              </Button>
+            );
+          })}
         </Stack>
 
         <Box sx={{ flexGrow: 1 }} />
@@ -162,7 +176,13 @@ function Header() {
               >
                 로그인
               </Button>
-              <Button component={RouterLink} to={ROUTES.SIGNUP} variant="contained" size="small">
+              <Button
+                component={RouterLink}
+                to={ROUTES.SIGNUP}
+                variant="contained"
+                size="small"
+                sx={{ borderRadius: 99, px: 2 }}
+              >
                 회원가입
               </Button>
             </>

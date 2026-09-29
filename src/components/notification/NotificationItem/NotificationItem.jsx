@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 
 import DdayBadge from '@/components/common/DdayBadge';
 import { buildPolicyDetailPath } from '@/constants/routes';
+import { COLORS } from '@/styles/theme';
 import { formatRelativeTime } from '@/utils/formatDate';
 
 /** 설계서 S-09: 안 읽은 알림은 점과 배경으로 구분하고, 행을 누르면 정책 상세로 간다. */
@@ -33,14 +34,16 @@ function NotificationItem({ notification, onRead, onDelete }) {
         alignItems: { xs: 'flex-start', sm: 'center' },
         px: 2,
         py: 1.5,
-        borderRadius: 1,
-        backgroundColor: notification.isRead ? 'transparent' : 'grey.100',
+        borderRadius: '14px',
+        backgroundColor: notification.isRead ? 'transparent' : COLORS.accentTint,
+        transition: 'background-color 150ms ease',
+        '&:hover': { backgroundColor: COLORS.accentSoft },
       }}
     >
       <Box
         sx={{
-          width: 6,
-          height: 6,
+          width: 8,
+          height: 8,
           flexShrink: 0,
           borderRadius: '50%',
           backgroundColor: notification.isRead ? 'transparent' : 'primary.main',

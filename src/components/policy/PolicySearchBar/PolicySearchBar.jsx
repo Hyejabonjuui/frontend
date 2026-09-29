@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography';
 
 import SubtypeChip from '@/components/common/SubtypeChip';
 import { POLICY_SEARCH_HASHTAGS, SEARCH_KEYWORD_MAX_LENGTH } from '@/constants/policy';
-import { LAYOUT } from '@/styles/theme';
+import { GRADIENTS, LAYOUT, SHADOWS } from '@/styles/theme';
 
 /**
  * 설계서 Search/Main: 600 × 52 · 테두리 1.5 · 글자 16/24 · 오른쪽 끝 44px 원형 검색 버튼.
@@ -86,12 +86,17 @@ function PolicySearchBar({
         sx={{
           maxWidth: LAYOUT.searchBarWidth,
           '& .MuiOutlinedInput-root': {
-            height: 52,
-            borderRadius: '26px',
-            pl: '22px',
+            height: 56,
+            borderRadius: '28px',
+            pl: '24px',
             pr: '6px',
+            bgcolor: 'common.white',
+            boxShadow: SHADOWS.card,
           },
-          '& .MuiOutlinedInput-notchedOutline': { borderWidth: 1.5, borderColor: 'grey.500' },
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderWidth: 1.5,
+            borderColor: 'rgba(101, 88, 211, 0.22)',
+          },
           '& .MuiOutlinedInput-input': { p: 0, height: 24, fontSize: 16, lineHeight: '24px' },
           '& .MuiInputAdornment-root': { height: 'auto', maxHeight: 'none', ml: '10px' },
           '& .MuiInputAdornment-root .MuiTypography-root': { display: { xs: 'none', sm: 'block' } },
@@ -115,9 +120,9 @@ function PolicySearchBar({
                     width: 44,
                     height: 44,
                     color: 'primary.contrastText',
-                    bgcolor: 'primary.main',
+                    background: GRADIENTS.accent,
                     // 설계서 공통 규칙: 호버·클릭은 같은 색을 진하게 보여 준다.
-                    '&:hover': { bgcolor: 'primary.main', opacity: 0.88 },
+                    '&:hover': { background: GRADIENTS.accent, opacity: 0.88 },
                   }}
                 >
                   <AppIcon name="search" size={20} />

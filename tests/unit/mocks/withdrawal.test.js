@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { MOCK_PASSWORD } from '@/mocks/data/users';
 import { findHandler } from '@/mocks/handlers';
 import { buildAccessToken, findUserByToken, mockStore } from '@/mocks/store';
 
@@ -14,7 +15,7 @@ describe('개발용 목 서버 회원 탈퇴', () => {
     const user = findUserByToken(authorization);
     const handler = findHandler('patch', '/api/members/me/delete');
 
-    const response = handler.handle({ user, authorization });
+    const response = handler.handle({ user, authorization, body: { password: MOCK_PASSWORD } });
     const state = mockStore.getState();
     const withdrawnUser = state.users.find((item) => item.id === 1);
 
@@ -27,11 +28,34 @@ describe('개발용 목 서버 회원 탈퇴', () => {
     expect(findUserByToken(authorization)).toBeNull();
   });
 
+  it.each([
+    ['비밀번호가 없으면', undefined, 'COMMON_003'],
+    ['비밀번호가 틀리면', 'wrong-password1!', 'MEMBER_006'],
+  ])('%s 400으로 거절하고 탈퇴하지 않는다', (label, password, code) => {
+    const authorization = `Bearer ${buildAccessToken(1, 'USER')}`;
+    const handler = findHandler('patch', '/api/members/me/delete');
+
+    const response = handler.handle({
+      user: findUserByToken(authorization),
+      authorization,
+      body: password ? { password } : {},
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.data.code).toBe(code);
+    expect(mockStore.getState().users.find((item) => item.id === 1).deletedAt).toBeFalsy();
+    expect(findUserByToken(authorization)).not.toBeNull();
+  });
+
   it('탈퇴 회원의 닉네임으로 새 계정을 만들 수 없다', () => {
     const accessToken = buildAccessToken(1, 'USER');
     const authorization = `Bearer ${accessToken}`;
     const withdrawalHandler = findHandler('patch', '/api/members/me/delete');
-    withdrawalHandler.handle({ user: findUserByToken(authorization), authorization });
+    withdrawalHandler.handle({
+      user: findUserByToken(authorization),
+      authorization,
+      body: { password: MOCK_PASSWORD },
+    });
 
     const email = 'new-member@hyeja.kr';
     mockStore.update((state) => {

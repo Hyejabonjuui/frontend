@@ -40,7 +40,7 @@ function NotificationPopover({
       }}
     >
       {/* "모두 읽음"은 백엔드 일괄 읽음 API가 생기면 다시 둔다. 지금은 한 건씩만 읽음 처리할 수 있다. */}
-      <Typography variant="body2" sx={{ px: 2, py: 1.5 }}>
+      <Typography variant="body2" sx={{ px: 2.5, py: 1.75, fontWeight: 800 }}>
         [마감 7일 이하] 알림 / 안 읽음 ({unreadCount})
       </Typography>
 
@@ -64,6 +64,7 @@ function NotificationPopover({
           to={`${ROUTES.MY_PAGE}?tab=${MY_PAGE_TABS.NOTIFICATION}`}
           variant="text"
           onClick={onClose}
+          sx={{ color: 'primary.main' }}
         >
           알림함 전체 보기
         </Button>

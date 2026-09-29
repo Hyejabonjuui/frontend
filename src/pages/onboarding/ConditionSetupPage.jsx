@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import ErrorState from '@/components/common/ErrorState';
+import FormPageLayout from '@/components/common/FormPageLayout';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { ROUTES } from '@/constants/routes';
 import { useMyConditions } from '@/hooks/useMyConditions';
@@ -26,24 +26,22 @@ function ConditionSetupPage() {
   }
 
   return (
-    <Stack sx={{ alignItems: 'center' }}>
-      <Card variant="outlined" sx={{ width: '100%', maxWidth: 620, p: { xs: 2, sm: 4 } }}>
-        <Stack spacing={1} sx={{ mb: 3 }}>
-          <Typography variant="h1">내 조건 등록</Typography>
-          <Typography variant="body1" color="text.secondary">
-            한 번만 등록하면 검색할 때마다 자동으로 AI가 반영해요. 선택 항목을 비워 두면 그 조건은
-            &ldquo;확인이 필요해요&rdquo;로 알려드려요.
-          </Typography>
-        </Stack>
+    <FormPageLayout>
+      <Stack spacing={1} sx={{ mb: 3 }}>
+        <Typography variant="h1">내 조건 등록</Typography>
+        <Typography variant="body1" color="text.secondary">
+          한 번만 등록하면 검색할 때마다 자동으로 AI가 반영해요. 선택 항목을 비워 두면 그 조건은
+          &ldquo;확인이 필요해요&rdquo;로 알려드려요.
+        </Typography>
+      </Stack>
 
-        <ConditionEditor
-          initialConditions={conditions}
-          draft={draft}
-          submitLabel="저장하고 시작하기"
-          onSaved={() => navigate(ROUTES.HOME)}
-        />
-      </Card>
-    </Stack>
+      <ConditionEditor
+        initialConditions={conditions}
+        draft={draft}
+        submitLabel="저장하고 시작하기"
+        onSaved={() => navigate(ROUTES.HOME)}
+      />
+    </FormPageLayout>
   );
 }
 

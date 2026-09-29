@@ -1,13 +1,14 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
-import { RADIUS } from '@/styles/theme';
+import Illustration from '@/components/common/Illustration';
+import { COLORS, RADIUS } from '@/styles/theme';
 
 /**
  * isFramed는 설계서 S-05 "후보 0건"의 점선 박스를 쓴다는 뜻이다.
- * 점선 line-2 · 모서리 12 · 여백 48/32 · 제목 15/22 굵게 · 제목과 설명 사이 10
+ * illustration을 주면 제목 위에 public/illustrations의 그림을 함께 보여 준다.
  */
-function EmptyState({ title, description, action, isFramed = false }) {
+function EmptyState({ title, description, action, isFramed = false, illustration }) {
   return (
     <Box
       sx={{
@@ -15,12 +16,15 @@ function EmptyState({ title, description, action, isFramed = false }) {
         py: 6,
         px: isFramed ? 4 : 2,
         ...(isFramed && {
-          border: '1px dashed',
+          border: '1.5px dashed',
           borderColor: 'grey.500',
           borderRadius: `${RADIUS.card}px`,
+          bgcolor: COLORS.accentTint,
         }),
       }}
     >
+      {illustration && <Illustration name={illustration} sx={{ width: 180, mx: 'auto', mb: 2 }} />}
+
       <Typography variant={isFramed ? 'subtitle1' : 'body2'} color="text.primary">
         {title}
       </Typography>

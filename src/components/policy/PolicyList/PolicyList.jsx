@@ -6,6 +6,7 @@ import ListPagination from '@/components/common/ListPagination';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import PolicyRow from '@/components/policy/PolicyRow';
 import { EMPTY_MESSAGES } from '@/constants/messages';
+import { RADIUS } from '@/styles/theme';
 
 function PolicyList({
   policies,
@@ -34,15 +35,25 @@ function PolicyList({
 
   return (
     <Box>
-      {policies.map((policy) => (
-        <PolicyRow
-          key={policy.id}
-          policy={policy}
-          isFavorite={isFavorite?.(policy.id) ?? false}
-          onToggleFavorite={onToggleFavorite}
-          memberRegionCode={memberRegionCode}
-        />
-      ))}
+      <Box
+        sx={{
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: `${RADIUS.card}px`,
+          overflow: 'hidden',
+          bgcolor: 'background.paper',
+        }}
+      >
+        {policies.map((policy) => (
+          <PolicyRow
+            key={policy.id}
+            policy={policy}
+            isFavorite={isFavorite?.(policy.id) ?? false}
+            onToggleFavorite={onToggleFavorite}
+            memberRegionCode={memberRegionCode}
+          />
+        ))}
+      </Box>
 
       {onPageChange && (
         <ListPagination page={page} totalPages={totalPages} onPageChange={onPageChange} />

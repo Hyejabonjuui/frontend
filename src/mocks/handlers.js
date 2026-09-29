@@ -611,7 +611,7 @@ export const HANDLERS = [
   {
     method: 'patch',
     match: (url) => url === '/api/members/me/delete',
-    handle: ({ user, authorization }) => {
+    handle: ({ user, authorization, body }) => {
       if (!user) {
         return {
           status: 404,
@@ -621,6 +621,21 @@ export const HANDLERS = [
             message: '이미 탈퇴했거나 존재하지 않는 회원입니다.',
             result: null,
           },
+        };
+      }
+
+      // 백엔드와 같이 본인 확인용 비밀번호를 받아 맞을 때만 탈퇴한다.
+      if (!body?.password) {
+        return {
+          status: 400,
+          data: { isSuccess: false, code: 'COMMON_003', message: '비밀번호를 입력해 주세요.' },
+        };
+      }
+
+      if (body.password !== user.password) {
+        return {
+          status: 400,
+          data: { isSuccess: false, code: 'MEMBER_006', message: '비밀번호가 일치하지 않습니다.' },
         };
       }
 

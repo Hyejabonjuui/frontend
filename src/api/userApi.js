@@ -90,6 +90,6 @@ export const updateMyConditions = async (conditionForm) =>
     unwrapResult(await httpClient.patch(ENDPOINTS.USER.PROFILE, toProfileRequest(conditionForm))),
   );
 
-/** F-05: 탈퇴하면 조건·관심 정책·알림이 함께 지워진다. */
-export const deleteAccount = async () =>
-  unwrapResult(await httpClient.patch(ENDPOINTS.USER.DELETE));
+/** F-05: 탈퇴하면 조건·관심 정책·알림이 함께 지워진다. 본인 확인용으로 현재 비밀번호를 함께 보낸다. */
+export const deleteAccount = async (password) =>
+  unwrapResult(await httpClient.patch(ENDPOINTS.USER.DELETE, { password }));

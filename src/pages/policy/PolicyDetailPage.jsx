@@ -26,7 +26,16 @@ import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { useCardNewsDetail, usePolicyDetail } from '@/hooks/usePolicies';
 import { useTerms } from '@/hooks/useTerms';
 import { useToast } from '@/hooks/useToast';
-import { RADIUS } from '@/styles/theme';
+import {
+  COLORS,
+  getSubtypeTone,
+  GRADIENTS,
+  JUDGE_TONE,
+  LAYOUT,
+  RADIUS,
+  SHADOWS,
+  TONES,
+} from '@/styles/theme';
 import { formatDateRange } from '@/utils/formatDate';
 
 /** 설계서 S-06 오른쪽 카드 폭 */
@@ -34,8 +43,25 @@ const DETAIL_ASIDE_WIDTH = 380;
 /** 본문과 카드를 나란히 둘 만큼 넓은 화면. 더 좁으면 카드가 본문 아래로 내려간다. */
 const SIDE_BY_SIDE = '@media (min-width:1024px)';
 
-/** 설계서 S-06 오른쪽 카드 공통 틀: 폭 380 · 여백 24 · 회색 바탕 */
-const ASIDE_CARD_SX = { width: '100%', minWidth: 0, p: 3, backgroundColor: 'grey.100' };
+/** 설계서 S-06 오른쪽 카드 공통 틀: 폭 380 · 여백 24. 흰 바탕에 그림자를 둬 본문 위에 떠 보이게 한다. */
+const ASIDE_CARD_SX = {
+  width: '100%',
+  minWidth: 0,
+  p: 3,
+  backgroundColor: 'background.paper',
+  boxShadow: SHADOWS.card,
+  borderColor: 'transparent',
+};
+
+/** 본문 블록마다 붙는 아이콘과 파스텔 색 */
+const SECTION_ICONS = {
+  '어떤 정책인가요': { icon: 'info-circle', tone: TONES.violet },
+  '지원 내용': { icon: 'check-circle', tone: TONES.mint },
+  '신청 기간': { icon: 'bell-outline', tone: TONES.peach },
+  '신청 방법': { icon: 'arrow-up-right', tone: TONES.sky },
+  '추가 자격': { icon: 'account-outline', tone: TONES.rose },
+};
+
 /** 비로그인 카드는 조건 표가 빠져도 조건 다섯 줄이 있던 때의 높이를 유지한다. */
 const GUEST_CARD_MIN_HEIGHT = 469;
 
@@ -54,10 +80,10 @@ function JudgementCard({ judgements, summary, group }) {
               alignItems: 'center',
               px: 1.5,
               py: 1.25,
-              border: 1,
-              borderColor: 'grey.500',
               borderRadius: `${RADIUS.toast}px`,
-              backgroundColor: 'background.paper',
+              backgroundColor: group
+                ? JUDGE_TONE[JUDGE_RESULT_BY_GROUP[group]]?.bg
+                : COLORS.accentTint,
             }}
           >
             {/* 옆 문장이 판정을 말해 주므로 아이콘은 화면 낭독기에 읽히지 않게 둔다. */}
@@ -105,9 +131,8 @@ function JudgementCard({ judgements, summary, group }) {
           component={RouterLink}
           to={buildMyPagePath(MY_PAGE_TABS.CONDITION)}
           variant="body2"
-          color="text.primary"
-          underline="always"
-          sx={{ alignSelf: 'flex-start' }}
+          underline="hover"
+          sx={{ alignSelf: 'flex-start', fontWeight: 700 }}
         >
           내 조건 수정 <AppIcon name="arrow-right" size={16} />
         </Link>
@@ -182,14 +207,49 @@ function GuestConditionsCard({ onLogin }) {
   );
 }
 
-/** 설계서 S-06 본문 블록: 제목 15/22 굵게, 내용과 8px 간격 */
+/** 설계서 S-06 본문 블록: 제목 15/22 굵게, 내용과 8px 간격. 왼쪽 아이콘 색으로 블록을 구분한다. */
 function DetailSection({ label, children }) {
+  const { icon, tone } = SECTION_ICONS[label] ?? SECTION_ICONS['어떤 정책인가요'];
+
   return (
-    <Stack spacing={1}>
-      <Typography variant="subtitle1">{label}</Typography>
-      <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
-        {children}
-      </Typography>
+    <Stack
+      direction="row"
+      spacing={2}
+      sx={{
+        p: { xs: 2, sm: 2.5 },
+        border: 1,
+        borderColor: 'divider',
+        borderRadius: `${RADIUS.card}px`,
+      }}
+    >
+      <Box
+        aria-hidden="true"
+        sx={{
+          display: 'grid',
+          placeItems: 'center',
+          width: 40,
+          height: 40,
+          flexShrink: 0,
+          borderRadius: '12px',
+          bgcolor: tone.bg,
+          color: tone.fg,
+        }}
+      >
+        <AppIcon name={icon} size={20} />
+      </Box>
+      <Stack spacing={1} sx={{ minWidth: 0, pt: 0.75 }}>
+        <Typography variant="subtitle1">{label}</Typography>
+        {typeof children === 'string' ? (
+          <Typography
+            variant="body1"
+            sx={{ fontSize: 15, lineHeight: 1.7, whiteSpace: 'pre-line', wordBreak: 'keep-all' }}
+          >
+            {children}
+          </Typography>
+        ) : (
+          children
+        )}
+      </Stack>
     </Stack>
   );
 }
@@ -254,11 +314,38 @@ function PolicyDetailPage() {
   };
 
   const saved = isFavorite(policy.id, policy.isFavorite);
+  const subtypeTone = getSubtypeTone(policy.subtypeName);
 
   return (
     <Stack spacing={4}>
-      <Stack component="header" spacing={1.5}>
-        <Breadcrumbs separator={<AppIcon name="chevron-right" size={14} />}>
+      <Stack
+        component="header"
+        spacing={1.5}
+        sx={{
+          position: 'relative',
+          overflow: 'hidden',
+          px: { xs: 2.5, sm: 4, md: 5 },
+          py: { xs: 3, sm: 4 },
+          borderRadius: { xs: '24px', sm: '28px' },
+          background: GRADIENTS.hero,
+          border: `1px solid ${COLORS.accentLine}`,
+        }}
+      >
+        <Box
+          aria-hidden="true"
+          sx={{
+            position: 'absolute',
+            right: { xs: -30, sm: 32 },
+            bottom: { xs: -30, sm: -24 },
+            color: 'rgba(101, 88, 211, 0.1)',
+          }}
+        >
+          <AppIcon name="home" size={180} />
+        </Box>
+        <Breadcrumbs
+          separator={<AppIcon name="chevron-right" size={14} />}
+          sx={{ position: 'relative' }}
+        >
           <Link
             component={RouterLink}
             to={ROUTES.HOME}
@@ -279,16 +366,39 @@ function PolicyDetailPage() {
           useFlexGap
           sx={{ alignItems: 'center', flexWrap: 'wrap' }}
         >
-          <Chip label={policy.subtypeName} variant="outlined" size="small" />
-          <Typography variant="h1" sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+          <Chip
+            label={policy.subtypeName}
+            size="small"
+            sx={{ fontWeight: 700, bgcolor: subtypeTone.bg, color: subtypeTone.fg }}
+          />
+          <Typography
+            variant="h1"
+            sx={{
+              minWidth: 0,
+              fontSize: { xs: 24, sm: 32 },
+              lineHeight: 1.3,
+              overflowWrap: 'anywhere',
+              wordBreak: 'keep-all',
+            }}
+          >
             {policy.title}
           </Typography>
           <DdayBadge applyPeriodType={policy.applyPeriodType} applyEndDate={policy.applyEndDate} />
         </Stack>
 
-        <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', pt: 0.5 }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          useFlexGap
+          sx={{ position: 'relative', flexWrap: 'wrap', pt: 1 }}
+        >
+          <Button variant="contained" size="large" onClick={handleApplyClick}>
+            신청하러 가기 <AppIcon name="arrow-up-right" size={16} />
+          </Button>
+
           <Button
             variant="outlined"
+            size="large"
             startIcon={<AppIcon name={saved ? 'heart' : 'heart-outline'} size={20} />}
             onClick={() => toggleFavorite(policy.id, saved)}
             sx={{ '& .MuiButton-startIcon': { color: saved ? 'favorite.main' : 'inherit' } }}
@@ -298,14 +408,11 @@ function PolicyDetailPage() {
 
           <Button
             variant="outlined"
+            size="large"
             loading={Boolean(requestedCardNewsId) && cardNewsState.isLoading}
             onClick={handleCardNewsClick}
           >
             카드뉴스로 보기
-          </Button>
-
-          <Button variant="contained" onClick={handleApplyClick}>
-            신청하러 가기 <AppIcon name="arrow-up-right" size={16} />
           </Button>
         </Stack>
       </Stack>
@@ -319,7 +426,7 @@ function PolicyDetailPage() {
           [SIDE_BY_SIDE]: { flexDirection: 'row', alignItems: 'flex-start', gap: 4 },
         }}
       >
-        <Stack spacing={3.5} sx={{ flex: 1, minWidth: 0, width: '100%' }}>
+        <Stack spacing={1.5} sx={{ flex: 1, minWidth: 0, width: '100%' }}>
           <DetailSection label="어떤 정책인가요">{policy.description}</DetailSection>
           <DetailSection label="지원 내용">{policy.benefit}</DetailSection>
           <DetailSection label="신청 기간">
@@ -327,13 +434,12 @@ function PolicyDetailPage() {
           </DetailSection>
           <DetailSection label="신청 방법">{policy.applyMethod}</DetailSection>
           {policy.extraQualification && (
-            <Stack spacing={1}>
-              <Typography variant="subtitle1">추가 자격</Typography>
+            <DetailSection label="추가 자격">
               <TermText text={policy.extraQualification} terms={terms} />
               <Typography variant="caption" color="text.disabled">
                 밑줄 친 단어에 마우스를 올리면 쉬운 설명이 나와요
               </Typography>
-            </Stack>
+            </DetailSection>
           )}
         </Stack>
 
@@ -342,7 +448,12 @@ function PolicyDetailPage() {
             sx={{
               width: '100%',
               flexShrink: 0,
-              [SIDE_BY_SIDE]: { width: `min(${DETAIL_ASIDE_WIDTH}px, 36vw)` },
+              // 넓은 화면에서는 본문을 내려도 조건 카드가 헤더 아래에 붙어 따라온다.
+              [SIDE_BY_SIDE]: {
+                width: `min(${DETAIL_ASIDE_WIDTH}px, 36vw)`,
+                position: 'sticky',
+                top: LAYOUT.headerHeight + 24,
+              },
             }}
           >
             {isAuthenticated ? (

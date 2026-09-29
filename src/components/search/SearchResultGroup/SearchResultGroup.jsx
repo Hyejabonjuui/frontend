@@ -9,10 +9,11 @@ import {
   RECOMMENDATION_GROUP_DESCRIPTION,
   RECOMMENDATION_GROUP_LABEL,
 } from '@/constants/policy';
+import { COLORS, RADIUS } from '@/styles/theme';
 
 function SearchResultGroup({ group, policies = [], isFavorite, onToggleFavorite }) {
   return (
-    <Box component="section">
+    <Box component="section" id={`result-group-${group}`} sx={{ scrollMarginTop: 88 }}>
       <Stack
         direction="row"
         spacing={1}
@@ -20,7 +21,7 @@ function SearchResultGroup({ group, policies = [], isFavorite, onToggleFavorite 
         sx={{ alignItems: 'center', flexWrap: 'wrap', columnGap: 1.5, mb: 1.5 }}
       >
         <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-          <JudgeIcon result={JUDGE_RESULT_BY_GROUP[group]} size={20} />
+          <JudgeIcon result={JUDGE_RESULT_BY_GROUP[group]} size={24} />
           <Typography variant="h2">
             {RECOMMENDATION_GROUP_LABEL[group]} · {policies.length}건
           </Typography>
@@ -31,7 +32,18 @@ function SearchResultGroup({ group, policies = [], isFavorite, onToggleFavorite 
       </Stack>
 
       {policies.length === 0 ? (
-        <Typography variant="body1" color="text.disabled" sx={{ py: 1 }}>
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          sx={{
+            py: 2.5,
+            textAlign: 'center',
+            borderRadius: `${RADIUS.card}px`,
+            border: '1.5px dashed',
+            borderColor: 'divider',
+            bgcolor: COLORS.accentTint,
+          }}
+        >
           해당하는 정책이 없어요
         </Typography>
       ) : (

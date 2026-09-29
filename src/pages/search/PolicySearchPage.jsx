@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link as RouterLink, useLocation, useSearchParams } from 'react-router-dom';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Link from '@mui/material/Link';
@@ -8,12 +9,15 @@ import Typography from '@mui/material/Typography';
 
 import EmptyState from '@/components/common/EmptyState';
 import ErrorState from '@/components/common/ErrorState';
+import Illustration from '@/components/common/Illustration';
+import JudgeIcon from '@/components/common/JudgeIcon';
 import PolicySearchBar from '@/components/policy/PolicySearchBar';
 import SearchCriteriaSummary from '@/components/search/SearchCriteriaSummary';
 import SearchResultGroup from '@/components/search/SearchResultGroup';
 import SearchResultSkeleton from '@/components/search/SearchResultSkeleton';
 import { EMPTY_MESSAGES, LOGIN_NOTICE, TOAST_MESSAGES } from '@/constants/messages';
 import {
+  JUDGE_RESULT_BY_GROUP,
   POLICY_SEARCH_HASHTAGS,
   RECOMMENDATION_GROUP,
   RECOMMENDATION_GROUP_LABEL,
@@ -25,6 +29,7 @@ import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { useMyConditions } from '@/hooks/useMyConditions';
 import { usePolicySearch } from '@/hooks/usePolicySearch';
 import { useToast } from '@/hooks/useToast';
+import { COLORS, GRADIENTS, JUDGE_TONE } from '@/styles/theme';
 import { withDirectionParticle } from '@/utils/koreanParticle';
 
 const GROUP_ORDER = [
@@ -119,49 +124,109 @@ function PolicySearchPage() {
 
   return (
     <Stack spacing={4.5}>
-      <Stack component="section" spacing={1.5}>
-        <PolicySearchBar
-          keyword={searchKeyword}
-          onKeywordChange={setSearchKeyword}
-          onSubmit={handleSearch}
-          onRequestLogin={isAuthenticated ? undefined : () => openLoginNotice(LOGIN_NOTICE.SEARCH)}
-          isResultPage
-          inputRef={searchInputRef}
+      <Box
+        component="section"
+        sx={{
+          position: 'relative',
+          overflow: 'hidden',
+          px: { xs: 2, sm: 4 },
+          py: { xs: 2.5, sm: 3.5 },
+          borderRadius: { xs: '24px', sm: '28px' },
+          background: GRADIENTS.hero,
+          border: `1px solid ${COLORS.accentLine}`,
+        }}
+      >
+        <Illustration
+          name="search"
+          sx={{
+            display: 'none',
+            '@media (min-width:1100px)': { display: 'block' },
+            position: 'absolute',
+            right: 24,
+            bottom: 8,
+            width: 190,
+          }}
         />
-
-        {!isIdle && !errorMessage && (
-          <SearchCriteriaSummary
-            typeLabel={searchedHashtag ? `‘${searchedHashtag}’ 유형으로 찾았어요` : ''}
-            conditions={appliedConditions}
-            action={
-              canEditConditions && (
-                <Link
-                  component={RouterLink}
-                  to={buildMyPagePath(MY_PAGE_TABS.CONDITION)}
-                  variant="body2"
-                  color="text.primary"
-                  underline="always"
-                >
-                  조건 수정
-                </Link>
-              )
+        <Stack
+          spacing={1.5}
+          sx={{
+            position: 'relative',
+            '@media (min-width:1100px)': { maxWidth: 'calc(100% - 220px)' },
+          }}
+        >
+          <PolicySearchBar
+            keyword={searchKeyword}
+            onKeywordChange={setSearchKeyword}
+            onSubmit={handleSearch}
+            onRequestLogin={
+              isAuthenticated ? undefined : () => openLoginNotice(LOGIN_NOTICE.SEARCH)
             }
+            isResultPage
+            inputRef={searchInputRef}
           />
-        )}
 
-        {hasResult && totalCount > 0 && (
-          <Stack direction="row" useFlexGap sx={{ flexWrap: 'wrap', columnGap: 3, pt: 1 }}>
-            {GROUP_ORDER.map((group) => (
-              <Stack key={group} direction="row" spacing={0.75} sx={{ alignItems: 'baseline' }}>
-                <Typography variant="body2">{RECOMMENDATION_GROUP_LABEL[group]}</Typography>
-                <Typography variant="body1" color="text.secondary">
-                  {groupCounts[group] ?? 0}건
-                </Typography>
-              </Stack>
-            ))}
-          </Stack>
-        )}
-      </Stack>
+          {!isIdle && !errorMessage && (
+            <SearchCriteriaSummary
+              typeLabel={searchedHashtag ? `‘${searchedHashtag}’ 유형으로 찾았어요` : ''}
+              conditions={appliedConditions}
+              action={
+                canEditConditions && (
+                  <Link
+                    component={RouterLink}
+                    to={buildMyPagePath(MY_PAGE_TABS.CONDITION)}
+                    variant="body2"
+                    color="text.primary"
+                    underline="always"
+                  >
+                    조건 수정
+                  </Link>
+                )
+              }
+            />
+          )}
+
+          {hasResult && totalCount > 0 && (
+            <Stack direction="row" useFlexGap sx={{ flexWrap: 'wrap', gap: 1, pt: 0.5 }}>
+              {GROUP_ORDER.map((group) => {
+                const judgeResult = JUDGE_RESULT_BY_GROUP[group];
+
+                // 누르면 그 그룹 결과로 바로 내려간다.
+                return (
+                  <Stack
+                    key={group}
+                    component="a"
+                    href={`#result-group-${group}`}
+                    direction="row"
+                    spacing={0.75}
+                    sx={{
+                      alignItems: 'center',
+                      pl: 0.75,
+                      pr: 1.5,
+                      py: 0.6,
+                      borderRadius: 99,
+                      bgcolor: 'common.white',
+                      border: `1px solid ${COLORS.line}`,
+                      color: 'text.primary',
+                      textDecoration: 'none',
+                      transition: 'border-color 150ms ease',
+                      '&:hover': { borderColor: JUDGE_TONE[judgeResult].fg },
+                    }}
+                  >
+                    <JudgeIcon result={judgeResult} size={20} />
+                    <Typography variant="body2">{RECOMMENDATION_GROUP_LABEL[group]}</Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{ fontWeight: 800, color: JUDGE_TONE[judgeResult].fg }}
+                    >
+                      {groupCounts[group] ?? 0}건
+                    </Typography>
+                  </Stack>
+                );
+              })}
+            </Stack>
+          )}
+        </Stack>
+      </Box>
 
       {/* 설계서 S-05 로딩: AI 응답을 기다리는 동안 결과와 같은 뼈대를 보여 준다. */}
       {isLoading && <SearchResultSkeleton />}
@@ -170,6 +235,7 @@ function PolicySearchPage() {
       {!isLoading && isNotHousing && (
         <EmptyState
           isFramed
+          illustration="empty"
           title={EMPTY_MESSAGES.SEARCH_NOT_HOUSING}
           description={EMPTY_MESSAGES.SEARCH_NOT_HOUSING_DESCRIPTION}
           action={
@@ -193,6 +259,7 @@ function PolicySearchPage() {
       {hasResult && totalCount === 0 && (
         <EmptyState
           isFramed
+          illustration="search"
           title={EMPTY_MESSAGES.SEARCH}
           description={EMPTY_MESSAGES.SEARCH_DESCRIPTION}
           action={
