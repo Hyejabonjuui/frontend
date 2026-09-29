@@ -3,6 +3,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import AppIcon from '@/components/common/AppIcon';
 import FieldError from '@/components/common/FieldError';
 import Illustration from '@/components/common/Illustration';
+import PasswordField from '@/components/common/PasswordField';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -117,10 +118,9 @@ function LoginDialog({ isOpen, onClose, onLoggedIn }) {
             }}
           />
 
-          <TextField
+          <PasswordField
             label="비밀번호"
             name="password"
-            type="password"
             value={form.password}
             onChange={handleChange}
             placeholder="비밀번호 입력"

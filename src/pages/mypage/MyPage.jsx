@@ -10,11 +10,11 @@ import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 import ErrorState from '@/components/common/ErrorState';
 import FieldError from '@/components/common/FieldError';
+import PasswordField from '@/components/common/PasswordField';
 import ListPagination from '@/components/common/ListPagination';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import PageHero from '@/components/common/PageHero';
@@ -169,9 +169,8 @@ function AccountTab() {
               내 조건, 관심 정책, 알림이 모두 지워지고 되돌릴 수 없어요. 본인 확인을 위해 비밀번호를
               입력해 주세요.
             </Typography>
-            <TextField
+            <PasswordField
               label="비밀번호"
-              type="password"
               autoComplete="current-password"
               autoFocus
               fullWidth

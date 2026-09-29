@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 
 import { confirmEmailVerification, sendEmailVerification } from '@/api/authApi';
 import FormPageLayout from '@/components/common/FormPageLayout';
+import PasswordField from '@/components/common/PasswordField';
 import ErrorState from '@/components/common/ErrorState';
 import FieldError from '@/components/common/FieldError';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -425,10 +426,9 @@ function SignupPage() {
             </Typography>
           </Stack>
         )}
-        <TextField
+        <PasswordField
           label="비밀번호"
           name="password"
-          type="password"
           value={form.password}
           onChange={handleChange}
           error={Boolean(fieldErrors.password)}
@@ -441,10 +441,9 @@ function SignupPage() {
           }
           fullWidth
         />
-        <TextField
+        <PasswordField
           label="비밀번호 확인"
           name="passwordConfirm"
-          type="password"
           value={form.passwordConfirm}
           onChange={handleChange}
           error={Boolean(fieldErrors.passwordConfirm)}
