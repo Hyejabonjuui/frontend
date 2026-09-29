@@ -23,9 +23,15 @@
 - 컴포넌트는 axios를 직접 부르지 않습니다. `pages → hooks → api` 순서로 내려갑니다.
 - 조회는 effect 안에서 하고 `isActive` 플래그로 정리합니다. 응답 순서가 꼬여도 늦게 온 응답이 화면을 덮지 않습니다.
   (ESLint `react-hooks/set-state-in-effect` 규칙도 이 형태를 요구합니다.)
+- 로그인 여부에 따라 요청이 달라지는 조회는 세션 복원(`isAuthLoading`)이 끝날 때까지 기다립니다.
+  새로고침 직후 비회원 목록을 먼저 불러 잠깐 보여 주는 일을 막습니다.
 
 ```js
 useEffect(() => {
+  if (isAuthLoading) {
+    return undefined;
+  }
+
   let isActive = true;
 
   const loadPolicies = async () => {
@@ -47,7 +53,7 @@ useEffect(() => {
   return () => {
     isActive = false;
   };
-}, [paramsKey, isAuthenticated, reloadToken]);
+}, [paramsKey, isAuthenticated, isAuthLoading, reloadToken]);
 ```
 
 - 다시 불러오기는 `reloadToken`을 올리는 `refetch`로 합니다.
@@ -82,7 +88,8 @@ useEffect(() => {
 - **입력 오류는 테두리 2px과 경고 아이콘 문구를 함께** 표시합니다.
   테두리는 테마가, 아이콘과 문구는 `FieldError`가 맡습니다.
 - **로그인이 필요한 동작**은 `useLoginDialog`의 `requireLogin(pendingAction)`으로 막습니다.
-  로그인에 성공하면 하려던 동작을 이어서 실행합니다.
+  넘긴 `pendingAction`은 로그인에 성공하면 이어서 실행합니다(♡ 저장).
+  보호 화면 가드처럼 동작을 넘기지 않으면 로그인 모달만 띄웁니다.
 
 ## 아이콘
 
